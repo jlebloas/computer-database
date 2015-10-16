@@ -52,4 +52,9 @@ public class Page<T> {
 		this.items = items;
 	}
 
+	@Override
+	public String toString() {
+		return "Page [beginIndex=" + beginIndex + ", nb=" + nb + ", items=" + items + "]";
+	}
+
 }

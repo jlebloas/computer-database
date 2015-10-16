@@ -4,6 +4,9 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public final class DBConnection {
 
 	private static String url = "jdbc:mysql://localhost:3306/computer-database-db?zeroDateTimeBehavior=convertToNull";
@@ -28,19 +31,21 @@ public final class DBConnection {
 	}
 
 	public static Connection getConnection() {
+		logger.trace("Getting a connection to the database");
 		try {
 			return DriverManager.getConnection(url, user, passwd);
 		} catch (SQLException e) {
-			e.printStackTrace();
+			logger.error("Error while getting a connection", e);
 		}
 		return null;
 	}
 
 	public static void closeConnection(Connection connection) {
+		logger.trace("Closing the database connection");
 		try {
 			connection.close();
 		} catch (SQLException e) {
-			e.printStackTrace();
+			logger.error("Error while closing the connection", e);
 		}
 	}
 
