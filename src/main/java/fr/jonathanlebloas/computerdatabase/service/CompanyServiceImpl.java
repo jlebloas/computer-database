@@ -39,6 +39,10 @@ public class CompanyServiceImpl implements CompanyService {
 		return instance;
 	}
 
+	void setCompanyDAO(CompanyDAO companyDAO) {
+		this.companyDAO = companyDAO;
+	}
+
 	@Override
 	public List<Company> listCompanies() throws ServiceException {
 		logger.debug("List companies");

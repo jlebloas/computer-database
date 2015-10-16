@@ -45,6 +45,11 @@ public class ComputerServiceImpl implements ComputerService {
 		return instance;
 	}
 
+
+	void setComputerDAO(ComputerDAO computerDAO) {
+		this.computerDAO = computerDAO;
+	}
+
 	@Override
 	public List<Computer> listComputers() throws ServiceException {
 		logger.debug("List computers");

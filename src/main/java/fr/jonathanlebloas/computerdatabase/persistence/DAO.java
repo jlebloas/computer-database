@@ -9,7 +9,7 @@ public abstract class DAO<T> {
 
 	/**
 	 * Allow to find by id in the db
-	 * 
+	 *
 	 * @param id
 	 * @return
 	 */
@@ -17,45 +17,46 @@ public abstract class DAO<T> {
 
 	/**
 	 * Allow to create object in the db
-	 * 
+	 *
 	 * @param obj
 	 */
 	public abstract T create(T obj) throws PersistenceException;
 
 	/**
 	 * Allow to update an Object in the db
-	 * 
+	 *
 	 * @param obj
 	 */
 	public abstract T update(T obj) throws PersistenceException;
 
 	/**
 	 * Allow to delete an Object in the db
-	 * 
+	 *
 	 * @param obj
 	 */
 	public abstract void delete(T obj) throws PersistenceException;
 
 	/**
 	 * Get the number of Object in the db
-	 * 
+	 *
 	 * @param obj
 	 */
 	public abstract int count() throws PersistenceException;
 
 	/**
 	 * Get the list of all Object
-	 * 
+	 *
 	 * @param obj
 	 */
 	public abstract List<T> list() throws PersistenceException;
 
 	/**
 	 * Populate the item list of the page
-	 * 
+	 *
 	 * @param page
+	 * @return the populated page
 	 */
-	public abstract void populate(Page<T> page) throws PersistenceException;
+	public abstract Page<T> populate(Page<T> page) throws PersistenceException;
 
 	/**
 	 * @param s

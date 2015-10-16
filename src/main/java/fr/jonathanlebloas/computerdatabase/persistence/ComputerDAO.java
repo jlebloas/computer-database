@@ -240,7 +240,7 @@ public class ComputerDAO extends DAO<Computer> {
 	}
 
 	@Override
-	public void populate(Page<Computer> page) throws PersistenceException {
+	public Page<Computer> populate(Page<Computer> page) throws PersistenceException {
 		logger.trace("Populating computers page : {}", page);
 		Connection connect = DBConnection.getConnection();
 
@@ -271,7 +271,7 @@ public class ComputerDAO extends DAO<Computer> {
 		} finally {
 			DBConnection.closeConnection(connect);
 		}
-
+		return page;
 	}
 
 	@Override

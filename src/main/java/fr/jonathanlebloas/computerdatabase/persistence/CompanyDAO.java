@@ -191,7 +191,7 @@ public class CompanyDAO extends DAO<Company> {
 	}
 
 	@Override
-	public void populate(Page<Company> page) throws PersistenceException {
+	public Page<Company> populate(Page<Company> page) throws PersistenceException {
 		logger.trace("Populating companies page : {}", page);
 		Connection connect = DBConnection.getConnection();
 
@@ -219,6 +219,7 @@ public class CompanyDAO extends DAO<Company> {
 			DBConnection.closeConnection(connect);
 		}
 
+		return page;
 	}
 
 	@Override
