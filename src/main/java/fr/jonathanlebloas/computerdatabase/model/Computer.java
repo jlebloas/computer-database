@@ -1,6 +1,6 @@
 package fr.jonathanlebloas.computerdatabase.model;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 /**
  * A computer has a name, the date when it was introduced, eventually the date
@@ -12,9 +12,9 @@ public class Computer {
 
 	private String name;
 
-	private Date introduced;
+	private LocalDate introduced;
 
-	private Date discontinued;
+	private LocalDate discontinued;
 
 	private Company manufacturer;
 
@@ -22,7 +22,7 @@ public class Computer {
 		super();
 	}
 
-	public Computer(long id, String name, Date introduced, Date discontinued, Company manufacturer) {
+	public Computer(long id, String name, LocalDate introduced, LocalDate discontinued, Company manufacturer) {
 		super();
 		this.id = id;
 		this.name = name;
@@ -31,7 +31,11 @@ public class Computer {
 		this.manufacturer = manufacturer;
 	}
 
-	public Computer(String name, Date introduced, Date discontinued, Company manufacturer) {
+	public Computer(String name) {
+		this(0, name, null, null, null);
+	}
+
+	public Computer(String name, LocalDate introduced, LocalDate discontinued, Company manufacturer) {
 		this(0, name, introduced, discontinued, manufacturer);
 	}
 
@@ -51,19 +55,19 @@ public class Computer {
 		this.name = name;
 	}
 
-	public Date getIntroduced() {
+	public LocalDate getIntroduced() {
 		return introduced;
 	}
 
-	public void setIntroduced(Date introduced) {
+	public void setIntroduced(LocalDate introduced) {
 		this.introduced = introduced;
 	}
 
-	public Date getDiscontinued() {
+	public LocalDate getDiscontinued() {
 		return discontinued;
 	}
 
-	public void setDiscontinued(Date discontinued) {
+	public void setDiscontinued(LocalDate discontinued) {
 		this.discontinued = discontinued;
 	}
 
@@ -89,35 +93,47 @@ public class Computer {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
+		if (this == obj) {
 			return true;
-		if (obj == null)
+		}
+		if (obj == null) {
 			return false;
-		if (getClass() != obj.getClass())
+		}
+		if (getClass() != obj.getClass()) {
 			return false;
+		}
 		Computer other = (Computer) obj;
 		if (discontinued == null) {
-			if (other.discontinued != null)
+			if (other.discontinued != null) {
 				return false;
-		} else if (!discontinued.equals(other.discontinued))
+			}
+		} else if (!discontinued.equals(other.discontinued)) {
 			return false;
-		if (id != other.id)
+		}
+		if (id != other.id) {
 			return false;
+		}
 		if (introduced == null) {
-			if (other.introduced != null)
+			if (other.introduced != null) {
 				return false;
-		} else if (!introduced.equals(other.introduced))
+			}
+		} else if (!introduced.equals(other.introduced)) {
 			return false;
+		}
 		if (manufacturer == null) {
-			if (other.manufacturer != null)
+			if (other.manufacturer != null) {
 				return false;
-		} else if (!manufacturer.equals(other.manufacturer))
+			}
+		} else if (!manufacturer.equals(other.manufacturer)) {
 			return false;
+		}
 		if (name == null) {
-			if (other.name != null)
+			if (other.name != null) {
 				return false;
-		} else if (!name.equals(other.name))
+			}
+		} else if (!name.equals(other.name)) {
 			return false;
+		}
 		return true;
 	}
 

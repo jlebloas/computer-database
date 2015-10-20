@@ -84,14 +84,14 @@ public class ComputerDAO extends DAO<Computer> {
 			if (obj.getIntroduced() == null) {
 				prepared.setNull(2, java.sql.Types.TIMESTAMP);
 			} else {
-				prepared.setTimestamp(2, new Timestamp(obj.getIntroduced().getTime()));
+				prepared.setTimestamp(2, Timestamp.valueOf(obj.getIntroduced().atStartOfDay()));
 			}
 
 			// Set the discontinued or null if needed
 			if (obj.getDiscontinued() == null) {
 				prepared.setNull(3, java.sql.Types.TIMESTAMP);
 			} else {
-				prepared.setTimestamp(3, new Timestamp(obj.getDiscontinued().getTime()));
+				prepared.setTimestamp(3, Timestamp.valueOf(obj.getDiscontinued().atStartOfDay()));
 			}
 
 			// Set the company_id foreign key on company
@@ -134,14 +134,14 @@ public class ComputerDAO extends DAO<Computer> {
 			if (obj.getIntroduced() == null) {
 				prepared.setNull(2, java.sql.Types.TIMESTAMP);
 			} else {
-				prepared.setTimestamp(2, new Timestamp(obj.getIntroduced().getTime()));
+				prepared.setTimestamp(2, Timestamp.valueOf(obj.getIntroduced().atStartOfDay()));
 			}
 
 			// Set the discontinued or null if needed
 			if (obj.getDiscontinued() == null) {
 				prepared.setNull(3, java.sql.Types.TIMESTAMP);
 			} else {
-				prepared.setTimestamp(3, new Timestamp(obj.getDiscontinued().getTime()));
+				prepared.setTimestamp(3, Timestamp.valueOf(obj.getDiscontinued().atStartOfDay()));
 			}
 
 			// Set the company_id foreign key on company
@@ -312,8 +312,12 @@ public class ComputerDAO extends DAO<Computer> {
 
 			computer.setId(rs.getLong(1));
 			computer.setName(rs.getString(2));
-			computer.setIntroduced(rs.getDate(3));
-			computer.setDiscontinued(rs.getDate(4));
+			if (rs.getDate(3) != null) {
+				computer.setIntroduced(rs.getDate(3).toLocalDate());
+			}
+			if (rs.getDate(4) != null) {
+				computer.setDiscontinued(rs.getDate(4).toLocalDate());
+			}
 
 			Company company = null;
 			if (rs.getLong(5) != 0) {

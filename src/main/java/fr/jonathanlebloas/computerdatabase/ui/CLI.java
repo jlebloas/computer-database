@@ -1,11 +1,11 @@
 package fr.jonathanlebloas.computerdatabase.ui;
 
-import java.text.DateFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.EnumSet;
 import java.util.List;
-import java.util.Locale;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -47,24 +47,24 @@ public final class CLI {
 	 */
 	private enum Command {
 		LISTCOMPANIES("Display the list of companies", new Options()
-				.addOption(new Option("p",CONSOLE_ARG_PAGE, true, "The optional page"))),
+				.addOption(new Option("p", CONSOLE_ARG_PAGE, true, "The optional page"))),
 		LISTCOMPUTERS("Display the list of computers", new Options()
-				.addOption(new Option("p",CONSOLE_ARG_PAGE, true, "The optional page"))),
+				.addOption(new Option("p", CONSOLE_ARG_PAGE, true, "The optional page"))),
 		SHOW("Display the details of a computer", new Options()
-				.addOption(new Option(CONSOLE_ARG_ID,CONSOLE_ARG_ID, true, "The id of the computer"))),
+				.addOption(new Option(CONSOLE_ARG_ID, CONSOLE_ARG_ID, true, "The id of the computer"))),
 		CREATE("Create a computer", new Options()
-				.addOption("n",CONSOLE_ARG_NAME, true, "The mendatory name of the computer")
-				.addOption("i",CONSOLE_ARG_INTRODUCED, true, "The date it was introduced")
-				.addOption("d",CONSOLE_ARG_DISCONTINUED, true, "The date it was discontinued")
-				.addOption("m",CONSOLE_ARG_MANUFACTURER, true, "The id of the manufacturer")),
-		UPDATE("Update a computer", new Options()
-				.addOption(CONSOLE_ARG_ID,CONSOLE_ARG_ID, true, "The mandatory id of the upadted computer")
-				.addOption("n",CONSOLE_ARG_NAME, true, "The new name of the computer")
-				.addOption("i",CONSOLE_ARG_INTRODUCED, true, "The new introduced date")
-				.addOption("d",CONSOLE_ARG_DISCONTINUED, true, "The new discontinued date")
-				.addOption("m",CONSOLE_ARG_MANUFACTURER, true, "The id of the new manufacturer")),
+				.addOption("n", CONSOLE_ARG_NAME, true, "The mendatory name of the computer")
+				.addOption("i", CONSOLE_ARG_INTRODUCED, true, "The date it was introduced")
+				.addOption("d", CONSOLE_ARG_DISCONTINUED, true, "The date it was discontinued")
+				.addOption("m", CONSOLE_ARG_MANUFACTURER, true,	"The id of the manufacturer")),
+		UPDATE( "Update a computer", new Options()
+				.addOption(CONSOLE_ARG_ID, CONSOLE_ARG_ID, true, "The mandatory id of the upadted computer")
+				.addOption("n", CONSOLE_ARG_NAME, true, "The new name of the computer")
+				.addOption("i", CONSOLE_ARG_INTRODUCED, true, "The new introduced date")
+				.addOption("d", CONSOLE_ARG_DISCONTINUED, true, "The new discontinued date")
+				.addOption("m",	CONSOLE_ARG_MANUFACTURER, true, "The id of the new manufacturer")),
 		DELETE("Delete a computer", new Options()
-				.addOption(CONSOLE_ARG_ID,CONSOLE_ARG_ID, true, "The mandatory id of the computer to be deleted")),
+				.addOption(CONSOLE_ARG_ID, CONSOLE_ARG_ID, true, "The mandatory id of the computer to be deleted")),
 		HELP("Display the commands", new Options());
 
 		// TODO Look for optional args and naming args values
@@ -95,8 +95,7 @@ public final class CLI {
 
 	private static CompanyService companyService = CompanyServiceImpl.getIntance();
 
-	private static DateFormat df = DateFormat.getDateInstance(DateFormat.SHORT,
-			Locale.getDefault(Locale.Category.FORMAT));
+	private static DateTimeFormatter df = DateTimeFormatter.ISO_LOCAL_DATE;
 
 	private static HelpFormatter formatter = new HelpFormatter();
 
@@ -265,13 +264,13 @@ public final class CLI {
 			String name = options.getOptionValue(CONSOLE_ARG_NAME);
 
 			// Parse the given dates
-			Date introduced = null;
-			Date discontinued = null;
+			LocalDate introduced = null;
+			LocalDate discontinued = null;
 			if (options.hasOption(CONSOLE_ARG_INTRODUCED)) {
-				introduced = df.parse(options.getOptionValue(CONSOLE_ARG_INTRODUCED));
+				introduced = LocalDate.parse(options.getOptionValue(CONSOLE_ARG_INTRODUCED), df);
 			}
 			if (options.hasOption(CONSOLE_ARG_DISCONTINUED)) {
-				discontinued = df.parse(options.getOptionValue(CONSOLE_ARG_DISCONTINUED));
+				discontinued = LocalDate.parse(options.getOptionValue(CONSOLE_ARG_DISCONTINUED), df);
 			}
 
 			// Get the optional manufacturer
@@ -291,8 +290,8 @@ public final class CLI {
 		} catch (CompanyNotFoundException | EmptyNameException | ComputerNotFoundException | InvalidCompanyException
 				| InvalidDateException | ServiceException e) {
 			System.out.println("\t" + e.getMessage());
-		} catch (java.text.ParseException e) {
-			System.out.println("\t Your date is not well formated");
+		} catch (DateTimeParseException e) {
+			System.out.println("\t Your date is not well formated. Format it like 2011-12-03");
 		}
 	}
 
@@ -314,10 +313,12 @@ public final class CLI {
 
 			// Parse the given dates
 			if (options.hasOption(CONSOLE_ARG_INTRODUCED)) {
-				computer.setIntroduced(df.parse(options.getOptionValue(CONSOLE_ARG_INTRODUCED)));
+				LocalDate introduced = LocalDate.parse(options.getOptionValue(CONSOLE_ARG_INTRODUCED), df);
+				computer.setIntroduced(introduced);
 			}
 			if (options.hasOption(CONSOLE_ARG_DISCONTINUED)) {
-				computer.setDiscontinued(df.parse(options.getOptionValue(CONSOLE_ARG_DISCONTINUED)));
+				LocalDate discontinued = LocalDate.parse(options.getOptionValue(CONSOLE_ARG_DISCONTINUED), df);
+				computer.setDiscontinued(discontinued);
 			}
 
 			// Get the optional manufacturer
@@ -332,10 +333,10 @@ public final class CLI {
 			computerService.update(computer);
 			System.out.println("\t Your computer as been successfully updated ! : " + computer.toString());
 
-		} catch (java.text.ParseException e) {
+		} catch (DateTimeParseException e) {
 			System.out.println("\t Your date is not well formated.");
 		} catch (NumberFormatException e) {
-			System.out.println("\t Your id has a wrong format.");
+			System.out.println("\t Your id has a wrong format. Format it like 2011-12-03");
 		} catch (ComputerNotFoundException | CompanyNotFoundException | EmptyNameException | ServiceException
 				| InvalidDateException | InvalidCompanyException e) {
 			System.out.println(e.getMessage());
