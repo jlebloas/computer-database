@@ -14,7 +14,7 @@ public interface ComputerService {
 
 	/**
 	 * Return the full list of all the computers
-	 * 
+	 *
 	 * @return
 	 * @throws ServiceException
 	 */
@@ -22,7 +22,7 @@ public interface ComputerService {
 
 	/**
 	 * Gives the details of the given computer
-	 * 
+	 *
 	 * @param c
 	 * @return
 	 * @throws ComputerNotFoundException
@@ -32,7 +32,7 @@ public interface ComputerService {
 
 	/**
 	 * Find the computer with the given id
-	 * 
+	 *
 	 * @param id
 	 * @return
 	 * @throws ComputerNotFoundException
@@ -42,7 +42,7 @@ public interface ComputerService {
 
 	/**
 	 * Retrieves the List of Computer with the parameter in their name
-	 * 
+	 *
 	 * @param s
 	 * @return The list
 	 * @throws EmptyNameException
@@ -52,21 +52,20 @@ public interface ComputerService {
 
 	/**
 	 * Create a new computer
-	 * 
+	 *
 	 * @param c
 	 * @return
 	 * @throws EmptyNameException
 	 * @throws InvalidDateException
 	 * @throws ServiceException
 	 * @throws InvalidCompanyException
-	 * @throws ComputerNotFoundException
 	 */
-	Computer create(Computer c) throws EmptyNameException, ServiceException, InvalidDateException,
-			ComputerNotFoundException, InvalidCompanyException;
+	Computer create(Computer c)
+			throws EmptyNameException, ServiceException, InvalidDateException, InvalidCompanyException;
 
 	/**
 	 * Update the given computer
-	 * 
+	 *
 	 * @param c
 	 * @return
 	 * @throws EmptyNameException
@@ -80,7 +79,7 @@ public interface ComputerService {
 
 	/**
 	 * Delete the given computer
-	 * 
+	 *
 	 * @param c
 	 * @return
 	 * @throws ComputerNotFoundException
@@ -89,19 +88,23 @@ public interface ComputerService {
 	Computer delete(Computer c) throws ComputerNotFoundException, ServiceException;
 
 	/**
+	 * Return the number of pages given nb the number of elements per pages
+	 *
+	 * @param nb
 	 * @return The number of pages possible
 	 * @throws InvalidDateException
 	 */
-	int getNbPages() throws ServiceException;
+	int getNbPages(int nb) throws ServiceException;
 
 	/**
-	 * Return the Page asked with index or an empty list if the index doesn't
-	 * exist First page index is 1
-	 * 
+	 * Return the Page at index containing nb elements or an empty page if the
+	 * index doesn't exist. The first page index is 1
+	 *
 	 * @param index
+	 * @param nb
 	 * @return the page asked
 	 * @throws InvalidDateException
 	 */
-	Page<Computer> getPage(int index) throws ServiceException;
+	Page<Computer> getPage(int index, int nb) throws ServiceException;
 
 }

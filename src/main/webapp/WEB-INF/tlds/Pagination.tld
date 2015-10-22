@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<taglib version="2.0" xmlns="http://java.sun.com/xml/j2ee"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee/web-jsptaglibrary_2_0.xsd">
+	
+	<tlibversion>2.0</tlibversion>
+	<jspversion>2.2</jspversion>
+	<shortname>pagination</shortname>
+	<info>Taglib for pagination operations</info>
+	<uri>http://jonathanlebloas.fr/computerdatabase/tag/pagination</uri>
+
+	<tag>
+		<name>menu</name>
+		<tagclass>fr.jonathanlebloas.computerdatabase.tag.Pagination</tagclass>
+		<bodycontent>empty</bodycontent>
+		<info>Page navigation bar</info>
+		<attribute>
+			<name>page</name>
+			<required>true</required>
+			<rtexprvalue>true</rtexprvalue>
+		</attribute>
+		<attribute>
+			<name>pageCount</name>
+			<required>true</required>
+			<rtexprvalue>true</rtexprvalue>
+		</attribute>
+	</tag>
+</taglib>

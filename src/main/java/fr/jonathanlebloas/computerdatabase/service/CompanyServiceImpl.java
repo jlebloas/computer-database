@@ -20,8 +20,6 @@ import fr.jonathanlebloas.computerdatabase.utils.StringUtils;
  */
 public class CompanyServiceImpl implements CompanyService {
 
-	public static final int DEFAULT_MAX_ITEMS = 10;
-
 	private static CompanyServiceImpl instance = new CompanyServiceImpl();
 
 	private CompanyDAO companyDAO = CompanyDAO.getInstance();
@@ -35,7 +33,7 @@ public class CompanyServiceImpl implements CompanyService {
 	/**
 	 * @return the unique instance
 	 */
-	public static CompanyServiceImpl getIntance() {
+	public static CompanyServiceImpl getInstance() {
 		return instance;
 	}
 
@@ -86,11 +84,15 @@ public class CompanyServiceImpl implements CompanyService {
 	}
 
 	@Override
-	public int getNbPages() throws ServiceException {
-		logger.debug("Get number of companies pages");
+	public int getNbPages(int nb) throws ServiceException {
+		logger.debug("Get number of companies pages with nb={}", nb);
 		try {
+			if (nb == 0) {
+				return 0;
+			}
+
 			int total = companyDAO.count();
-			int maxPerpage = DEFAULT_MAX_ITEMS;
+			int maxPerpage = nb;
 			return (total + maxPerpage - 1) / maxPerpage;
 		} catch (PersistenceException e) {
 			logger.error("An error occurred while getting the number of pages of companies", e);
@@ -99,13 +101,13 @@ public class CompanyServiceImpl implements CompanyService {
 	}
 
 	@Override
-	public Page<Company> getPage(int index) throws ServiceException {
+	public Page<Company> getPage(int index, int nb) throws ServiceException {
 		logger.debug("Get the companies page {}", index);
 		try {
-			int beginIndex = (index - 1) * DEFAULT_MAX_ITEMS;
-			Page<Company> page = new Page<Company>(beginIndex, DEFAULT_MAX_ITEMS);
+			int beginIndex = (index - 1) * nb;
+			Page<Company> page = new Page<Company>(beginIndex, nb);
 
-			int nbPages = this.getNbPages();
+			int nbPages = this.getNbPages(nb);
 			if (0 < index && index <= nbPages) {
 				companyDAO.populate(page);
 			} else {

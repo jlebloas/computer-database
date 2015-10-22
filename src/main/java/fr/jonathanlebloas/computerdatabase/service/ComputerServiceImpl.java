@@ -24,11 +24,9 @@ import fr.jonathanlebloas.computerdatabase.utils.StringUtils;
  */
 public class ComputerServiceImpl implements ComputerService {
 
-	public static final int DEFAULT_MAX_ITEMS = 10;
-
 	private static ComputerServiceImpl instance = new ComputerServiceImpl();
 
-	private CompanyService companyService = CompanyServiceImpl.getIntance();
+	// private CompanyService companyService = CompanyServiceImpl.getInstance();
 
 	private ComputerDAO computerDAO = ComputerDAO.getInstance();
 
@@ -113,8 +111,8 @@ public class ComputerServiceImpl implements ComputerService {
 	}
 
 	@Override
-	public Computer create(Computer c) throws EmptyNameException, ServiceException, InvalidDateException,
-			ComputerNotFoundException, InvalidCompanyException {
+	public Computer create(Computer c)
+			throws EmptyNameException, ServiceException, InvalidDateException, InvalidCompanyException {
 		logger.debug("Create computer : {}", c);
 		try {
 			if (c == null) {
@@ -182,11 +180,15 @@ public class ComputerServiceImpl implements ComputerService {
 	}
 
 	@Override
-	public int getNbPages() throws ServiceException {
-		logger.debug("Get number of computer pages");
+	public int getNbPages(int nb) throws ServiceException {
+		logger.debug("Get number of computer pages with nb={}", nb);
 		try {
+			if (nb == 0) {
+				return 0;
+			}
+
 			int total = computerDAO.count();
-			int maxPerpage = DEFAULT_MAX_ITEMS;
+			int maxPerpage = nb;
 			return (total + maxPerpage - 1) / maxPerpage;
 		} catch (PersistenceException e) {
 			logger.error("An error occurred while getting the number of pages of computers", e);
@@ -195,13 +197,13 @@ public class ComputerServiceImpl implements ComputerService {
 	}
 
 	@Override
-	public Page<Computer> getPage(int index) throws IndexOutOfBoundsException, ServiceException {
+	public Page<Computer> getPage(int index, int nb) throws IndexOutOfBoundsException, ServiceException {
 		logger.debug("Get the computer page {}", index);
 		try {
-			int beginIndex = (index - 1) * DEFAULT_MAX_ITEMS;
-			Page<Computer> page = new Page<Computer>(beginIndex, DEFAULT_MAX_ITEMS);
+			int beginIndex = (index - 1) * nb;
+			Page<Computer> page = new Page<Computer>(beginIndex, nb);
 
-			int nbPages = this.getNbPages();
+			int nbPages = this.getNbPages(nb);
 			if (0 < index && index <= nbPages) {
 				computerDAO.populate(page);
 			} else {
@@ -215,8 +217,9 @@ public class ComputerServiceImpl implements ComputerService {
 		}
 	}
 
-	private void validate(Computer c) throws ComputerNotFoundException, EmptyNameException, InvalidDateException,
-			InvalidCompanyException, CompanyNotFoundException, ServiceException, PersistenceException {
+	private void validate(Computer c) throws EmptyNameException, InvalidDateException,
+ InvalidCompanyException,
+			CompanyNotFoundException, ServiceException, PersistenceException {
 
 		if (StringUtils.isEmpty(c.getName())) {
 			throw new EmptyNameException();
@@ -236,10 +239,12 @@ public class ComputerServiceImpl implements ComputerService {
 				throw new InvalidDateException("The computer must be discontinued after he was introduced");
 			}
 		}
-		// Check the company exist
-		if (c.getManufacturer() != null
-				&& !c.getManufacturer().equals(companyService.find(c.getManufacturer().getId()))) {
-			throw new InvalidCompanyException();
-		}
+		// // Check the company is exactly the same
+		// if (c.getManufacturer() != null
+		// &&
+		// !c.getManufacturer().equals(companyService.find(c.getManufacturer().getId())))
+		// {
+		// throw new InvalidCompanyException();
+		// }
 	}
 }

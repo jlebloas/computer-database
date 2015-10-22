@@ -35,7 +35,7 @@ public class CompanyServiceImplTest {
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-		service = CompanyServiceImpl.getIntance();
+		service = CompanyServiceImpl.getInstance();
 	}
 
 	@AfterClass
@@ -56,7 +56,7 @@ public class CompanyServiceImplTest {
 
 	@Test
 	public void testGetIntance() {
-		assertThat(service, IsSame.sameInstance(CompanyServiceImpl.getIntance()));
+		assertThat(service, IsSame.sameInstance(CompanyServiceImpl.getInstance()));
 	}
 
 	@Test(expected = ServiceException.class)
@@ -99,23 +99,31 @@ public class CompanyServiceImplTest {
 
 	@Test
 	public void testGetNbPages() throws PersistenceException, ServiceException {
+		assertThat(0, IsEqual.equalTo(service.getNbPages(0)));
+
 		doReturn(0).when(dao).count();
-		assertThat(0, IsEqual.equalTo(service.getNbPages()));
+		assertThat(0, IsEqual.equalTo(service.getNbPages(10)));
 
 		doReturn(10).when(dao).count();
-		assertThat(1, IsEqual.equalTo(service.getNbPages()));
+		assertThat(1, IsEqual.equalTo(service.getNbPages(10)));
 
 		doReturn(11).when(dao).count();
-		assertThat(2, IsEqual.equalTo(service.getNbPages()));
+		assertThat(2, IsEqual.equalTo(service.getNbPages(10)));
 
 		doReturn(39).when(dao).count();
-		assertThat(4, IsEqual.equalTo(service.getNbPages()));
+		assertThat(4, IsEqual.equalTo(service.getNbPages(10)));
 
 		doReturn(40).when(dao).count();
-		assertThat(4, IsEqual.equalTo(service.getNbPages()));
+		assertThat(4, IsEqual.equalTo(service.getNbPages(10)));
 
 		doReturn(41).when(dao).count();
-		assertThat(5, IsEqual.equalTo(service.getNbPages()));
+		assertThat(5, IsEqual.equalTo(service.getNbPages(10)));
+
+		doReturn(41).when(dao).count();
+		assertThat(2, IsEqual.equalTo(service.getNbPages(40)));
+
+		doReturn(41).when(dao).count();
+		assertThat(9, IsEqual.equalTo(service.getNbPages(5)));
 	}
 
 	@Test
@@ -123,19 +131,19 @@ public class CompanyServiceImplTest {
 		doReturn(52).when(dao).count();
 		doReturn(null).when(dao).populate(any());
 
-		Page<Company> page = service.getPage(6);
+		Page<Company> page = service.getPage(6, 10);
 
 		assertEquals(50, page.getBeginIndex());
-		assertEquals(CompanyServiceImpl.DEFAULT_MAX_ITEMS, page.getNb());
+		assertEquals(10, page.getNb());
 	}
 
 	@Test
 	public void testGetPageEmpty() throws PersistenceException, ServiceException {
 		doReturn(52).when(dao).count();
 
-		assertTrue(service.getPage(-1).getItems().isEmpty());
-		assertTrue(service.getPage(7).getItems().isEmpty());
-		assertTrue(service.getPage(42).getItems().isEmpty());
+		assertTrue(service.getPage(-1, 10).getItems().isEmpty());
+		assertTrue(service.getPage(7, 10).getItems().isEmpty());
+		assertTrue(service.getPage(42, 10).getItems().isEmpty());
 	}
 
 }

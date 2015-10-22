@@ -93,7 +93,7 @@ public final class CLI {
 
 	private static ComputerService computerService = ComputerServiceImpl.getInstance();
 
-	private static CompanyService companyService = CompanyServiceImpl.getIntance();
+	private static CompanyService companyService = CompanyServiceImpl.getInstance();
 
 	private static DateTimeFormatter df = DateTimeFormatter.ISO_LOCAL_DATE;
 
@@ -193,7 +193,7 @@ public final class CLI {
 					return;
 				} else {
 					int index = Integer.parseInt(options.getOptionValue(CONSOLE_ARG_PAGE));
-					Page<Company> page = companyService.getPage(index);
+					Page<Company> page = companyService.getPage(index, 10);
 					displayList(page.getItems());
 				}
 			} else {
@@ -218,7 +218,7 @@ public final class CLI {
 					return;
 				} else {
 					int index = Integer.parseInt(options.getOptionValue(CONSOLE_ARG_PAGE));
-					displayList(computerService.getPage(index).getItems());
+					displayList(computerService.getPage(index, 10).getItems());
 				}
 			} else {
 				displayList(computerService.listComputers());
@@ -287,7 +287,7 @@ public final class CLI {
 
 			System.out.println("\t Your computer as been successfully created ! : " + newComputer.toString());
 
-		} catch (CompanyNotFoundException | EmptyNameException | ComputerNotFoundException | InvalidCompanyException
+		} catch (CompanyNotFoundException | EmptyNameException | InvalidCompanyException
 				| InvalidDateException | ServiceException e) {
 			System.out.println("\t" + e.getMessage());
 		} catch (DateTimeParseException e) {
