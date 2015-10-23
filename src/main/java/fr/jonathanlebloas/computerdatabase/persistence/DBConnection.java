@@ -1,51 +1,60 @@
 package fr.jonathanlebloas.computerdatabase.persistence;
 
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.Properties;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public final class DBConnection {
+public enum DBConnection {
+	INSTANCE;
 
-	private static String url = "jdbc:mysql://localhost:3306/computer-database-db?zeroDateTimeBehavior=convertToNull";
+	private static final String DRIVER_NAME = "com.mysql.jdbc.Driver";
 
-	// TODO export logins in properties
-	private static String user = "admincdb";
+	private static final Logger LOGGER = LoggerFactory.getLogger(DBConnection.class);
 
-	private static String passwd = "qwerty1234";
+	private String url;
 
-	private static final Logger logger = LoggerFactory.getLogger(DBConnection.class);
+	private Properties properties;
 
-	static {
+	private DBConnection() {
+		// Load the Driver
 		try {
-			Class.forName("com.mysql.jdbc.Driver");
+			Class.forName(DRIVER_NAME);
 		} catch (ClassNotFoundException e) {
-			logger.error("Error while registering the driver", e);
+			throw new RuntimeException("Error while loading the driver", e);
+		}
+
+		// Load the properties
+		properties = new Properties();
+		try {
+			InputStream is = DBConnection.class.getClassLoader().getResourceAsStream("config/config.properties");
+			properties.load(is);
+			url = properties.getProperty("url");
+		} catch (Exception e) {
+			throw new RuntimeException("Error while loading config.properties", e);
 		}
 	}
 
-	private DBConnection() {
-		super();
-	}
-
-	public static Connection getConnection() {
-		logger.trace("Getting a connection to the database");
+	public Connection getConnection() {
+		LOGGER.trace("Getting a connection to the database");
 		try {
-			return DriverManager.getConnection(url, user, passwd);
+			return DriverManager.getConnection(url, properties);
 		} catch (SQLException e) {
-			logger.error("Error while getting a connection", e);
+			LOGGER.error("Error while getting a connection", e);
 		}
 		return null;
 	}
 
-	public static void closeConnection(Connection connection) {
-		logger.trace("Closing the database connection");
+	public void closeConnection(Connection connection) {
+		LOGGER.trace("Closing the database connection");
 		try {
 			connection.close();
 		} catch (SQLException e) {
-			logger.error("Error while closing the connection", e);
+			LOGGER.error("Error while closing the connection", e);
 		}
 	}
 

@@ -1,4 +1,4 @@
-package fr.jonathanlebloas.computerdatabase.persistence;
+package fr.jonathanlebloas.computerdatabase.persistence.impl;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -15,34 +15,25 @@ import org.slf4j.LoggerFactory;
 import fr.jonathanlebloas.computerdatabase.model.Company;
 import fr.jonathanlebloas.computerdatabase.model.Computer;
 import fr.jonathanlebloas.computerdatabase.model.Page;
+import fr.jonathanlebloas.computerdatabase.persistence.DAO;
+import fr.jonathanlebloas.computerdatabase.persistence.DBConnection;
+import fr.jonathanlebloas.computerdatabase.persistence.RowMapper;
 import fr.jonathanlebloas.computerdatabase.persistence.exceptions.PersistenceException;
 
 /**
  * DAO used for computers Singleton
  */
-public class ComputerDAO extends DAO<Computer> {
-
-	private static ComputerDAO instance = new ComputerDAO();
+public enum ComputerDAO implements DAO<Computer> {
+	INSTANCE;
 
 	private ComputerRowMapper rowMapper = new ComputerRowMapper();
 
-	private static final Logger logger = LoggerFactory.getLogger(ComputerDAO.class);
-
-	private ComputerDAO() {
-		super();
-	}
-
-	/**
-	 * @return the unique instance
-	 */
-	public static ComputerDAO getInstance() {
-		return instance;
-	}
+	private static final Logger LOGGER = LoggerFactory.getLogger(ComputerDAO.class);
 
 	@Override
 	public Computer find(long id) throws PersistenceException {
-		logger.trace("Finding computer with id: {}", id);
-		Connection connect = DBConnection.getConnection();
+		LOGGER.trace("Finding computer with id: {}", id);
+		Connection connect = DBConnection.INSTANCE.getConnection();
 
 		Computer computer = null;
 
@@ -59,71 +50,69 @@ public class ComputerDAO extends DAO<Computer> {
 			}
 
 		} catch (SQLException se) {
-			logger.error("Error while finding the computer with id : " + id, se);
+			LOGGER.error("Error while finding the computer with id : " + id, se);
 			throw new PersistenceException("SQL exception during find by id : " + id, se);
 
 		} finally {
-			DBConnection.closeConnection(connect);
+			DBConnection.INSTANCE.closeConnection(connect);
 		}
 
 		return computer;
 	}
 
 	@Override
-	public Computer create(Computer obj) throws PersistenceException {
-		logger.trace("Creating computer : {}", obj);
-		Connection connect = DBConnection.getConnection();
+	public void create(Computer computer) throws PersistenceException {
+		LOGGER.trace("Creating computer : {}", computer);
+		Connection connect = DBConnection.INSTANCE.getConnection();
 
 		try {
 			PreparedStatement prepared = connect.prepareStatement(
 					"INSERT INTO computer(name, introduced, discontinued, company_id) VALUES (?, ?, ?, ?)",
 					Statement.RETURN_GENERATED_KEYS);
-			prepared.setString(1, obj.getName());
+			prepared.setString(1, computer.getName());
 
 			// Set the introduced or null if needed
-			if (obj.getIntroduced() == null) {
+			if (computer.getIntroduced() == null) {
 				prepared.setNull(2, java.sql.Types.TIMESTAMP);
 			} else {
-				prepared.setTimestamp(2, Timestamp.valueOf(obj.getIntroduced().atStartOfDay()));
+				prepared.setTimestamp(2, Timestamp.valueOf(computer.getIntroduced().atStartOfDay()));
 			}
 
 			// Set the discontinued or null if needed
-			if (obj.getDiscontinued() == null) {
+			if (computer.getDiscontinued() == null) {
 				prepared.setNull(3, java.sql.Types.TIMESTAMP);
 			} else {
-				prepared.setTimestamp(3, Timestamp.valueOf(obj.getDiscontinued().atStartOfDay()));
+				prepared.setTimestamp(3, Timestamp.valueOf(computer.getDiscontinued().atStartOfDay()));
 			}
 
 			// Set the company_id foreign key on company
-			if (obj.getManufacturer() == null) {
+			if (computer.getCompany() == null) {
 				prepared.setNull(4, java.sql.Types.BIGINT);
 			} else {
-				prepared.setLong(4, obj.getManufacturer().getId());
+				prepared.setLong(4, computer.getCompany().getId());
 			}
 			prepared.executeUpdate();
 
 			ResultSet rs = prepared.getGeneratedKeys();
 			if (rs.first()) {
-				obj.setId(rs.getLong(1));
+				computer.setId(rs.getLong(1));
 			} else {
-				throw new SQLException("The computer was not inserted : " + obj.toString());
+				throw new SQLException("The computer was not inserted : " + computer.toString());
 			}
 
 		} catch (SQLException se) {
-			logger.error("Error while creating the computer : " + obj, se);
-			throw new PersistenceException("SQL exception during creation of a computer : " + obj.toString(), se);
+			LOGGER.error("Error while creating the computer : " + computer, se);
+			throw new PersistenceException("SQL exception during creation of a computer : " + computer.toString(), se);
 
 		} finally {
-			DBConnection.closeConnection(connect);
+			DBConnection.INSTANCE.closeConnection(connect);
 		}
-
-		return obj;
 	}
 
 	@Override
 	public Computer update(Computer obj) throws PersistenceException {
-		logger.trace("Updating computer : {}", obj);
-		Connection connect = DBConnection.getConnection();
+		LOGGER.trace("Updating computer : {}", obj);
+		Connection connect = DBConnection.INSTANCE.getConnection();
 
 		try {
 			PreparedStatement prepared = connect.prepareStatement(
@@ -145,10 +134,10 @@ public class ComputerDAO extends DAO<Computer> {
 			}
 
 			// Set the company_id foreign key on company
-			if (obj.getManufacturer() == null) {
+			if (obj.getCompany() == null) {
 				prepared.setNull(4, java.sql.Types.BIGINT);
 			} else {
-				prepared.setLong(4, obj.getManufacturer().getId());
+				prepared.setLong(4, obj.getCompany().getId());
 			}
 
 			prepared.setLong(5, obj.getId());
@@ -156,11 +145,11 @@ public class ComputerDAO extends DAO<Computer> {
 			prepared.executeUpdate();
 
 		} catch (SQLException se) {
-			logger.error("Error while updating the computer : " + obj, se);
+			LOGGER.error("Error while updating the computer : " + obj, se);
 			throw new PersistenceException("SQL exception during update of a computer : " + obj.toString(), se);
 
 		} finally {
-			DBConnection.closeConnection(connect);
+			DBConnection.INSTANCE.closeConnection(connect);
 		}
 
 		return obj;
@@ -168,8 +157,8 @@ public class ComputerDAO extends DAO<Computer> {
 
 	@Override
 	public void delete(Computer obj) throws PersistenceException {
-		logger.trace("Deleting computer : {}", obj);
-		Connection connect = DBConnection.getConnection();
+		LOGGER.trace("Deleting computer : {}", obj);
+		Connection connect = DBConnection.INSTANCE.getConnection();
 
 		try {
 			PreparedStatement prepared = connect.prepareStatement("DELETE FROM computer WHERE id=?");
@@ -178,19 +167,19 @@ public class ComputerDAO extends DAO<Computer> {
 			prepared.executeUpdate();
 
 		} catch (SQLException se) {
-			logger.error("Error while deleting the computer : " + obj, se);
+			LOGGER.error("Error while deleting the computer : " + obj, se);
 			throw new PersistenceException("SQL exception during deletion of a computer : " + obj.toString(), se);
 
 		} finally {
-			DBConnection.closeConnection(connect);
+			DBConnection.INSTANCE.closeConnection(connect);
 		}
 
 	}
 
 	@Override
 	public int count() throws PersistenceException {
-		logger.trace("Counting computers");
-		Connection connect = DBConnection.getConnection();
+		LOGGER.trace("Counting computers");
+		Connection connect = DBConnection.INSTANCE.getConnection();
 
 		int tmp = 0;
 		try {
@@ -201,11 +190,11 @@ public class ComputerDAO extends DAO<Computer> {
 			}
 
 		} catch (SQLException se) {
-			logger.error("Error while counting the computers", se);
+			LOGGER.error("Error while counting the computers", se);
 			throw new PersistenceException("SQL exception during count of computers ", se);
 
 		} finally {
-			DBConnection.closeConnection(connect);
+			DBConnection.INSTANCE.closeConnection(connect);
 		}
 
 		return tmp;
@@ -213,8 +202,8 @@ public class ComputerDAO extends DAO<Computer> {
 
 	@Override
 	public List<Computer> list() throws PersistenceException {
-		logger.trace("Listing computers");
-		Connection connect = DBConnection.getConnection();
+		LOGGER.trace("Listing computers");
+		Connection connect = DBConnection.INSTANCE.getConnection();
 
 		List<Computer> list = new ArrayList<Computer>();
 		try {
@@ -229,20 +218,20 @@ public class ComputerDAO extends DAO<Computer> {
 				list.add(computer);
 			}
 		} catch (SQLException se) {
-			logger.error("Error while listing the computers", se);
+			LOGGER.error("Error while listing the computers", se);
 			throw new PersistenceException("SQL exception during listing of computers ", se);
 
 		} finally {
-			DBConnection.closeConnection(connect);
+			DBConnection.INSTANCE.closeConnection(connect);
 		}
 
 		return list;
 	}
 
 	@Override
-	public Page<Computer> populate(Page<Computer> page) throws PersistenceException {
-		logger.trace("Populating computers page : {}", page);
-		Connection connect = DBConnection.getConnection();
+	public void populate(Page<Computer> page) throws PersistenceException {
+		LOGGER.trace("Populating computers page : {}", page);
+		Connection connect = DBConnection.INSTANCE.getConnection();
 
 		// A temporary list
 		List<Computer> list = new ArrayList<Computer>();
@@ -265,19 +254,18 @@ public class ComputerDAO extends DAO<Computer> {
 			page.setItems(list);
 
 		} catch (SQLException se) {
-			logger.error("Error while populating the computers page : " + page, se);
+			LOGGER.error("Error while populating the computers page : " + page, se);
 			throw new PersistenceException("SQL exception during sublisting of computers ", se);
 
 		} finally {
-			DBConnection.closeConnection(connect);
+			DBConnection.INSTANCE.closeConnection(connect);
 		}
-		return page;
 	}
 
 	@Override
 	public List<Computer> findByName(String name) throws PersistenceException {
-		logger.trace("Searching computers with name : {}", name);
-		Connection connect = DBConnection.getConnection();
+		LOGGER.trace("Searching computers with name : {}", name);
+		Connection connect = DBConnection.INSTANCE.getConnection();
 
 		List<Computer> list = new ArrayList<Computer>();
 		try {
@@ -294,11 +282,11 @@ public class ComputerDAO extends DAO<Computer> {
 			}
 
 		} catch (SQLException se) {
-			logger.error("Error while searching computers with name : " + name, se);
+			LOGGER.error("Error while searching computers with name : " + name, se);
 			throw new PersistenceException("SQL exception during Computer findByName : " + name, se);
 
 		} finally {
-			DBConnection.closeConnection(connect);
+			DBConnection.INSTANCE.closeConnection(connect);
 		}
 
 		return list;
@@ -308,10 +296,8 @@ public class ComputerDAO extends DAO<Computer> {
 
 		@Override
 		public Computer mapRow(ResultSet rs) throws SQLException {
-			Computer computer = new Computer();
+			Computer computer = Computer.builder().id(rs.getLong(1)).name(rs.getString(2)).build();
 
-			computer.setId(rs.getLong(1));
-			computer.setName(rs.getString(2));
 			if (rs.getDate(3) != null) {
 				computer.setIntroduced(rs.getDate(3).toLocalDate());
 			}
@@ -321,9 +307,9 @@ public class ComputerDAO extends DAO<Computer> {
 
 			Company company = null;
 			if (rs.getLong(5) != 0) {
-				company = new Company(rs.getLong(5), rs.getString(6));
+				company = Company.builder().id(rs.getLong(5)).name(rs.getString(6)).build();
 			}
-			computer.setManufacturer(company);
+			computer.setCompany(company);
 
 			return computer;
 		}

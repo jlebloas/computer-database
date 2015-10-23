@@ -2,9 +2,11 @@ package fr.jonathanlebloas.computerdatabase.model;
 
 import java.time.LocalDate;
 
+import fr.jonathanlebloas.computerdatabase.utils.StringUtils;
+
 /**
  * A computer has a name, the date when it was introduced, eventually the date
- * when it was discontinued, and the manufacturer. The name is mandatory
+ * when it was discontinued, and the company. The name is mandatory
  */
 public class Computer {
 
@@ -16,27 +18,10 @@ public class Computer {
 
 	private LocalDate discontinued;
 
-	private Company manufacturer;
+	private Company company;
 
-	public Computer() {
+	private Computer() {
 		super();
-	}
-
-	public Computer(long id, String name, LocalDate introduced, LocalDate discontinued, Company manufacturer) {
-		super();
-		this.id = id;
-		this.name = name;
-		this.introduced = introduced;
-		this.discontinued = discontinued;
-		this.manufacturer = manufacturer;
-	}
-
-	public Computer(String name) {
-		this(0, name, null, null, null);
-	}
-
-	public Computer(String name, LocalDate introduced, LocalDate discontinued, Company manufacturer) {
-		this(0, name, introduced, discontinued, manufacturer);
 	}
 
 	public long getId() {
@@ -71,12 +56,12 @@ public class Computer {
 		this.discontinued = discontinued;
 	}
 
-	public Company getManufacturer() {
-		return manufacturer;
+	public Company getCompany() {
+		return company;
 	}
 
-	public void setManufacturer(Company manufacturer) {
-		this.manufacturer = manufacturer;
+	public void setCompany(Company company) {
+		this.company = company;
 	}
 
 	@Override
@@ -86,7 +71,7 @@ public class Computer {
 		result = prime * result + ((discontinued == null) ? 0 : discontinued.hashCode());
 		result = prime * result + (int) (id ^ (id >>> 32));
 		result = prime * result + ((introduced == null) ? 0 : introduced.hashCode());
-		result = prime * result + ((manufacturer == null) ? 0 : manufacturer.hashCode());
+		result = prime * result + ((company == null) ? 0 : company.hashCode());
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		return result;
 	}
@@ -120,11 +105,11 @@ public class Computer {
 		} else if (!introduced.equals(other.introduced)) {
 			return false;
 		}
-		if (manufacturer == null) {
-			if (other.manufacturer != null) {
+		if (company == null) {
+			if (other.company != null) {
 				return false;
 			}
-		} else if (!manufacturer.equals(other.manufacturer)) {
+		} else if (!company.equals(other.company)) {
 			return false;
 		}
 		if (name == null) {
@@ -140,6 +125,57 @@ public class Computer {
 	@Override
 	public String toString() {
 		return "Computer [id=" + id + ", name=" + name + ", introduced=" + introduced + ", discontinued=" + discontinued
-				+ ", manufacturer=" + manufacturer + "]";
+				+ ", company=" + company + "]";
+	}
+
+	/**
+	 * @return the builder of the class
+	 */
+	public static Builder builder() {
+		return new Builder();
+	}
+
+	public static class Builder {
+		private Computer computer;
+
+		private Builder() {
+			computer = new Computer();
+		}
+
+		public Builder id(long id) {
+			computer.id = id;
+			return this;
+		}
+
+		public Builder name(String name) {
+			computer.name = name;
+			return this;
+		}
+
+		public Builder introduced(LocalDate introduced) {
+			computer.introduced = introduced;
+			return this;
+		}
+
+		public Builder discontinued(LocalDate discontinued) {
+			computer.discontinued = discontinued;
+			return this;
+		}
+
+		public Builder company(Company company) {
+			computer.company = company;
+			return this;
+		}
+
+		public Computer build() {
+			// Validation
+			if (computer.id < 0) {
+				throw new IllegalArgumentException("id is invalid : " + computer.id);
+			}
+			if (StringUtils.isEmpty(computer.name)) {
+				throw new IllegalArgumentException("name is invalid : " + computer.name);
+			}
+			return computer;
+		}
 	}
 }

@@ -1,4 +1,4 @@
-package fr.jonathanlebloas.computerdatabase.persistence;
+package fr.jonathanlebloas.computerdatabase.persistence.impl;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -13,34 +13,26 @@ import org.slf4j.LoggerFactory;
 
 import fr.jonathanlebloas.computerdatabase.model.Company;
 import fr.jonathanlebloas.computerdatabase.model.Page;
+import fr.jonathanlebloas.computerdatabase.persistence.DAO;
+import fr.jonathanlebloas.computerdatabase.persistence.DBConnection;
+import fr.jonathanlebloas.computerdatabase.persistence.RowMapper;
 import fr.jonathanlebloas.computerdatabase.persistence.exceptions.PersistenceException;
 
 /**
  * DAO used for companies Singleton
  */
-public class CompanyDAO extends DAO<Company> {
-
-	private static CompanyDAO instance = new CompanyDAO();
+public enum CompanyDAO implements DAO<Company> {
+	INSTANCE;
 
 	private CompanyRowMapper rowMapper = new CompanyRowMapper();
 
-	private static final Logger logger = LoggerFactory.getLogger(CompanyDAO.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(CompanyDAO.class);
 
-	private CompanyDAO() {
-		super();
-	}
-
-	/**
-	 * @return the unique instance
-	 */
-	public static CompanyDAO getInstance() {
-		return instance;
-	}
 
 	@Override
 	public Company find(long id) throws PersistenceException {
-		logger.trace("Finding company with id: {}", id);
-		Connection connect = DBConnection.getConnection();
+		LOGGER.trace("Finding company with id: {}", id);
+		Connection connect = DBConnection.INSTANCE.getConnection();
 
 		Company company = null;
 		try {
@@ -55,49 +47,47 @@ public class CompanyDAO extends DAO<Company> {
 			}
 
 		} catch (SQLException se) {
-			logger.error("Error while finding the company with id : " + id, se);
+			LOGGER.error("Error while finding the company with id : " + id, se);
 			throw new PersistenceException("SQL exception during find by id : " + id, se);
 
 		} finally {
-			DBConnection.closeConnection(connect);
+			DBConnection.INSTANCE.closeConnection(connect);
 		}
 
 		return company;
 	}
 
 	@Override
-	public Company create(Company obj) throws PersistenceException {
-		logger.trace("Creating company : {}", obj);
-		Connection connect = DBConnection.getConnection();
+	public void create(Company company) throws PersistenceException {
+		LOGGER.trace("Creating company : {}", company);
+		Connection connect = DBConnection.INSTANCE.getConnection();
 
 		try {
 			PreparedStatement prepared = connect.prepareStatement("INSERT INTO company(name) VALUES (?)",
 					Statement.RETURN_GENERATED_KEYS);
-			prepared.setString(1, obj.getName());
+			prepared.setString(1, company.getName());
 			prepared.executeUpdate();
 
 			ResultSet rs = prepared.getGeneratedKeys();
 			if (rs.first()) {
-				obj.setId(rs.getLong(1));
+				company.setId(rs.getLong(1));
 			} else {
-				throw new SQLException("The company was not inserted : " + obj.toString());
+				throw new SQLException("The company was not inserted : " + company.toString());
 			}
 
 		} catch (SQLException se) {
-			logger.error("Error while creating the company : " + obj, se);
-			throw new PersistenceException("SQL exception during creation of company : " + obj.toString(), se);
+			LOGGER.error("Error while creating the company : " + company, se);
+			throw new PersistenceException("SQL exception during creation of company : " + company.toString(), se);
 
 		} finally {
-			DBConnection.closeConnection(connect);
+			DBConnection.INSTANCE.closeConnection(connect);
 		}
-
-		return obj;
 	}
 
 	@Override
 	public Company update(Company obj) throws PersistenceException {
-		logger.trace("Updating company : {}", obj);
-		Connection connect = DBConnection.getConnection();
+		LOGGER.trace("Updating company : {}", obj);
+		Connection connect = DBConnection.INSTANCE.getConnection();
 
 		try {
 			PreparedStatement prepared = connect.prepareStatement("UPDATE company SET name = ? WHERE id = ?");
@@ -107,11 +97,11 @@ public class CompanyDAO extends DAO<Company> {
 			prepared.executeUpdate();
 
 		} catch (SQLException se) {
-			logger.error("Error while updating the company : " + obj, se);
+			LOGGER.error("Error while updating the company : " + obj, se);
 			throw new PersistenceException("SQL exception during update of company : " + obj.toString(), se);
 
 		} finally {
-			DBConnection.closeConnection(connect);
+			DBConnection.INSTANCE.closeConnection(connect);
 		}
 
 		return obj;
@@ -119,8 +109,8 @@ public class CompanyDAO extends DAO<Company> {
 
 	@Override
 	public void delete(Company obj) throws PersistenceException {
-		logger.trace("Deleting company : {}", obj);
-		Connection connect = DBConnection.getConnection();
+		LOGGER.trace("Deleting company : {}", obj);
+		Connection connect = DBConnection.INSTANCE.getConnection();
 
 		try {
 			PreparedStatement prepared = connect.prepareStatement("DELETE FROM company WHERE id=?");
@@ -129,19 +119,19 @@ public class CompanyDAO extends DAO<Company> {
 			prepared.executeUpdate();
 
 		} catch (SQLException se) {
-			logger.error("Error while deleting the company : " + obj, se);
+			LOGGER.error("Error while deleting the company : " + obj, se);
 			throw new PersistenceException("SQL exception during deletion of company : " + obj.toString(), se);
 
 		} finally {
-			DBConnection.closeConnection(connect);
+			DBConnection.INSTANCE.closeConnection(connect);
 		}
 
 	}
 
 	@Override
 	public int count() throws PersistenceException {
-		logger.trace("Counting companies");
-		Connection connect = DBConnection.getConnection();
+		LOGGER.trace("Counting companies");
+		Connection connect = DBConnection.INSTANCE.getConnection();
 
 		int tmp = 0;
 		try {
@@ -153,11 +143,11 @@ public class CompanyDAO extends DAO<Company> {
 			}
 
 		} catch (SQLException se) {
-			logger.error("Error while counting the companies", se);
+			LOGGER.error("Error while counting the companies", se);
 			throw new PersistenceException("SQL exception during count of companies", se);
 
 		} finally {
-			DBConnection.closeConnection(connect);
+			DBConnection.INSTANCE.closeConnection(connect);
 		}
 
 		return tmp;
@@ -165,8 +155,8 @@ public class CompanyDAO extends DAO<Company> {
 
 	@Override
 	public List<Company> list() throws PersistenceException {
-		logger.trace("Listing companies");
-		Connection connect = DBConnection.getConnection();
+		LOGGER.trace("Listing companies");
+		Connection connect = DBConnection.INSTANCE.getConnection();
 
 		List<Company> list = new ArrayList<Company>();
 		try {
@@ -180,20 +170,20 @@ public class CompanyDAO extends DAO<Company> {
 			}
 
 		} catch (SQLException se) {
-			logger.error("Error while listing the companies", se);
+			LOGGER.error("Error while listing the companies", se);
 			throw new PersistenceException("SQL exception during listing of companies", se);
 
 		} finally {
-			DBConnection.closeConnection(connect);
+			DBConnection.INSTANCE.closeConnection(connect);
 		}
 
 		return list;
 	}
 
 	@Override
-	public Page<Company> populate(Page<Company> page) throws PersistenceException {
-		logger.trace("Populating companies page : {}", page);
-		Connection connect = DBConnection.getConnection();
+	public void populate(Page<Company> page) throws PersistenceException {
+		LOGGER.trace("Populating companies page : {}", page);
+		Connection connect = DBConnection.INSTANCE.getConnection();
 
 		try {
 			PreparedStatement prepared = connect.prepareStatement("SELECT c.id, c.name FROM company c LIMIT ?,?");
@@ -212,20 +202,18 @@ public class CompanyDAO extends DAO<Company> {
 			page.setItems(list);
 
 		} catch (SQLException se) {
-			logger.error("Error while populating the companies page : " + page, se);
+			LOGGER.error("Error while populating the companies page : " + page, se);
 			throw new PersistenceException("SQL exception during sublisting of companies", se);
 
 		} finally {
-			DBConnection.closeConnection(connect);
+			DBConnection.INSTANCE.closeConnection(connect);
 		}
-
-		return page;
 	}
 
 	@Override
 	public List<Company> findByName(String name) throws PersistenceException {
-		logger.trace("Searching companies with name : {}", name);
-		Connection connect = DBConnection.getConnection();
+		LOGGER.trace("Searching companies with name : {}", name);
+		Connection connect = DBConnection.INSTANCE.getConnection();
 
 		List<Company> list = new ArrayList<Company>();
 		try {
@@ -242,11 +230,11 @@ public class CompanyDAO extends DAO<Company> {
 			}
 
 		} catch (SQLException se) {
-			logger.error("Error while searching companies with name : " + name, se);
+			LOGGER.error("Error while searching companies with name : " + name, se);
 			throw new PersistenceException("SQL exception during a Company findByName : " + name, se);
 
 		} finally {
-			DBConnection.closeConnection(connect);
+			DBConnection.INSTANCE.closeConnection(connect);
 		}
 
 		return list;
@@ -256,10 +244,7 @@ public class CompanyDAO extends DAO<Company> {
 
 		@Override
 		public Company mapRow(ResultSet rs) throws SQLException {
-			Company company = new Company();
-
-			company.setId(rs.getLong(1));
-			company.setName(rs.getString(2));
+			Company company = Company.builder().id(rs.getLong(1)).name(rs.getString(2)).build();
 
 			return company;
 		}

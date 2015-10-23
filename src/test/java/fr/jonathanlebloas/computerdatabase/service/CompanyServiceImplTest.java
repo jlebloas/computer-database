@@ -8,61 +8,70 @@ import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.hamcrest.core.IsEqual;
 import org.hamcrest.core.IsSame;
-import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mockito;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
 
 import fr.jonathanlebloas.computerdatabase.model.Company;
 import fr.jonathanlebloas.computerdatabase.model.Page;
-import fr.jonathanlebloas.computerdatabase.persistence.CompanyDAO;
+import fr.jonathanlebloas.computerdatabase.persistence.impl.CompanyDAO;
 import fr.jonathanlebloas.computerdatabase.persistence.exceptions.PersistenceException;
 import fr.jonathanlebloas.computerdatabase.service.exceptions.CompanyNotFoundException;
 import fr.jonathanlebloas.computerdatabase.service.exceptions.EmptyNameException;
 import fr.jonathanlebloas.computerdatabase.service.exceptions.ServiceException;
+import fr.jonathanlebloas.computerdatabase.service.impl.CompanyServiceImpl;
 
+/**
+ * Test Company service Use PowerMock to mock the CompanyDAO
+ */
+@RunWith(PowerMockRunner.class)
+@PrepareForTest({ CompanyDAO.class })
 public class CompanyServiceImplTest {
-	private static CompanyServiceImpl service;
-	private CompanyDAO dao;
+	private CompanyServiceImpl service = CompanyServiceImpl.INSTANCE;
 
-	@BeforeClass
-	public static void setUpBeforeClass() throws Exception {
-		service = CompanyServiceImpl.getInstance();
-	}
-
-	@AfterClass
-	public static void tearDownAfterClass() throws Exception {
-		service = null;
-	}
+	private CompanyDAO dao = Mockito.mock(CompanyDAO.class);
 
 	@Before
 	public void setUp() throws Exception {
-		dao = mock(CompanyDAO.class);
-		service.setCompanyDAO(dao);
+		// Set the mocked DAO to the service
+		Field field = CompanyServiceImpl.class.getDeclaredField("companyDAO");
+		field.setAccessible(true);
+		field.set(service, dao);
 	}
 
-	@After
-	public void tearDown() throws Exception {
-		dao = null;
-	}
-
-	@Test
-	public void testGetIntance() {
-		assertThat(service, IsSame.sameInstance(CompanyServiceImpl.getInstance()));
-	}
-
+	/**
+	 * Test that the PersistenceException is wrapped into a ServiceException
+	 *
+	 * @throws ServiceException
+	 * @throws PersistenceException
+	 */
 	@Test(expected = ServiceException.class)
 	public void testListCompaniesServiceException() throws ServiceException, PersistenceException {
 		doThrow(new PersistenceException()).when(dao).list();
 		service.listCompanies();
+	}
+
+	/**
+	 * Test that the PersistenceException is wrapped into a ServiceException
+	 *
+	 * @throws ServiceException
+	 * @throws PersistenceException
+	 */
+	@Test(expected = ServiceException.class)
+	public void testFindLongServiceException() throws ServiceException, PersistenceException, CompanyNotFoundException {
+		doThrow(new PersistenceException()).when(dao).find(anyLong());
+		service.find(42L);
 	}
 
 	@Test(expected = CompanyNotFoundException.class)
@@ -72,17 +81,10 @@ public class CompanyServiceImplTest {
 		service.find(0);
 	}
 
-	@Test(expected = ServiceException.class)
-	public void testFindLongServiceException() throws ServiceException, PersistenceException, CompanyNotFoundException {
-		doThrow(new PersistenceException()).when(dao).find(anyLong());
-		service.find(42L);
-	}
-
 	@Test(expected = CompanyNotFoundException.class)
 	public void testFindLong() throws PersistenceException, CompanyNotFoundException, ServiceException {
-		Company company = new Company();
-		doReturn(new Company()).when(dao).find(0);
-		assertThat(company, IsSame.sameInstance(service.find(42L)));
+		doReturn(null).when(dao).find(0);
+		service.find(0);
 	}
 
 	@Test(expected = EmptyNameException.class)
@@ -126,6 +128,8 @@ public class CompanyServiceImplTest {
 		assertThat(9, IsEqual.equalTo(service.getNbPages(5)));
 	}
 
+	// TODO Refactor Page System
+	@Ignore
 	@Test
 	public void testGetPage() throws PersistenceException, ServiceException {
 		doReturn(52).when(dao).count();

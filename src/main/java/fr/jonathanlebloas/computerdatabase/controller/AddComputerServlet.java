@@ -20,9 +20,9 @@ import fr.jonathanlebloas.computerdatabase.mapper.ComputerMapper;
 import fr.jonathanlebloas.computerdatabase.model.Company;
 import fr.jonathanlebloas.computerdatabase.model.Computer;
 import fr.jonathanlebloas.computerdatabase.service.CompanyService;
-import fr.jonathanlebloas.computerdatabase.service.CompanyServiceImpl;
+import fr.jonathanlebloas.computerdatabase.service.impl.CompanyServiceImpl;
 import fr.jonathanlebloas.computerdatabase.service.ComputerService;
-import fr.jonathanlebloas.computerdatabase.service.ComputerServiceImpl;
+import fr.jonathanlebloas.computerdatabase.service.impl.ComputerServiceImpl;
 import fr.jonathanlebloas.computerdatabase.service.exceptions.EmptyNameException;
 import fr.jonathanlebloas.computerdatabase.service.exceptions.InvalidCompanyException;
 import fr.jonathanlebloas.computerdatabase.service.exceptions.InvalidDateException;
@@ -33,24 +33,24 @@ import fr.jonathanlebloas.computerdatabase.utils.ServletUtil;
 public class AddComputerServlet extends HttpServlet {
 	private static final long serialVersionUID = 9049278320734561410L;
 
-	private static final Logger logger = LoggerFactory.getLogger(AddComputerServlet.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(AddComputerServlet.class);
 
 	private ComputerService computerService;
 	private CompanyService companyService;
 
 	public AddComputerServlet() {
-		this.computerService = ComputerServiceImpl.getInstance();
-		this.companyService = CompanyServiceImpl.getInstance();
+		this.computerService = ComputerServiceImpl.INSTANCE;
+		this.companyService = CompanyServiceImpl.INSTANCE;
 	}
 
 	@Override
 	public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-		logger.info("Add Computer : GET");
+		LOGGER.info("Add Computer : GET");
 
 		try {
 
 			List<Company> companies = companyService.listCompanies();
-			companies.add(0, new Company(0, "--"));
+			companies.add(0, Company.builder().id(0).name("--").build());
 
 			List<CompanyDTO> companiesDTO = CompanyMapper.mapModelListToDTO(companies);
 
@@ -66,12 +66,12 @@ public class AddComputerServlet extends HttpServlet {
 
 	@Override
 	public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-		logger.info("Add Computer : POST");
+		LOGGER.info("Add Computer : POST");
 		Computer computer = null;
 
 		try {
 			ComputerDTO computerDTO = ServletUtil.getComputerDto(request);
-			logger.info("Add Computer : dto {} ", computerDTO);
+			LOGGER.info("Add Computer : dto {} ", computerDTO);
 			computer = ComputerMapper.mapDTOToModel(computerDTO);
 			computerService.create(computer);
 
@@ -82,11 +82,11 @@ public class AddComputerServlet extends HttpServlet {
 			RequestDispatcher dispatch = getServletContext().getRequestDispatcher("/WEB-INF/views/500.jsp");
 			dispatch.forward(request, response);
 		} catch (InvalidCompanyException e) {
-			logger.warn("Add Computer : company invalid on {}", computer);
+			LOGGER.warn("Add Computer : company invalid on {}", computer);
 		} catch (EmptyNameException e) {
-			logger.warn("The name of the computer is empty");
+			LOGGER.warn("The name of the computer is empty");
 		} catch (InvalidDateException e) {
-			logger.warn("The date is invalid {}", e.getMessage());
+			LOGGER.warn("The date is invalid {}", e.getMessage());
 		}
 	}
 }

@@ -1,4 +1,4 @@
-package fr.jonathanlebloas.computerdatabase.service;
+package fr.jonathanlebloas.computerdatabase.service.impl;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,8 +8,9 @@ import org.slf4j.LoggerFactory;
 
 import fr.jonathanlebloas.computerdatabase.model.Computer;
 import fr.jonathanlebloas.computerdatabase.model.Page;
-import fr.jonathanlebloas.computerdatabase.persistence.ComputerDAO;
+import fr.jonathanlebloas.computerdatabase.persistence.impl.ComputerDAO;
 import fr.jonathanlebloas.computerdatabase.persistence.exceptions.PersistenceException;
+import fr.jonathanlebloas.computerdatabase.service.ComputerService;
 import fr.jonathanlebloas.computerdatabase.service.exceptions.CompanyNotFoundException;
 import fr.jonathanlebloas.computerdatabase.service.exceptions.ComputerNotFoundException;
 import fr.jonathanlebloas.computerdatabase.service.exceptions.EmptyNameException;
@@ -22,46 +23,27 @@ import fr.jonathanlebloas.computerdatabase.utils.StringUtils;
 /**
  * Service used to manipulate computers Singleton
  */
-public class ComputerServiceImpl implements ComputerService {
+public enum ComputerServiceImpl implements ComputerService {
+	INSTANCE;
 
-	private static ComputerServiceImpl instance = new ComputerServiceImpl();
+	private ComputerDAO computerDAO = ComputerDAO.INSTANCE;
 
-	// private CompanyService companyService = CompanyServiceImpl.getInstance();
-
-	private ComputerDAO computerDAO = ComputerDAO.getInstance();
-
-	private static final Logger logger = LoggerFactory.getLogger(ComputerServiceImpl.class);
-
-	private ComputerServiceImpl() {
-		super();
-	}
-
-	/**
-	 * @return the unique instance
-	 */
-	public static ComputerServiceImpl getInstance() {
-		return instance;
-	}
-
-
-	void setComputerDAO(ComputerDAO computerDAO) {
-		this.computerDAO = computerDAO;
-	}
+	private static final Logger LOGGER = LoggerFactory.getLogger(ComputerServiceImpl.class);
 
 	@Override
 	public List<Computer> listComputers() throws ServiceException {
-		logger.debug("List computers");
+		LOGGER.debug("List computers");
 		try {
 			return computerDAO.list();
 		} catch (PersistenceException e) {
-			logger.error("An error occurred during listing of computer", e);
+			LOGGER.error("An error occurred during listing of computer", e);
 			throw new ServiceException();
 		}
 	}
 
 	@Override
 	public String getComputerDetails(Computer c) throws ComputerNotFoundException, ServiceException {
-		logger.debug("Getting details of the computer : {}", c);
+		LOGGER.debug("Getting details of the computer : {}", c);
 		try {
 			if (c == null) {
 				return "";
@@ -74,14 +56,14 @@ public class ComputerServiceImpl implements ComputerService {
 				return computer.toString();
 			}
 		} catch (PersistenceException e) {
-			logger.error("An error occurred during getting details of computer : " + c, e);
+			LOGGER.error("An error occurred during getting details of computer : " + c, e);
 			throw new ServiceException();
 		}
 	}
 
 	@Override
 	public Computer find(long id) throws ComputerNotFoundException, ServiceException {
-		logger.debug("Find computer with id : {}", id);
+		LOGGER.debug("Find computer with id : {}", id);
 		try {
 			Computer computer = computerDAO.find(id);
 			if (computer == null) {
@@ -90,14 +72,14 @@ public class ComputerServiceImpl implements ComputerService {
 				return computer;
 			}
 		} catch (PersistenceException e) {
-			logger.error("An error occurred finding the computer with id : " + id, e);
+			LOGGER.error("An error occurred finding the computer with id : " + id, e);
 			throw new ServiceException();
 		}
 	}
 
 	@Override
 	public List<Computer> find(String s) throws EmptyNameException, ServiceException {
-		logger.debug("Find computers with {} in their name", s);
+		LOGGER.debug("Find computers with {} in their name", s);
 		try {
 			if (StringUtils.isEmpty(s)) {
 				throw new EmptyNameException();
@@ -105,7 +87,7 @@ public class ComputerServiceImpl implements ComputerService {
 
 			return computerDAO.findByName(s);
 		} catch (PersistenceException e) {
-			logger.error("An error occurred finding the computers having '" + s + "' in their name", e);
+			LOGGER.error("An error occurred finding the computers having '" + s + "' in their name", e);
 			throw new ServiceException();
 		}
 	}
@@ -113,20 +95,22 @@ public class ComputerServiceImpl implements ComputerService {
 	@Override
 	public Computer create(Computer c)
 			throws EmptyNameException, ServiceException, InvalidDateException, InvalidCompanyException {
-		logger.debug("Create computer : {}", c);
+		LOGGER.debug("Create computer : {}", c);
 		try {
 			if (c == null) {
 				return null;
 			}
 			validate(c);
 
-			return computerDAO.create(c);
+			computerDAO.create(c);
+
+			return c;
 
 		} catch (PersistenceException e) {
-			logger.error("An error occurred during creation of the computer : " + c, e);
+			LOGGER.error("An error occurred during creation of the computer : " + c, e);
 			throw new ServiceException();
 		} catch (CompanyNotFoundException e) {
-			logger.warn("The company in the computer is invalid : " + c, e);
+			LOGGER.warn("The company in the computer is invalid : " + c, e);
 			throw new InvalidCompanyException();
 		}
 	}
@@ -134,7 +118,7 @@ public class ComputerServiceImpl implements ComputerService {
 	@Override
 	public Computer update(Computer c) throws EmptyNameException, ComputerNotFoundException, ServiceException,
 			InvalidDateException, InvalidCompanyException {
-		logger.debug("Update computer : {}", c);
+		LOGGER.debug("Update computer : {}", c);
 		try {
 			if (c == null) {
 				return null;
@@ -150,17 +134,17 @@ public class ComputerServiceImpl implements ComputerService {
 			return c;
 
 		} catch (PersistenceException e) {
-			logger.error("An error occurred during update of the computer : " + c, e);
+			LOGGER.error("An error occurred during update of the computer : " + c, e);
 			throw new ServiceException();
 		} catch (CompanyNotFoundException e) {
-			logger.warn("The company in the computer is invalid : " + c, e);
+			LOGGER.warn("The company in the computer is invalid : " + c, e);
 			throw new InvalidCompanyException();
 		}
 	}
 
 	@Override
 	public Computer delete(Computer c) throws ComputerNotFoundException, ServiceException {
-		logger.debug("Delete computer : {}", c);
+		LOGGER.debug("Delete computer : {}", c);
 		try {
 			if (c == null) {
 				return null;
@@ -174,14 +158,14 @@ public class ComputerServiceImpl implements ComputerService {
 				return computer;
 			}
 		} catch (PersistenceException e) {
-			logger.error("An error occurred during deletion of the computer : " + c, e);
+			LOGGER.error("An error occurred during deletion of the computer : " + c, e);
 			throw new ServiceException();
 		}
 	}
 
 	@Override
 	public int getNbPages(int nb) throws ServiceException {
-		logger.debug("Get number of computer pages with nb={}", nb);
+		LOGGER.debug("Get number of computer pages with nb={}", nb);
 		try {
 			if (nb == 0) {
 				return 0;
@@ -191,14 +175,14 @@ public class ComputerServiceImpl implements ComputerService {
 			int maxPerpage = nb;
 			return (total + maxPerpage - 1) / maxPerpage;
 		} catch (PersistenceException e) {
-			logger.error("An error occurred while getting the number of pages of computers", e);
+			LOGGER.error("An error occurred while getting the number of pages of computers", e);
 			throw new ServiceException();
 		}
 	}
 
 	@Override
 	public Page<Computer> getPage(int index, int nb) throws IndexOutOfBoundsException, ServiceException {
-		logger.debug("Get the computer page {}", index);
+		LOGGER.debug("Get the computer page {}", index);
 		try {
 			int beginIndex = (index - 1) * nb;
 			Page<Computer> page = new Page<Computer>(beginIndex, nb);
@@ -212,13 +196,12 @@ public class ComputerServiceImpl implements ComputerService {
 
 			return page;
 		} catch (PersistenceException e) {
-			logger.error("An error occurred during while getting the computer page : " + index, e);
+			LOGGER.error("An error occurred during while getting the computer page : " + index, e);
 			throw new ServiceException();
 		}
 	}
 
-	private void validate(Computer c) throws EmptyNameException, InvalidDateException,
- InvalidCompanyException,
+	private void validate(Computer c) throws EmptyNameException, InvalidDateException, InvalidCompanyException,
 			CompanyNotFoundException, ServiceException, PersistenceException {
 
 		if (StringUtils.isEmpty(c.getName())) {
@@ -239,12 +222,5 @@ public class ComputerServiceImpl implements ComputerService {
 				throw new InvalidDateException("The computer must be discontinued after he was introduced");
 			}
 		}
-		// // Check the company is exactly the same
-		// if (c.getManufacturer() != null
-		// &&
-		// !c.getManufacturer().equals(companyService.find(c.getManufacturer().getId())))
-		// {
-		// throw new InvalidCompanyException();
-		// }
 	}
 }

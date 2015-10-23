@@ -19,15 +19,15 @@ import fr.jonathanlebloas.computerdatabase.model.Company;
 import fr.jonathanlebloas.computerdatabase.model.Computer;
 import fr.jonathanlebloas.computerdatabase.model.Page;
 import fr.jonathanlebloas.computerdatabase.service.CompanyService;
-import fr.jonathanlebloas.computerdatabase.service.CompanyServiceImpl;
 import fr.jonathanlebloas.computerdatabase.service.ComputerService;
-import fr.jonathanlebloas.computerdatabase.service.ComputerServiceImpl;
 import fr.jonathanlebloas.computerdatabase.service.exceptions.CompanyNotFoundException;
 import fr.jonathanlebloas.computerdatabase.service.exceptions.ComputerNotFoundException;
 import fr.jonathanlebloas.computerdatabase.service.exceptions.EmptyNameException;
 import fr.jonathanlebloas.computerdatabase.service.exceptions.InvalidCompanyException;
 import fr.jonathanlebloas.computerdatabase.service.exceptions.InvalidDateException;
 import fr.jonathanlebloas.computerdatabase.service.exceptions.ServiceException;
+import fr.jonathanlebloas.computerdatabase.service.impl.CompanyServiceImpl;
+import fr.jonathanlebloas.computerdatabase.service.impl.ComputerServiceImpl;
 import fr.jonathanlebloas.computerdatabase.utils.StringUtils;
 
 /**
@@ -91,9 +91,8 @@ public final class CLI {
 		}
 	}
 
-	private static ComputerService computerService = ComputerServiceImpl.getInstance();
-
-	private static CompanyService companyService = CompanyServiceImpl.getInstance();
+	private static ComputerService computerService = ComputerServiceImpl.INSTANCE;
+	private static CompanyService companyService = CompanyServiceImpl.INSTANCE;
 
 	private static DateTimeFormatter df = DateTimeFormatter.ISO_LOCAL_DATE;
 
@@ -274,15 +273,16 @@ public final class CLI {
 			}
 
 			// Get the optional manufacturer
-			Company manufacturer = null;
+			Company company = null;
 			if (options.hasOption(CONSOLE_ARG_MANUFACTURER)) {
 				Long manufacturerId = Long.parseLong(options.getOptionValue(CONSOLE_ARG_MANUFACTURER));
 
-				manufacturer = companyService.find(manufacturerId);
+				company = companyService.find(manufacturerId);
 			}
 
 			// Create the computer
-			Computer newComputer = new Computer(name, introduced, discontinued, manufacturer);
+			Computer newComputer = Computer.builder().name(name).introduced(introduced).discontinued(discontinued)
+					.company(company).build();
 			computerService.create(newComputer);
 
 			System.out.println("\t Your computer as been successfully created ! : " + newComputer.toString());
@@ -326,7 +326,7 @@ public final class CLI {
 				Long manufacturerId = Long.parseLong(options.getOptionValue(CONSOLE_ARG_MANUFACTURER));
 
 				Company manufacturer = companyService.find(manufacturerId);
-				computer.setManufacturer(manufacturer);
+				computer.setCompany(manufacturer);
 			}
 
 			// Update the computer with the service

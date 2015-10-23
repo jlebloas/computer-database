@@ -26,8 +26,8 @@ public enum ComputerMapper {
 
 		computerDTO.setName(computer.getName());
 
-		if (computer.getManufacturer() != null) {
-			computerDTO.setManufacturerName(computer.getManufacturer().getName());
+		if (computer.getCompany() != null) {
+			computerDTO.setManufacturerName(computer.getCompany().getName());
 		} else {
 			computerDTO.setManufacturerName(null);
 		}
@@ -56,19 +56,18 @@ public enum ComputerMapper {
 	}
 
 	public static Computer mapDTOToModel(ComputerDTO dto) {
-		Computer computer = new Computer();
 		Company company = null;
 		if (dto.getManufacturerId() != null && dto.getManufacturerName() != null) {
 			company = CompanyMapper
 					.mapDTOToModel(new CompanyDTO(dto.getManufacturerId(), dto.getManufacturerName()));
 		}
 
-		// TODO HandleParsing on date and long
+		// TODO HandleParsing on date and long Validation ?
+		Computer computer = Computer.builder().name(dto.getName()).company(company).build();
 		if (dto.getId() != null) {
 			computer.setId(Long.parseLong(dto.getId()));
 		}
 
-		computer.setManufacturer(company);
 		computer.setName(dto.getName());
 		if (dto.getIntroduced() != null) {
 			computer.setIntroduced(LocalDate.parse(dto.getIntroduced(), df));

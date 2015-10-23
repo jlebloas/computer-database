@@ -18,19 +18,19 @@ import fr.jonathanlebloas.computerdatabase.mapper.ComputerMapper;
 import fr.jonathanlebloas.computerdatabase.model.Computer;
 import fr.jonathanlebloas.computerdatabase.model.Page;
 import fr.jonathanlebloas.computerdatabase.service.ComputerService;
-import fr.jonathanlebloas.computerdatabase.service.ComputerServiceImpl;
+import fr.jonathanlebloas.computerdatabase.service.impl.ComputerServiceImpl;
 import fr.jonathanlebloas.computerdatabase.service.exceptions.ServiceException;
 
 @WebServlet("/dashboard")
 public class DashboardServlet extends HttpServlet {
 	private static final long serialVersionUID = 959108770761115729L;
 
-	private static final Logger logger = LoggerFactory.getLogger(DashboardServlet.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(DashboardServlet.class);
 
 	private ComputerService computerService;
 
 	public DashboardServlet() {
-		this.computerService = ComputerServiceImpl.getInstance();
+		this.computerService = ComputerServiceImpl.INSTANCE;
 	}
 
 	@Override
@@ -38,7 +38,7 @@ public class DashboardServlet extends HttpServlet {
 		int pageIndex = getPage(request);
 		int size = getSize(request);
 
-		logger.info("Dashboard : GET index={} size={}", pageIndex, size);
+		LOGGER.info("Dashboard : GET index={} size={}", pageIndex, size);
 
 		try {
 			Page<Computer> page = computerService.getPage(pageIndex, size);
@@ -60,10 +60,9 @@ public class DashboardServlet extends HttpServlet {
 
 	@Override
 	public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-		logger.info("Dashboard : POST");
+		LOGGER.info("Dashboard : POST");
 		doGet(request, response);
 	}
-
 
 	private int getPage(HttpServletRequest request) {
 		try {
@@ -72,7 +71,7 @@ public class DashboardServlet extends HttpServlet {
 				return index;
 			}
 		} catch (Exception e) {
-			logger.info("Wrong format for parameter page, given : {}", request.getParameter("page"));
+			LOGGER.info("Wrong format for parameter page, given : {}", request.getParameter("page"));
 		}
 		return 1;
 	}
@@ -84,7 +83,7 @@ public class DashboardServlet extends HttpServlet {
 				return Integer.valueOf(request.getParameter("size"));
 			}
 		} catch (Exception e) {
-			logger.info("Wrong format for parameter size, given : {}", request.getParameter("size"));
+			LOGGER.info("Wrong format for parameter size, given : {}", request.getParameter("size"));
 		}
 		return 10;
 	}

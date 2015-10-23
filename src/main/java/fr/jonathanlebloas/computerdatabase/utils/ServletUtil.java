@@ -9,14 +9,14 @@ import fr.jonathanlebloas.computerdatabase.dto.ComputerDTO;
 
 public class ServletUtil {
 
-	private static final Logger logger = LoggerFactory.getLogger(ServletUtil.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(ServletUtil.class);
 
 	private static String getStringFromRequest(HttpServletRequest request, String name) {
 		String string = request.getParameter(name);
-		logger.debug("{} : {}", name, string);
+		LOGGER.debug("{} : {}", name, string);
 
 		if (StringUtils.isEmpty(string)) {
-			logger.warn("Can find parameter : " + name);
+			LOGGER.warn("Can find parameter : " + name);
 			return null;
 		}
 

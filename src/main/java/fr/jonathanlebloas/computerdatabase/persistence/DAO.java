@@ -5,7 +5,7 @@ import java.util.List;
 import fr.jonathanlebloas.computerdatabase.model.Page;
 import fr.jonathanlebloas.computerdatabase.persistence.exceptions.PersistenceException;
 
-public abstract class DAO<T> {
+public interface DAO<T> {
 
 	/**
 	 * Allow to find by id in the db
@@ -13,42 +13,54 @@ public abstract class DAO<T> {
 	 * @param id
 	 * @return
 	 */
-	public abstract T find(long id) throws PersistenceException;
+	public default T find(long id) throws PersistenceException {
+		throw new UnsupportedOperationException();
+	}
 
 	/**
 	 * Allow to create object in the db
 	 *
 	 * @param obj
 	 */
-	public abstract T create(T obj) throws PersistenceException;
+	public default void create(T obj) throws PersistenceException {
+		throw new UnsupportedOperationException();
+	}
 
 	/**
 	 * Allow to update an Object in the db
 	 *
 	 * @param obj
 	 */
-	public abstract T update(T obj) throws PersistenceException;
+	public default T update(T obj) throws PersistenceException {
+		throw new UnsupportedOperationException();
+	}
 
 	/**
 	 * Allow to delete an Object in the db
 	 *
 	 * @param obj
 	 */
-	public abstract void delete(T obj) throws PersistenceException;
+	public default void delete(T obj) throws PersistenceException {
+		throw new UnsupportedOperationException();
+	}
 
 	/**
 	 * Get the number of Object in the db
 	 *
 	 * @param obj
 	 */
-	public abstract int count() throws PersistenceException;
+	public default int count() throws PersistenceException {
+		throw new UnsupportedOperationException();
+	}
 
 	/**
 	 * Get the list of all Object
 	 *
 	 * @param obj
 	 */
-	public abstract List<T> list() throws PersistenceException;
+	public default List<T> list() throws PersistenceException {
+		throw new UnsupportedOperationException();
+	}
 
 	/**
 	 * Populate the item list of the page
@@ -56,11 +68,17 @@ public abstract class DAO<T> {
 	 * @param page
 	 * @return the populated page
 	 */
-	public abstract Page<T> populate(Page<T> page) throws PersistenceException;
+	public default void populate(Page<T> page) throws PersistenceException {
+		throw new UnsupportedOperationException();
+	}
 
 	/**
+	 * Return the list of items having the String s in their name
+	 *
 	 * @param s
-	 * @return Return the list of items having the String s in their name
+	 * @return
 	 */
-	public abstract List<T> findByName(String s) throws PersistenceException;
+	public default List<T> findByName(String s) throws PersistenceException {
+		throw new UnsupportedOperationException();
+	}
 }

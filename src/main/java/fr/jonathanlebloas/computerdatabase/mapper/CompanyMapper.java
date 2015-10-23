@@ -34,13 +34,8 @@ public enum CompanyMapper {
 	}
 
 	public static Company mapDTOToModel(CompanyDTO dto) {
-		Company company = new Company();
-
 		// TODO HandleParsing on date and long
-		company.setName(dto.getName());
-		company.setId(Long.parseLong(dto.getId()));
-
-		return company;
+		return Company.builder().id(Long.parseLong(dto.getId())).name(dto.getName()).build();
 	}
 
 	public static List<Company> mapDTOToModel(List<CompanyDTO> DTOList) {
