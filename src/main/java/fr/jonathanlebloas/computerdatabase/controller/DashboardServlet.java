@@ -14,12 +14,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import fr.jonathanlebloas.computerdatabase.dto.ComputerDTO;
-import fr.jonathanlebloas.computerdatabase.mapper.ComputerMapper;
+import fr.jonathanlebloas.computerdatabase.mapper.impl.ComputerMapper;
 import fr.jonathanlebloas.computerdatabase.model.Computer;
 import fr.jonathanlebloas.computerdatabase.model.Page;
 import fr.jonathanlebloas.computerdatabase.service.ComputerService;
-import fr.jonathanlebloas.computerdatabase.service.impl.ComputerServiceImpl;
 import fr.jonathanlebloas.computerdatabase.service.exceptions.ServiceException;
+import fr.jonathanlebloas.computerdatabase.service.impl.ComputerServiceImpl;
 
 @WebServlet("/dashboard")
 public class DashboardServlet extends HttpServlet {
@@ -27,10 +27,12 @@ public class DashboardServlet extends HttpServlet {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(DashboardServlet.class);
 
-	private ComputerService computerService;
+	private static final ComputerMapper COMPUTERMAPPER = ComputerMapper.INSTANCE;
+
+	private static final ComputerService COMPUTERSERVICE = ComputerServiceImpl.INSTANCE;
+
 
 	public DashboardServlet() {
-		this.computerService = ComputerServiceImpl.INSTANCE;
 	}
 
 	@Override
@@ -41,12 +43,12 @@ public class DashboardServlet extends HttpServlet {
 		LOGGER.info("Dashboard : GET index={} size={}", pageIndex, size);
 
 		try {
-			Page<Computer> page = computerService.getPage(pageIndex, size);
-			List<ComputerDTO> computers = ComputerMapper.mapModelListToDTO(page.getItems());
+			Page<Computer> page = COMPUTERSERVICE.getPage(pageIndex, size);
+			List<ComputerDTO> computers = COMPUTERMAPPER.toDTO(page.getItems());
 
 			request.setAttribute("computers", computers);
 
-			int pageCount = computerService.getNbPages(size);
+			int pageCount = COMPUTERSERVICE.getNbPages(size);
 			request.setAttribute("pageCount", pageCount);
 			request.setAttribute("page", pageIndex);
 
@@ -56,12 +58,6 @@ public class DashboardServlet extends HttpServlet {
 			RequestDispatcher dispatch = getServletContext().getRequestDispatcher("/WEB-INF/views/500.jsp");
 			dispatch.forward(request, response);
 		}
-	}
-
-	@Override
-	public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-		LOGGER.info("Dashboard : POST");
-		doGet(request, response);
 	}
 
 	private int getPage(HttpServletRequest request) {

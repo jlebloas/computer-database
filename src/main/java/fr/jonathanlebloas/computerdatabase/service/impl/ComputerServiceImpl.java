@@ -8,16 +8,12 @@ import org.slf4j.LoggerFactory;
 
 import fr.jonathanlebloas.computerdatabase.model.Computer;
 import fr.jonathanlebloas.computerdatabase.model.Page;
-import fr.jonathanlebloas.computerdatabase.persistence.impl.ComputerDAO;
 import fr.jonathanlebloas.computerdatabase.persistence.exceptions.PersistenceException;
+import fr.jonathanlebloas.computerdatabase.persistence.impl.ComputerDAO;
 import fr.jonathanlebloas.computerdatabase.service.ComputerService;
-import fr.jonathanlebloas.computerdatabase.service.exceptions.CompanyNotFoundException;
 import fr.jonathanlebloas.computerdatabase.service.exceptions.ComputerNotFoundException;
 import fr.jonathanlebloas.computerdatabase.service.exceptions.EmptyNameException;
-import fr.jonathanlebloas.computerdatabase.service.exceptions.InvalidCompanyException;
-import fr.jonathanlebloas.computerdatabase.service.exceptions.InvalidDateException;
 import fr.jonathanlebloas.computerdatabase.service.exceptions.ServiceException;
-import fr.jonathanlebloas.computerdatabase.utils.DateUtils;
 import fr.jonathanlebloas.computerdatabase.utils.StringUtils;
 
 /**
@@ -42,13 +38,9 @@ public enum ComputerServiceImpl implements ComputerService {
 	}
 
 	@Override
-	public String getComputerDetails(Computer c) throws ComputerNotFoundException, ServiceException {
+	public String getComputerDetails(Computer c) {
 		LOGGER.debug("Getting details of the computer : {}", c);
 		try {
-			if (c == null) {
-				return "";
-			}
-
 			Computer computer = computerDAO.find(c.getId());
 			if (computer == null) {
 				throw new ComputerNotFoundException();
@@ -62,7 +54,7 @@ public enum ComputerServiceImpl implements ComputerService {
 	}
 
 	@Override
-	public Computer find(long id) throws ComputerNotFoundException, ServiceException {
+	public Computer find(long id) {
 		LOGGER.debug("Find computer with id : {}", id);
 		try {
 			Computer computer = computerDAO.find(id);
@@ -78,7 +70,7 @@ public enum ComputerServiceImpl implements ComputerService {
 	}
 
 	@Override
-	public List<Computer> find(String s) throws EmptyNameException, ServiceException {
+	public List<Computer> find(String s) {
 		LOGGER.debug("Find computers with {} in their name", s);
 		try {
 			if (StringUtils.isEmpty(s)) {
@@ -93,15 +85,10 @@ public enum ComputerServiceImpl implements ComputerService {
 	}
 
 	@Override
-	public Computer create(Computer c)
-			throws EmptyNameException, ServiceException, InvalidDateException, InvalidCompanyException {
+	public Computer create(Computer c) {
 		LOGGER.debug("Create computer : {}", c);
 		try {
-			if (c == null) {
-				return null;
-			}
-			validate(c);
-
+			// The validation is made by the controlers
 			computerDAO.create(c);
 
 			return c;
@@ -109,26 +96,21 @@ public enum ComputerServiceImpl implements ComputerService {
 		} catch (PersistenceException e) {
 			LOGGER.error("An error occurred during creation of the computer : " + c, e);
 			throw new ServiceException();
-		} catch (CompanyNotFoundException e) {
-			LOGGER.warn("The company in the computer is invalid : " + c, e);
-			throw new InvalidCompanyException();
 		}
 	}
 
 	@Override
-	public Computer update(Computer c) throws EmptyNameException, ComputerNotFoundException, ServiceException,
-			InvalidDateException, InvalidCompanyException {
+	public Computer update(Computer c) {
 		LOGGER.debug("Update computer : {}", c);
 		try {
 			if (c == null) {
-				return null;
+				throw new IllegalArgumentException("The computer is null");
 			}
 
 			// Check the Computer already exists
 			if (computerDAO.find(c.getId()) == null) {
 				throw new ComputerNotFoundException();
 			}
-			validate(c);
 
 			computerDAO.update(c);
 			return c;
@@ -136,14 +118,11 @@ public enum ComputerServiceImpl implements ComputerService {
 		} catch (PersistenceException e) {
 			LOGGER.error("An error occurred during update of the computer : " + c, e);
 			throw new ServiceException();
-		} catch (CompanyNotFoundException e) {
-			LOGGER.warn("The company in the computer is invalid : " + c, e);
-			throw new InvalidCompanyException();
 		}
 	}
 
 	@Override
-	public Computer delete(Computer c) throws ComputerNotFoundException, ServiceException {
+	public Computer delete(Computer c) {
 		LOGGER.debug("Delete computer : {}", c);
 		try {
 			if (c == null) {
@@ -164,7 +143,7 @@ public enum ComputerServiceImpl implements ComputerService {
 	}
 
 	@Override
-	public int getNbPages(int nb) throws ServiceException {
+	public int getNbPages(int nb) {
 		LOGGER.debug("Get number of computer pages with nb={}", nb);
 		try {
 			if (nb == 0) {
@@ -181,7 +160,7 @@ public enum ComputerServiceImpl implements ComputerService {
 	}
 
 	@Override
-	public Page<Computer> getPage(int index, int nb) throws IndexOutOfBoundsException, ServiceException {
+	public Page<Computer> getPage(int index, int nb) {
 		LOGGER.debug("Get the computer page {}", index);
 		try {
 			int beginIndex = (index - 1) * nb;
@@ -201,26 +180,4 @@ public enum ComputerServiceImpl implements ComputerService {
 		}
 	}
 
-	private void validate(Computer c) throws EmptyNameException, InvalidDateException, InvalidCompanyException,
-			CompanyNotFoundException, ServiceException, PersistenceException {
-
-		if (StringUtils.isEmpty(c.getName())) {
-			throw new EmptyNameException();
-		}
-
-		// Check dates
-		if (c.getIntroduced() != null && DateUtils.isValid(c.getIntroduced())) {
-			throw new InvalidDateException("The introduced date of the computer is invalid.");
-		}
-		if (c.getDiscontinued() != null && DateUtils.isValid(c.getDiscontinued())) {
-			throw new InvalidDateException("The discontinued date of the computer is invalid.");
-		}
-		// To set discontinued introduced must be set and lower than
-		// discontinued
-		if (c.getDiscontinued() != null) {
-			if (c.getIntroduced() == null || c.getIntroduced().compareTo(c.getDiscontinued()) >= 0) {
-				throw new InvalidDateException("The computer must be discontinued after he was introduced");
-			}
-		}
-	}
 }

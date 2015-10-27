@@ -7,7 +7,7 @@
 <section id="main">
 	<div class="container">
 		<div class="alert alert-danger">
-			Error 403: Access denied! <br />
+			Error 403: Forbidden! <br />
 			<!-- stacktrace -->
 		</div>
 	</div>

@@ -4,11 +4,6 @@ import java.util.List;
 
 import fr.jonathanlebloas.computerdatabase.model.Computer;
 import fr.jonathanlebloas.computerdatabase.model.Page;
-import fr.jonathanlebloas.computerdatabase.service.exceptions.ComputerNotFoundException;
-import fr.jonathanlebloas.computerdatabase.service.exceptions.EmptyNameException;
-import fr.jonathanlebloas.computerdatabase.service.exceptions.InvalidCompanyException;
-import fr.jonathanlebloas.computerdatabase.service.exceptions.InvalidDateException;
-import fr.jonathanlebloas.computerdatabase.service.exceptions.ServiceException;
 
 public interface ComputerService {
 
@@ -16,85 +11,64 @@ public interface ComputerService {
 	 * Return the full list of all the computers
 	 *
 	 * @return
-	 * @throws ServiceException
 	 */
-	List<Computer> listComputers() throws ServiceException;
+	List<Computer> listComputers();
 
 	/**
 	 * Gives the details of the given computer
 	 *
 	 * @param c
 	 * @return
-	 * @throws ComputerNotFoundException
-	 * @throws ServiceException
 	 */
-	String getComputerDetails(Computer c) throws ComputerNotFoundException, ServiceException;
+	String getComputerDetails(Computer c);
 
 	/**
 	 * Find the computer with the given id
 	 *
 	 * @param id
 	 * @return
-	 * @throws ComputerNotFoundException
-	 * @throws ServiceException
 	 */
-	Computer find(long id) throws ComputerNotFoundException, ServiceException;
+	Computer find(long id);
 
 	/**
 	 * Retrieves the List of Computer with the parameter in their name
 	 *
 	 * @param s
 	 * @return The list
-	 * @throws EmptyNameException
-	 * @throws ServiceException
 	 */
-	List<Computer> find(String s) throws EmptyNameException, ServiceException;
+	List<Computer> find(String s);
 
 	/**
 	 * Create a new computer
 	 *
 	 * @param c
 	 * @return
-	 * @throws EmptyNameException
-	 * @throws InvalidDateException
-	 * @throws ServiceException
-	 * @throws InvalidCompanyException
 	 */
-	Computer create(Computer c)
-			throws EmptyNameException, ServiceException, InvalidDateException, InvalidCompanyException;
+	Computer create(Computer c);
 
 	/**
 	 * Update the given computer
 	 *
 	 * @param c
 	 * @return
-	 * @throws EmptyNameException
-	 * @throws ComputerNotFoundException
-	 * @throws InvalidDateException
-	 * @throws ServiceException
-	 * @throws InvalidCompanyException
 	 */
-	Computer update(Computer c) throws EmptyNameException, ComputerNotFoundException, ServiceException,
-			InvalidDateException, InvalidCompanyException;
+	Computer update(Computer c);
 
 	/**
 	 * Delete the given computer
 	 *
 	 * @param c
 	 * @return
-	 * @throws ComputerNotFoundException
-	 * @throws InvalidDateException
 	 */
-	Computer delete(Computer c) throws ComputerNotFoundException, ServiceException;
+	Computer delete(Computer c);
 
 	/**
 	 * Return the number of pages given nb the number of elements per pages
 	 *
 	 * @param nb
 	 * @return The number of pages possible
-	 * @throws InvalidDateException
 	 */
-	int getNbPages(int nb) throws ServiceException;
+	int getNbPages(int nb);
 
 	/**
 	 * Return the Page at index containing nb elements or an empty page if the
@@ -103,8 +77,7 @@ public interface ComputerService {
 	 * @param index
 	 * @param nb
 	 * @return the page asked
-	 * @throws InvalidDateException
 	 */
-	Page<Computer> getPage(int index, int nb) throws ServiceException;
+	Page<Computer> getPage(int index, int nb);
 
 }

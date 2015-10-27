@@ -1,6 +1,6 @@
 package fr.jonathanlebloas.computerdatabase.service.exceptions;
 
-public class ServiceException extends Exception {
+public class ServiceException extends RuntimeException {
 
 	private static final long serialVersionUID = 7853558355369792429L;
 

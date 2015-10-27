@@ -32,10 +32,11 @@ public enum CompanyServiceImpl implements CompanyService {
 	}
 
 	@Override
-	public List<Company> listCompanies() throws ServiceException {
+	public List<Company> listCompanies() {
 		LOGGER.debug("List companies");
 		try {
 			return companyDAO.list();
+
 		} catch (PersistenceException e) {
 			LOGGER.error("An error occurred during listing of companies", e);
 			throw new ServiceException();
@@ -43,7 +44,7 @@ public enum CompanyServiceImpl implements CompanyService {
 	}
 
 	@Override
-	public Company find(long id) throws CompanyNotFoundException, ServiceException {
+	public Company find(long id) {
 		LOGGER.debug("Find company with id : {}", id);
 		try {
 			Company company = companyDAO.find(id);
@@ -59,7 +60,7 @@ public enum CompanyServiceImpl implements CompanyService {
 	}
 
 	@Override
-	public List<Company> find(String s) throws EmptyNameException, ServiceException {
+	public List<Company> find(String s) {
 		LOGGER.debug("Find companies with {} in their name", s);
 		try {
 			if (StringUtils.isEmpty(s)) {
@@ -74,10 +75,10 @@ public enum CompanyServiceImpl implements CompanyService {
 	}
 
 	@Override
-	public int getNbPages(int nb) throws ServiceException {
+	public int getNbPages(int nb) {
 		LOGGER.debug("Get number of companies pages with nb={}", nb);
 		try {
-			if (nb == 0) {
+			if (nb <= 0) {
 				return 0;
 			}
 
@@ -91,7 +92,7 @@ public enum CompanyServiceImpl implements CompanyService {
 	}
 
 	@Override
-	public Page<Company> getPage(int index, int nb) throws ServiceException {
+	public Page<Company> getPage(int index, int nb) {
 		LOGGER.debug("Get the companies page {}", index);
 		try {
 			int beginIndex = (index - 1) * nb;

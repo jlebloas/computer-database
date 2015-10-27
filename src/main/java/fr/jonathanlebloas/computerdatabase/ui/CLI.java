@@ -20,11 +20,8 @@ import fr.jonathanlebloas.computerdatabase.model.Computer;
 import fr.jonathanlebloas.computerdatabase.model.Page;
 import fr.jonathanlebloas.computerdatabase.service.CompanyService;
 import fr.jonathanlebloas.computerdatabase.service.ComputerService;
-import fr.jonathanlebloas.computerdatabase.service.exceptions.CompanyNotFoundException;
 import fr.jonathanlebloas.computerdatabase.service.exceptions.ComputerNotFoundException;
 import fr.jonathanlebloas.computerdatabase.service.exceptions.EmptyNameException;
-import fr.jonathanlebloas.computerdatabase.service.exceptions.InvalidCompanyException;
-import fr.jonathanlebloas.computerdatabase.service.exceptions.InvalidDateException;
 import fr.jonathanlebloas.computerdatabase.service.exceptions.ServiceException;
 import fr.jonathanlebloas.computerdatabase.service.impl.CompanyServiceImpl;
 import fr.jonathanlebloas.computerdatabase.service.impl.ComputerServiceImpl;
@@ -287,8 +284,7 @@ public final class CLI {
 
 			System.out.println("\t Your computer as been successfully created ! : " + newComputer.toString());
 
-		} catch (CompanyNotFoundException | EmptyNameException | InvalidCompanyException
-				| InvalidDateException | ServiceException e) {
+		} catch (ServiceException e) {
 			System.out.println("\t" + e.getMessage());
 		} catch (DateTimeParseException e) {
 			System.out.println("\t Your date is not well formated. Format it like 2011-12-03");
@@ -337,8 +333,7 @@ public final class CLI {
 			System.out.println("\t Your date is not well formated.");
 		} catch (NumberFormatException e) {
 			System.out.println("\t Your id has a wrong format. Format it like 2011-12-03");
-		} catch (ComputerNotFoundException | CompanyNotFoundException | EmptyNameException | ServiceException
-				| InvalidDateException | InvalidCompanyException e) {
+		} catch (ServiceException e) {
 			System.out.println(e.getMessage());
 		}
 	}

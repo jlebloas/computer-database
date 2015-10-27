@@ -1,19 +1,21 @@
-package fr.jonathanlebloas.computerdatabase.mapper;
+package fr.jonathanlebloas.computerdatabase.mapper.impl;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
 import fr.jonathanlebloas.computerdatabase.dto.CompanyDTO;
+import fr.jonathanlebloas.computerdatabase.mapper.Mapper;
 import fr.jonathanlebloas.computerdatabase.model.Company;
 
-public enum CompanyMapper {
+public enum CompanyMapper implements Mapper<Company, CompanyDTO> {
 	INSTANCE;
 
 	private CompanyMapper() {
 	}
 
-	public static CompanyDTO mapModelToDTO(Company company) {
+	@Override
+	public CompanyDTO toDTO(Company company) {
 		CompanyDTO companyDto = new CompanyDTO();
 
 		companyDto.setId("" + company.getId());
@@ -23,28 +25,30 @@ public enum CompanyMapper {
 		return companyDto;
 	}
 
-	public static List<CompanyDTO> mapModelListToDTO(List<Company> list) {
+	@Override
+	public List<CompanyDTO> toDTO(List<Company> list) {
 		List<CompanyDTO> temp = new ArrayList<>();
 		for (Iterator<Company> iterator = list.iterator(); iterator.hasNext();) {
 			Company company = iterator.next();
 
-			temp.add(mapModelToDTO(company));
+			temp.add(toDTO(company));
 		}
 		return temp;
 	}
 
-	public static Company mapDTOToModel(CompanyDTO dto) {
-		// TODO HandleParsing on date and long
+	@Override
+	public Company fromDTO(CompanyDTO dto) {
 		return Company.builder().id(Long.parseLong(dto.getId())).name(dto.getName()).build();
 	}
 
-	public static List<Company> mapDTOToModel(List<CompanyDTO> DTOList) {
+	@Override
+	public List<Company> fromDTO(List<CompanyDTO> DTOList) {
 
 		List<Company> temp = new ArrayList<>();
 		for (Iterator<CompanyDTO> iterator = DTOList.iterator(); iterator.hasNext();) {
 			CompanyDTO dto = iterator.next();
 
-			temp.add(mapDTOToModel(dto));
+			temp.add(fromDTO(dto));
 		}
 		return temp;
 	}

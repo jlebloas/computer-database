@@ -6,22 +6,22 @@ public class ComputerDTO {
 	private String name;
 	private String introduced;
 	private String discontinued;
-	private String manufacturerId;
-	private String manufacturerName;
+	private String companyId;
+	private String companyName;
 
 	public ComputerDTO() {
 		super();
 	}
 
-	public ComputerDTO(String id, String name, String introduced, String discontinued, String manufacturerId,
-			String manufacturerName) {
+	public ComputerDTO(String id, String name, String introduced, String discontinued, String companyId,
+			String companyName) {
 		super();
 		this.id = id;
 		this.name = name;
 		this.introduced = introduced;
 		this.discontinued = discontinued;
-		this.manufacturerId = manufacturerId;
-		this.manufacturerName = manufacturerName;
+		this.companyId = companyId;
+		this.companyName = companyName;
 	}
 
 	public String getId() {
@@ -56,20 +56,20 @@ public class ComputerDTO {
 		this.discontinued = discontinued;
 	}
 
-	public String getManufacturerId() {
-		return manufacturerId;
+	public String getCompanyId() {
+		return companyId;
 	}
 
-	public void setManufacturerId(String manufacturerId) {
-		this.manufacturerId = manufacturerId;
+	public void setCompanyId(String companyId) {
+		this.companyId = companyId;
 	}
 
-	public String getManufacturerName() {
-		return manufacturerName;
+	public String getCompanyName() {
+		return companyName;
 	}
 
-	public void setManufacturerName(String manufacturerName) {
-		this.manufacturerName = manufacturerName;
+	public void setCompanyName(String companyName) {
+		this.companyName = companyName;
 	}
 
 	@Override
@@ -79,8 +79,8 @@ public class ComputerDTO {
 		result = prime * result + ((discontinued == null) ? 0 : discontinued.hashCode());
 		result = prime * result + ((id == null) ? 0 : id.hashCode());
 		result = prime * result + ((introduced == null) ? 0 : introduced.hashCode());
-		result = prime * result + ((manufacturerId == null) ? 0 : manufacturerId.hashCode());
-		result = prime * result + ((manufacturerName == null) ? 0 : manufacturerName.hashCode());
+		result = prime * result + ((companyId == null) ? 0 : companyId.hashCode());
+		result = prime * result + ((companyName == null) ? 0 : companyName.hashCode());
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		return result;
 	}
@@ -118,18 +118,18 @@ public class ComputerDTO {
 		} else if (!introduced.equals(other.introduced)) {
 			return false;
 		}
-		if (manufacturerId == null) {
-			if (other.manufacturerId != null) {
+		if (companyId == null) {
+			if (other.companyId != null) {
 				return false;
 			}
-		} else if (!manufacturerId.equals(other.manufacturerId)) {
+		} else if (!companyId.equals(other.companyId)) {
 			return false;
 		}
-		if (manufacturerName == null) {
-			if (other.manufacturerName != null) {
+		if (companyName == null) {
+			if (other.companyName != null) {
 				return false;
 			}
-		} else if (!manufacturerName.equals(other.manufacturerName)) {
+		} else if (!companyName.equals(other.companyName)) {
 			return false;
 		}
 		if (name == null) {
@@ -145,6 +145,6 @@ public class ComputerDTO {
 	@Override
 	public String toString() {
 		return "ComputerDTO [id=" + id + ", name=" + name + ", introduced=" + introduced + ", discontinued="
-				+ discontinued + ", manufacturerId=" + manufacturerId + ", manufacturerName=" + manufacturerName + "]";
+				+ discontinued + ", companyId=" + companyId + ", companyName=" + companyName + "]";
 	}
 }

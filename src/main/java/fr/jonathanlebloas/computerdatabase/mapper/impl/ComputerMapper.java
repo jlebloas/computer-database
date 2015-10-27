@@ -1,4 +1,4 @@
-package fr.jonathanlebloas.computerdatabase.mapper;
+package fr.jonathanlebloas.computerdatabase.mapper.impl;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -8,18 +8,22 @@ import java.util.List;
 
 import fr.jonathanlebloas.computerdatabase.dto.CompanyDTO;
 import fr.jonathanlebloas.computerdatabase.dto.ComputerDTO;
+import fr.jonathanlebloas.computerdatabase.mapper.Mapper;
 import fr.jonathanlebloas.computerdatabase.model.Company;
 import fr.jonathanlebloas.computerdatabase.model.Computer;
 
-public enum ComputerMapper {
+public enum ComputerMapper implements Mapper<Computer, ComputerDTO> {
 	INSTANCE;
 
-	private static DateTimeFormatter df = DateTimeFormatter.ISO_LOCAL_DATE;
+	CompanyMapper companyMapper = CompanyMapper.INSTANCE;
+
+	private DateTimeFormatter df = DateTimeFormatter.ISO_LOCAL_DATE;
 
 	private ComputerMapper() {
 	}
 
-	public static ComputerDTO mapModelToDTO(Computer computer) {
+	@Override
+	public ComputerDTO toDTO(Computer computer) {
 		ComputerDTO computerDTO = new ComputerDTO();
 
 		computerDTO.setId("" + computer.getId());
@@ -27,9 +31,9 @@ public enum ComputerMapper {
 		computerDTO.setName(computer.getName());
 
 		if (computer.getCompany() != null) {
-			computerDTO.setManufacturerName(computer.getCompany().getName());
+			computerDTO.setCompanyName(computer.getCompany().getName());
 		} else {
-			computerDTO.setManufacturerName(null);
+			computerDTO.setCompanyName(null);
 		}
 		computerDTO.setName(computer.getName());
 		if (computer.getDiscontinued() != null) {
@@ -45,24 +49,24 @@ public enum ComputerMapper {
 		return computerDTO;
 	}
 
-	public static List<ComputerDTO> mapModelListToDTO(List<Computer> list) {
+	@Override
+	public List<ComputerDTO> toDTO(List<Computer> list) {
 		List<ComputerDTO> temp = new ArrayList<>();
 		for (Iterator<Computer> iterator = list.iterator(); iterator.hasNext();) {
 			Computer computer = iterator.next();
 
-			temp.add(mapModelToDTO(computer));
+			temp.add(toDTO(computer));
 		}
 		return temp;
 	}
 
-	public static Computer mapDTOToModel(ComputerDTO dto) {
+	@Override
+	public Computer fromDTO(ComputerDTO dto) {
 		Company company = null;
-		if (dto.getManufacturerId() != null && dto.getManufacturerName() != null) {
-			company = CompanyMapper
-					.mapDTOToModel(new CompanyDTO(dto.getManufacturerId(), dto.getManufacturerName()));
+		if (dto.getCompanyId() != null && dto.getCompanyName() != null) {
+			company = companyMapper.fromDTO(new CompanyDTO(dto.getCompanyId(), dto.getCompanyName()));
 		}
 
-		// TODO HandleParsing on date and long Validation ?
 		Computer computer = Computer.builder().name(dto.getName()).company(company).build();
 		if (dto.getId() != null) {
 			computer.setId(Long.parseLong(dto.getId()));
@@ -79,13 +83,14 @@ public enum ComputerMapper {
 		return computer;
 	}
 
-	public static List<Computer> mapDTOToModel(List<ComputerDTO> DTOList) {
+	@Override
+	public List<Computer> fromDTO(List<ComputerDTO> DTOList) {
 
 		List<Computer> temp = new ArrayList<>();
 		for (Iterator<ComputerDTO> iterator = DTOList.iterator(); iterator.hasNext();) {
 			ComputerDTO dto = iterator.next();
 
-			temp.add(mapDTOToModel(dto));
+			temp.add(fromDTO(dto));
 		}
 		return temp;
 	}
