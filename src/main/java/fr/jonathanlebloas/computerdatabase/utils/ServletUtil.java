@@ -11,12 +11,14 @@ import fr.jonathanlebloas.computerdatabase.dto.CompanyDTO;
 import fr.jonathanlebloas.computerdatabase.dto.ComputerDTO;
 import fr.jonathanlebloas.computerdatabase.mapper.impl.CompanyMapper;
 import fr.jonathanlebloas.computerdatabase.model.Company;
+import fr.jonathanlebloas.computerdatabase.model.Computer;
 import fr.jonathanlebloas.computerdatabase.service.CompanyService;
 import fr.jonathanlebloas.computerdatabase.service.impl.CompanyServiceImpl;
 import fr.jonathanlebloas.computerdatabase.validation.Validator;
 
 public final class ServletUtil {
 
+	public static final String PARAM_COMPUTER_ID = "computerId";
 	public static final String PARAM_COMPUTER_NAME = "computerName";
 	public static final String PARAM_INTRODUCED = "introduced";
 	public static final String PARAM_DISCONTINUED = "discontinued";
@@ -54,6 +56,10 @@ public final class ServletUtil {
 	}
 
 	public static ComputerDTO getComputerDto(HttpServletRequest request) {
+		// The Id can be null for add
+		String computerId = request.getParameter(PARAM_COMPUTER_ID);
+
+		// Parameters mandatory
 		String name = getStringFromRequest(request, PARAM_COMPUTER_NAME);
 		String introduced = getStringFromRequest(request, PARAM_INTRODUCED);
 		String discontinued = getStringFromRequest(request, PARAM_DISCONTINUED);
@@ -68,9 +74,9 @@ public final class ServletUtil {
 		}
 
 		if (company == null) {
-			return new ComputerDTO(null, name, introduced, discontinued, null, null);
+			return new ComputerDTO(computerId, name, introduced, discontinued, null, null);
 		} else {
-			return new ComputerDTO(null, name, introduced, discontinued, Long.toString(company.getId()),
+			return new ComputerDTO(computerId, name, introduced, discontinued, Long.toString(company.getId()),
 					company.getName());
 		}
 	}
@@ -84,6 +90,7 @@ public final class ServletUtil {
 	public static boolean isLegalCompany(HttpServletRequest request) {
 		return Validator.isPositivInteger(getStringFromRequest(request, "companyId"));
 	}
+
 
 	/**
 	 * Return the prepared list of companies for the dropDown list
@@ -116,6 +123,17 @@ public final class ServletUtil {
 		request.setAttribute(ATTR_DISCONTINUED_ERROR, false);
 		request.setAttribute(ATTR_ORDER_ERROR, false);
 		request.setAttribute(ATTR_COMPANIES, getCompanies());
+	}
+
+	public static void prepareEditAttrs(HttpServletRequest request, Computer computer) {
+		prepareAttrs(request);
+		request.setAttribute(PARAM_COMPUTER_ID, computer.getId());
+		request.setAttribute(PARAM_COMPUTER_NAME, computer.getName());
+		request.setAttribute(PARAM_INTRODUCED, computer.getIntroduced());
+		request.setAttribute(PARAM_DISCONTINUED, computer.getDiscontinued());
+
+		Company company = computer.getCompany();
+		request.setAttribute(PARAM_COMPANY_ID, company == null ? 0 : company.getId());
 	}
 
 	/**

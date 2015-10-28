@@ -57,8 +57,7 @@
 					<tr>
 						<td class="editMode"><input type="checkbox" name="cb"
 							class="cb" value="0"></td>
-						<td><a href="editComputer.html" onclick=""><c:out
-									value="${computer.name}" /></a></td>
+						<td><a href="<c:url value="/computer/edit?id=${computer.id}" />" ><c:out value="${computer.name}" /></a></td>
 						<td><c:out value="${computer.introduced}" /></td>
 						<td><c:out value="${computer.discontinued}" /></td>
 						<td><c:out value="${computer.companyName}" /></td>

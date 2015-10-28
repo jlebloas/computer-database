@@ -1,5 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
 	pageEncoding="UTF-8"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
 
 <jsp:include page="template/header.jsp" />
 
@@ -7,42 +8,23 @@
 	<div class="container">
 		<div class="row">
 			<div class="col-xs-8 col-xs-offset-2 box">
-				<div class="label label-default pull-right">id: 0</div>
+				<div class="label label-default pull-right">id: <c:out value="${computerId}" /></div>
 				<h1>Edit Computer</h1>
 
-				<form action="editComputer" method="POST">
-					<input type="hidden" value="0" />
+				<form action="<c:url value="/computer/edit" />" onsubmit="return checkForm()" method="POST">
+					<input type="hidden" name="computerId" value="${computerId}" />
 					<fieldset>
-						<div class="form-group">
-							<label for="computerName">Computer name</label> <input
-								type="text" class="form-control" id="computerName"
-								placeholder="Computer name">
-						</div>
-						<div class="form-group">
-							<label for="introduced">Introduced date</label> <input
-								type="date" class="form-control" id="introduced"
-								placeholder="Introduced date">
-						</div>
-						<div class="form-group">
-							<label for="discontinued">Discontinued date</label> <input
-								type="date" class="form-control" id="discontinued"
-								placeholder="Discontinued date">
-						</div>
-						<div class="form-group">
-							<label for="companyId">Company</label> <select
-								class="form-control" id="companyId">
-								<option value="0">--</option>
-							</select>
-						</div>
+						<jsp:include page="template/computerForm.jsp" />
 					</fieldset>
 					<div class="actions pull-right">
-						<input type="submit" value="Edit" class="btn btn-primary">
-						or <a href="dashboard.html" class="btn btn-default">Cancel</a>
+						<input type="submit" value="Edit" class="btn btn-primary"> or <a href="<c:url value="/" />" class="btn btn-default">Cancel</a>
 					</div>
 				</form>
 			</div>
 		</div>
 	</div>
 </section>
+
+<script src="<c:url value="/js/computer.js"/>"></script>
 
 <jsp:include page="template/footer.jsp" />
