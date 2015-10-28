@@ -2,7 +2,6 @@ package fr.jonathanlebloas.computerdatabase.service;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.anyString;
@@ -13,20 +12,19 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.hamcrest.core.IsEqual;
 import org.hamcrest.core.IsSame;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
+import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 import fr.jonathanlebloas.computerdatabase.model.Company;
 import fr.jonathanlebloas.computerdatabase.model.Page;
-import fr.jonathanlebloas.computerdatabase.persistence.impl.CompanyDAO;
 import fr.jonathanlebloas.computerdatabase.persistence.exceptions.PersistenceException;
+import fr.jonathanlebloas.computerdatabase.persistence.impl.CompanyDAO;
 import fr.jonathanlebloas.computerdatabase.service.exceptions.CompanyNotFoundException;
 import fr.jonathanlebloas.computerdatabase.service.exceptions.EmptyNameException;
 import fr.jonathanlebloas.computerdatabase.service.exceptions.ServiceException;
@@ -99,55 +97,45 @@ public class CompanyServiceImplTest {
 		assertThat(list, IsSame.sameInstance(service.find("aPartOfName")));
 	}
 
+	/**
+	 * Don't test if the page contains the items because the items are just set
+	 * calling the DAO
+	 *
+	 * @throws PersistenceException
+	 * @throws ServiceException
+	 */
 	@Test
-	public void testGetNbPages() throws PersistenceException, ServiceException {
-		assertThat(0, IsEqual.equalTo(service.getNbPages(0)));
-
-		doReturn(0).when(dao).count();
-		assertThat(0, IsEqual.equalTo(service.getNbPages(10)));
-
-		doReturn(10).when(dao).count();
-		assertThat(1, IsEqual.equalTo(service.getNbPages(10)));
-
-		doReturn(11).when(dao).count();
-		assertThat(2, IsEqual.equalTo(service.getNbPages(10)));
-
-		doReturn(39).when(dao).count();
-		assertThat(4, IsEqual.equalTo(service.getNbPages(10)));
-
-		doReturn(40).when(dao).count();
-		assertThat(4, IsEqual.equalTo(service.getNbPages(10)));
-
-		doReturn(41).when(dao).count();
-		assertThat(5, IsEqual.equalTo(service.getNbPages(10)));
-
-		doReturn(41).when(dao).count();
-		assertThat(2, IsEqual.equalTo(service.getNbPages(40)));
-
-		doReturn(41).when(dao).count();
-		assertThat(9, IsEqual.equalTo(service.getNbPages(5)));
-	}
-
-	// TODO Refactor Page System
-	@Ignore
-	@Test
-	public void testGetPage() throws PersistenceException, ServiceException {
+	public void testPopulatePage() throws PersistenceException, ServiceException {
 		doReturn(52).when(dao).count();
-		doReturn(null).when(dao).populate(any());
+		PowerMockito.doNothing().when(dao).populateItems(any());
 
-		Page<Company> page = service.getPage(6, 10);
+		Page<Company> page = new Page<>(6, 10);
+		service.populatePage(page);
 
-		assertEquals(50, page.getBeginIndex());
-		assertEquals(10, page.getNb());
+		assertEquals(6, page.getIndex());
+		assertEquals(10, page.getSize());
+		assertEquals(52, page.getNbTotalElement());
+		assertEquals(6, page.getNbTotalPages());
+
+		page = new Page<>(5, 100);
+		service.populatePage(page);
+
+		assertEquals(5, page.getIndex());
+		assertEquals(100, page.getSize());
+		assertEquals(52, page.getNbTotalElement());
+		assertEquals(1, page.getNbTotalPages());
+
 	}
 
 	@Test
-	public void testGetPageEmpty() throws PersistenceException, ServiceException {
+	public void testPopulateWrongPage() throws PersistenceException, ServiceException {
 		doReturn(52).when(dao).count();
+		PowerMockito.doNothing().when(dao).populateItems(any());
 
-		assertTrue(service.getPage(-1, 10).getItems().isEmpty());
-		assertTrue(service.getPage(7, 10).getItems().isEmpty());
-		assertTrue(service.getPage(42, 10).getItems().isEmpty());
+		Page<Company> page = new Page<>(0, -12);
+		service.populatePage(page);
+
+		assertEquals(1, page.getIndex());
+		assertEquals(10, page.getSize());
 	}
-
 }

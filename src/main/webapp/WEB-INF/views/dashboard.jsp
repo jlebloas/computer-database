@@ -1,13 +1,13 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
 	pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
-<%@ taglib uri="http://jonathanlebloas.fr/computerdatabase/tag/pagination" prefix="p"%>
+<%@ taglib tagdir="/WEB-INF/tags/pagination" prefix="p" %>
 
 <jsp:include page="template/header.jsp" />
 
 <section id="main">
 	<div class="container">
-		<h1 id="homeTitle">121 Computers found</h1>
+		<h1 id="homeTitle"><c:out value="${page.nbTotalElement}"/> Computers found</h1>
 		<div id="actions" class="form-horizontal">
 			<div class="pull-left">
 				<form id="searchForm" action="#" method="GET" class="form-inline">
@@ -72,26 +72,7 @@
 
 <footer class="navbar-fixed-bottom">
 	<div class="container text-center">
-		<p:menu page="${page}" pageCount="${pageCount}"/>
-	
-<!-- 		<ul class="pagination"> -->
-<!-- 			<li><a href="#" aria-label="Previous"> <span -->
-<!-- 					aria-hidden="true">&laquo;</span> -->
-<!-- 			</a></li> -->
-<!-- 			<li><a href="#">1</a></li> -->
-<!-- 			<li><a href="#">2</a></li> -->
-<!-- 			<li><a href="#">3</a></li> -->
-<!-- 			<li><a href="#">4</a></li> -->
-<!-- 			<li><a href="#">5</a></li> -->
-<!-- 			<li><a href="#" aria-label="Next"> <span aria-hidden="true">&raquo;</span> -->
-<!-- 			</a></li> -->
-<!-- 		</ul> -->
-
-		<div class="btn-group btn-group-sm pull-right" role="group">
-			<button type="button" class="btn btn-default">10</button>
-			<button type="button" class="btn btn-default">50</button>
-			<button type="button" class="btn btn-default">100</button>
-		</div>
+		<p:menu page="${page}" />
 	</div>
 </footer>
 

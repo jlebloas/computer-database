@@ -165,9 +165,9 @@ public class ComputerDAOITest {
 
 	@Test
 	public void testPopulatePageOfComputer() throws PersistenceException {
-		Page<Computer> page = new Page<>(0, 10);
+		Page<Computer> page = new Page<>(1, 10);
 
-		computerDAO.populate(page);
+		computerDAO.populateItems(page);
 		List<Computer> expectedList = generateList();
 
 		assertThat(page.getItems().size(), IsEqual.equalTo(expectedList.size()));
@@ -178,7 +178,7 @@ public class ComputerDAOITest {
 	public void testPopulatePageEmpty() throws PersistenceException {
 		Page<Computer> page = new Page<>(50, 10);
 
-		computerDAO.populate(page);
+		computerDAO.populateItems(page);
 
 		assertThat(page.getItems().size(), IsEqual.equalTo(0));
 	}

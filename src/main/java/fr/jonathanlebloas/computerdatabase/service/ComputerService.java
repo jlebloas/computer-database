@@ -63,21 +63,10 @@ public interface ComputerService {
 	Computer delete(Computer c);
 
 	/**
-	 * Return the number of pages given nb the number of elements per pages
+	 * Fill the page with all elements
 	 *
-	 * @param nb
-	 * @return The number of pages possible
+	 * @param page
 	 */
-	int getNbPages(int nb);
-
-	/**
-	 * Return the Page at index containing nb elements or an empty page if the
-	 * index doesn't exist. The first page index is 1
-	 *
-	 * @param index
-	 * @param nb
-	 * @return the page asked
-	 */
-	Page<Computer> getPage(int index, int nb);
+	void populatePage(Page<Computer> page);
 
 }

@@ -181,18 +181,21 @@ public enum CompanyDAO implements DAO<Company> {
 	}
 
 	@Override
-	public void populate(Page<Company> page) throws PersistenceException {
+	public void populateItems(Page<Company> page) throws PersistenceException {
 		LOGGER.trace("Populating companies page : {}", page);
 		Connection connect = DBConnection.INSTANCE.getConnection();
 
 		try {
 			PreparedStatement prepared = connect.prepareStatement("SELECT c.id, c.name FROM company c LIMIT ?,?");
 
-			prepared.setInt(1, page.getBeginIndex());
-			prepared.setInt(2, page.getNb());
+			int beginIndex = (page.getIndex() - 1) * page.getSize();
+
+			prepared.setInt(1, beginIndex);
+			prepared.setInt(2, page.getSize());
 
 			ResultSet rs = prepared.executeQuery();
 
+			// Populate the temporary list then set it to the page
 			List<Company> list = new ArrayList<Company>();
 			while (rs.next()) {
 				Company company = rowMapper.mapRow(rs);
@@ -200,6 +203,8 @@ public enum CompanyDAO implements DAO<Company> {
 			}
 
 			page.setItems(list);
+
+			LOGGER.trace("Populated page : {}", page);
 
 		} catch (SQLException se) {
 			LOGGER.error("Error while populating the companies page : " + page, se);

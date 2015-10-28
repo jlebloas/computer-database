@@ -66,9 +66,8 @@ public interface DAO<T> {
 	 * Populate the item list of the page
 	 *
 	 * @param page
-	 * @return the populated page
 	 */
-	public default void populate(Page<T> page) throws PersistenceException {
+	public default void populateItems(Page<T> page) throws PersistenceException {
 		throw new UnsupportedOperationException();
 	}
 

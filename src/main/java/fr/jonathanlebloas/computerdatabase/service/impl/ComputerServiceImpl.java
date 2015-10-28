@@ -1,6 +1,5 @@
 package fr.jonathanlebloas.computerdatabase.service.impl;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -143,39 +142,30 @@ public enum ComputerServiceImpl implements ComputerService {
 	}
 
 	@Override
-	public int getNbPages(int nb) {
-		LOGGER.debug("Get number of computer pages with nb={}", nb);
+	public void populatePage(Page<Computer> page) {
+		LOGGER.debug("Populating the computers page : {}", page);
 		try {
-			if (nb == 0) {
-				return 0;
+			if (page.getIndex() < 1) {
+				page.setIndex(1);
+			}
+			if (page.getSize() <= 0) {
+				page.setSize(10);
 			}
 
 			int total = computerDAO.count();
-			int maxPerpage = nb;
-			return (total + maxPerpage - 1) / maxPerpage;
+			int maxPerpage = page.getSize();
+			int nbTotalPages = (total + maxPerpage - 1) / maxPerpage;
+
+			page.setNbTotalElement(total);
+
+			page.setNbTotalPages(nbTotalPages);
+
+			computerDAO.populateItems(page);
+
+			LOGGER.debug("Computers page populated : {}", page);
+
 		} catch (PersistenceException e) {
-			LOGGER.error("An error occurred while getting the number of pages of computers", e);
-			throw new ServiceException();
-		}
-	}
-
-	@Override
-	public Page<Computer> getPage(int index, int nb) {
-		LOGGER.debug("Get the computer page {}", index);
-		try {
-			int beginIndex = (index - 1) * nb;
-			Page<Computer> page = new Page<Computer>(beginIndex, nb);
-
-			int nbPages = this.getNbPages(nb);
-			if (0 < index && index <= nbPages) {
-				computerDAO.populate(page);
-			} else {
-				page.setItems(new ArrayList<Computer>());
-			}
-
-			return page;
-		} catch (PersistenceException e) {
-			LOGGER.error("An error occurred during while getting the computer page : " + index, e);
+			LOGGER.error("An error occurred during while populating the computers page : " + page, e);
 			throw new ServiceException();
 		}
 	}

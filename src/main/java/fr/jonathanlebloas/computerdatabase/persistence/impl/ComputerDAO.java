@@ -229,22 +229,23 @@ public enum ComputerDAO implements DAO<Computer> {
 	}
 
 	@Override
-	public void populate(Page<Computer> page) throws PersistenceException {
+	public void populateItems(Page<Computer> page) throws PersistenceException {
 		LOGGER.trace("Populating computers page : {}", page);
 		Connection connect = DBConnection.INSTANCE.getConnection();
 
-		// A temporary list
-		List<Computer> list = new ArrayList<Computer>();
 		try {
 			PreparedStatement prepared = connect.prepareStatement(
 					"SELECT c.id, c.name, c.introduced, c.discontinued, c.company_id, m.name FROM computer c LEFT JOIN company m ON c.company_id=m.id LIMIT ?,?");
 
-			prepared.setInt(1, page.getBeginIndex());
-			prepared.setInt(2, page.getNb());
+			int beginIndex = (page.getIndex() - 1) * page.getSize();
+
+			prepared.setInt(1, beginIndex);
+			prepared.setInt(2, page.getSize());
 
 			ResultSet rs = prepared.executeQuery();
 
 			// Populate the temporary list then set it to the page
+			List<Computer> list = new ArrayList<Computer>();
 			while (rs.next()) {
 				Computer computer = rowMapper.mapRow(rs);
 
@@ -252,6 +253,7 @@ public enum ComputerDAO implements DAO<Computer> {
 			}
 
 			page.setItems(list);
+			LOGGER.trace("Populated page : {}", page);
 
 		} catch (SQLException se) {
 			LOGGER.error("Error while populating the computers page : " + page, se);

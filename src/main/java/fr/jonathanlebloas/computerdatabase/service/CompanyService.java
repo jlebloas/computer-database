@@ -34,20 +34,10 @@ public interface CompanyService {
 	List<Company> find(String s);
 
 	/**
-	 * Return the number of pages given the number of elements per pages
+	 * Fill the page with all elements
 	 *
-	 * @param nb
-	 * @return The number of pages possible
+	 * @param page
 	 */
-	int getNbPages(int nb);
-
-	/**
-	 * Return the Page at index containing nb elements or an empty page if the
-	 * index doesn't exist. The first page index is 1
-	 *
-	 * @param index
-	 * @return the page asked
-	 */
-	Page<Company> getPage(int index, int nb);
+	void populatePage(Page<Company> page);
 
 }

@@ -3,7 +3,6 @@ package fr.jonathanlebloas.computerdatabase.controller;
 import java.io.IOException;
 import java.util.List;
 
-import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -18,11 +17,12 @@ import fr.jonathanlebloas.computerdatabase.mapper.impl.ComputerMapper;
 import fr.jonathanlebloas.computerdatabase.model.Computer;
 import fr.jonathanlebloas.computerdatabase.model.Page;
 import fr.jonathanlebloas.computerdatabase.service.ComputerService;
-import fr.jonathanlebloas.computerdatabase.service.exceptions.ServiceException;
 import fr.jonathanlebloas.computerdatabase.service.impl.ComputerServiceImpl;
 
 @WebServlet("/dashboard")
 public class DashboardServlet extends HttpServlet {
+	private static final String PATH_DASHBOARD_VIEW = "/WEB-INF/views/dashboard.jsp";
+
 	private static final long serialVersionUID = 959108770761115729L;
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(DashboardServlet.class);
@@ -31,7 +31,6 @@ public class DashboardServlet extends HttpServlet {
 
 	private static final ComputerService COMPUTERSERVICE = ComputerServiceImpl.INSTANCE;
 
-
 	public DashboardServlet() {
 	}
 
@@ -39,48 +38,53 @@ public class DashboardServlet extends HttpServlet {
 	public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 		int pageIndex = getPage(request);
 		int size = getSize(request);
-
 		LOGGER.info("Dashboard : GET index={} size={}", pageIndex, size);
 
-		try {
-			Page<Computer> page = COMPUTERSERVICE.getPage(pageIndex, size);
-			List<ComputerDTO> computers = COMPUTERMAPPER.toDTO(page.getItems());
+		Page<Computer> page = new Page<>(pageIndex, size);
+		COMPUTERSERVICE.populatePage(page);
+		List<ComputerDTO> computers = COMPUTERMAPPER.toDTO(page.getItems());
 
-			request.setAttribute("computers", computers);
+		request.setAttribute("computers", computers);
+		request.setAttribute("page", page);
 
-			int pageCount = COMPUTERSERVICE.getNbPages(size);
-			request.setAttribute("pageCount", pageCount);
-			request.setAttribute("page", pageIndex);
-
-			RequestDispatcher dispatch = getServletContext().getRequestDispatcher("/WEB-INF/views/dashboard.jsp");
-			dispatch.forward(request, response);
-		} catch (ServiceException e) {
-			RequestDispatcher dispatch = getServletContext().getRequestDispatcher("/WEB-INF/views/500.jsp");
-			dispatch.forward(request, response);
-		}
+		getServletContext().getRequestDispatcher(PATH_DASHBOARD_VIEW).forward(request, response);
 	}
 
 	private int getPage(HttpServletRequest request) {
-		try {
-			int index = Integer.valueOf(request.getParameter("page"));
-			if (index > 0) {
-				return index;
-			}
-		} catch (Exception e) {
-			LOGGER.info("Wrong format for parameter page, given : {}", request.getParameter("page"));
+		String param = request.getParameter("page");
+
+		if (param == null) {
+			return 1;
 		}
+
+		if (!param.matches("^\\d*$")) {
+			throw new IllegalArgumentException("The page asked is not an number");
+		}
+
+		int page = Integer.valueOf(param);
+		if (page > 0) {
+			return page;
+		}
+
 		return 1;
 	}
 
 	private int getSize(HttpServletRequest request) {
-		try {
-			int size = Integer.valueOf(request.getParameter("size"));
-			if (size >= 10) {
-				return Integer.valueOf(request.getParameter("size"));
-			}
-		} catch (Exception e) {
-			LOGGER.info("Wrong format for parameter size, given : {}", request.getParameter("size"));
+		String param = request.getParameter("size");
+
+		if (param == null) {
+			return 10;
 		}
+
+		if (!param.matches("^\\d*$")) {
+			throw new IllegalArgumentException("The size asked is not an number");
+		}
+
+		int size = Integer.valueOf(param);
+		if (size > 0) {
+			return size;
+		}
+
 		return 10;
 	}
 }

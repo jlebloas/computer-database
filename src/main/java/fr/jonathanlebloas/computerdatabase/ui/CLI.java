@@ -189,7 +189,11 @@ public final class CLI {
 					return;
 				} else {
 					int index = Integer.parseInt(options.getOptionValue(CONSOLE_ARG_PAGE));
-					Page<Company> page = companyService.getPage(index, 10);
+
+					Page<Company> page = new Page<>(index, 10);
+
+					companyService.populatePage(page);
+
 					displayList(page.getItems());
 				}
 			} else {
@@ -214,7 +218,12 @@ public final class CLI {
 					return;
 				} else {
 					int index = Integer.parseInt(options.getOptionValue(CONSOLE_ARG_PAGE));
-					displayList(computerService.getPage(index, 10).getItems());
+
+					Page<Computer> page = new Page<>(index, 10);
+
+					computerService.populatePage(page);
+
+					displayList(page.getItems());
 				}
 			} else {
 				displayList(computerService.listComputers());

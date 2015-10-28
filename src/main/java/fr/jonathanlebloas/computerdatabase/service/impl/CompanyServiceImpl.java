@@ -1,6 +1,5 @@
 package fr.jonathanlebloas.computerdatabase.service.impl;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -8,8 +7,8 @@ import org.slf4j.LoggerFactory;
 
 import fr.jonathanlebloas.computerdatabase.model.Company;
 import fr.jonathanlebloas.computerdatabase.model.Page;
-import fr.jonathanlebloas.computerdatabase.persistence.impl.CompanyDAO;
 import fr.jonathanlebloas.computerdatabase.persistence.exceptions.PersistenceException;
+import fr.jonathanlebloas.computerdatabase.persistence.impl.CompanyDAO;
 import fr.jonathanlebloas.computerdatabase.service.CompanyService;
 import fr.jonathanlebloas.computerdatabase.service.exceptions.CompanyNotFoundException;
 import fr.jonathanlebloas.computerdatabase.service.exceptions.EmptyNameException;
@@ -75,39 +74,30 @@ public enum CompanyServiceImpl implements CompanyService {
 	}
 
 	@Override
-	public int getNbPages(int nb) {
-		LOGGER.debug("Get number of companies pages with nb={}", nb);
+	public void populatePage(Page<Company> page) {
+		LOGGER.debug("Populating the companies page : {}", page);
 		try {
-			if (nb <= 0) {
-				return 0;
+			if (page.getIndex() < 1) {
+				page.setIndex(1);
+			}
+			if (page.getSize() <= 0) {
+				page.setSize(10);
 			}
 
-			int total = companyDAO.count();
-			int maxPerpage = nb;
-			return (total + maxPerpage - 1) / maxPerpage;
+			int nbElements = companyDAO.count();
+			int maxPerpage = page.getSize();
+			int nbTotalPages = (nbElements + maxPerpage - 1) / maxPerpage;
+
+			page.setNbTotalElement(nbElements);
+
+			page.setNbTotalPages(nbTotalPages);
+
+			companyDAO.populateItems(page);
+
+			LOGGER.debug("Companies page populated : {}", page);
+
 		} catch (PersistenceException e) {
-			LOGGER.error("An error occurred while getting the number of pages of companies", e);
-			throw new ServiceException();
-		}
-	}
-
-	@Override
-	public Page<Company> getPage(int index, int nb) {
-		LOGGER.debug("Get the companies page {}", index);
-		try {
-			int beginIndex = (index - 1) * nb;
-			Page<Company> page = new Page<Company>(beginIndex, nb);
-
-			int nbPages = this.getNbPages(nb);
-			if (0 < index && index <= nbPages) {
-				companyDAO.populate(page);
-			} else {
-				page.setItems(new ArrayList<Company>());
-			}
-
-			return page;
-		} catch (PersistenceException e) {
-			LOGGER.error("An error occurred during while getting the companies page : " + index, e);
+			LOGGER.error("An error occurred during while populating the companies page : " + page, e);
 			throw new ServiceException();
 		}
 	}
