@@ -106,7 +106,7 @@ public class CompanyServiceImplTest {
 	 */
 	@Test
 	public void testPopulatePage() throws PersistenceException, ServiceException {
-		doReturn(52).when(dao).count();
+		doReturn(52).when(dao).count(any());
 		PowerMockito.doNothing().when(dao).populateItems(any());
 
 		Page<Company> page = new Page<>(6, 10);
@@ -129,7 +129,7 @@ public class CompanyServiceImplTest {
 
 	@Test
 	public void testPopulateWrongPage() throws PersistenceException, ServiceException {
-		doReturn(52).when(dao).count();
+		doReturn(52).when(dao).count(any());
 		PowerMockito.doNothing().when(dao).populateItems(any());
 
 		Page<Company> page = new Page<>(0, -12);

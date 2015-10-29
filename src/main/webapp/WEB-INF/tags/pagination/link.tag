@@ -4,4 +4,5 @@
 <%@ attribute name="target" required="true" rtexprvalue="fasle"%>
 <%@ attribute name="index" required="true" rtexprvalue="true"%>
 <%@ attribute name="size" required="true" rtexprvalue="true"%>
-<c:url value="${target}?page=${index}&size=${size}" />
+<%@ attribute name="search" required="true" rtexprvalue="true"%>
+<c:url value="${target}?page=${index}&size=${size}&search=${search}" />

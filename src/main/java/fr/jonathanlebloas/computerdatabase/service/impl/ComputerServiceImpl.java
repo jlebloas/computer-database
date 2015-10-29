@@ -152,7 +152,7 @@ public enum ComputerServiceImpl implements ComputerService {
 				page.setSize(10);
 			}
 
-			int total = computerDAO.count();
+			int total = computerDAO.count(page.getSearch());
 			int maxPerpage = page.getSize();
 			int nbTotalPages = (total + maxPerpage - 1) / maxPerpage;
 

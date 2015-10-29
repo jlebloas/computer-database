@@ -177,14 +177,21 @@ public enum ComputerDAO implements DAO<Computer> {
 	}
 
 	@Override
-	public int count() throws PersistenceException {
+	public int count(String search) throws PersistenceException {
 		LOGGER.trace("Counting computers");
 		Connection connect = DBConnection.INSTANCE.getConnection();
 
 		int tmp = 0;
 		try {
-			Statement stmt = connect.createStatement();
-			ResultSet result = stmt.executeQuery("SELECT count(*) FROM computer");
+
+			PreparedStatement prepared = connect.prepareStatement(
+					"SELECT count(*) FROM computer c LEFT JOIN company m ON c.company_id=m.id WHERE c.name LIKE ? OR m.name LIKE ?");
+
+			prepared.setString(1, "%" + search + "%");
+			prepared.setString(2, "%" + search + "%");
+
+			ResultSet result = prepared.executeQuery();
+
 			if (result.first()) {
 				tmp = result.getInt(1);
 			}
@@ -235,12 +242,14 @@ public enum ComputerDAO implements DAO<Computer> {
 
 		try {
 			PreparedStatement prepared = connect.prepareStatement(
-					"SELECT c.id, c.name, c.introduced, c.discontinued, c.company_id, m.name FROM computer c LEFT JOIN company m ON c.company_id=m.id LIMIT ?,?");
+					"SELECT c.id, c.name, c.introduced, c.discontinued, c.company_id, m.name FROM computer c LEFT JOIN company m ON c.company_id=m.id WHERE c.name LIKE ? OR m.name LIKE ? LIMIT ?, ?");
 
 			int beginIndex = (page.getIndex() - 1) * page.getSize();
 
-			prepared.setInt(1, beginIndex);
-			prepared.setInt(2, page.getSize());
+			prepared.setString(1, "%" + page.getSearch() + "%");
+			prepared.setString(2, "%" + page.getSearch() + "%");
+			prepared.setInt(3, beginIndex);
+			prepared.setInt(4, page.getSize());
 
 			ResultSet rs = prepared.executeQuery();
 

@@ -47,9 +47,10 @@ public class ComputerDAOITest {
 
 	@Test
 	public void testCount() throws PersistenceException {
-		int nb = computerDAO.count();
-
-		assertThat(nb, IsEqual.equalTo(10));
+		assertThat(computerDAO.count(""), IsEqual.equalTo(10));
+		assertThat(computerDAO.count("Apple"), IsEqual.equalTo(6)); // 4 computer "Apple" + 2 with company "Apple"
+		assertThat(computerDAO.count("CM"), IsEqual.equalTo(4));
+		assertThat(computerDAO.count("Don't exist"), IsEqual.equalTo(0));
 	}
 
 	@Test
@@ -75,7 +76,7 @@ public class ComputerDAOITest {
 	@Test
 	public void testCreate() throws PersistenceException {
 
-		int nb = computerDAO.count();
+		int nb = computerDAO.count("");
 
 		// Create 4 computers add them and check if they're in base
 		Computer c1 = Computer.builder().name("A name").introduced(LocalDate.parse("1999-12-13", df)).build();
@@ -95,7 +96,7 @@ public class ComputerDAOITest {
 		assertThat(computerDAO.find(c4.getId()), IsEqual.equalTo(c4));
 
 		// Check the numbers of computers
-		assertThat(computerDAO.count(), IsEqual.equalTo(nb + 4));
+		assertThat(computerDAO.count(""), IsEqual.equalTo(nb + 4));
 	}
 
 	@Test
@@ -141,19 +142,19 @@ public class ComputerDAOITest {
 
 	@Test
 	public void testDelete() throws PersistenceException {
-		int nb = computerDAO.count();
+		int nb = computerDAO.count("");
 
 		Computer c = computerDAO.find(6);
 		computerDAO.delete(c);
 
 		// Check the numbers of computers now
-		assertThat(computerDAO.count(), IsEqual.equalTo(nb - 1));
+		assertThat(computerDAO.count(""), IsEqual.equalTo(nb - 1));
 		assertThat(computerDAO.find(6), IsNull.nullValue());
 	}
 
 	@Test
 	public void testList() throws PersistenceException {
-		int nb = computerDAO.count();
+		int nb = computerDAO.count("");
 
 		List<Computer> expectedList = generateList();
 
@@ -169,6 +170,32 @@ public class ComputerDAOITest {
 
 		computerDAO.populateItems(page);
 		List<Computer> expectedList = generateList();
+
+		assertThat(page.getItems().size(), IsEqual.equalTo(expectedList.size()));
+		assertThat(page.getItems(), IsEqual.equalTo(expectedList));
+	}
+
+	@Test
+	public void testPopulatePageOfComputerWithSearch() throws PersistenceException {
+		Page<Computer> page = new Page<>(1, 10, "CM");
+
+		computerDAO.populateItems(page);
+
+		// "CM something" computers only are expected (c2, c", c4, c5)
+		List<Computer> expectedList = generateSubList();
+
+		assertThat(page.getItems().size(), IsEqual.equalTo(expectedList.size()));
+		assertThat(page.getItems(), IsEqual.equalTo(expectedList));
+	}
+
+	@Test
+	public void testPopulatePageOfComputerWithSearchAndLimit() throws PersistenceException {
+		Page<Computer> page = new Page<>(2, 2, "CM");
+
+		computerDAO.populateItems(page);
+
+		// c4 and c5 only are expected
+		List<Computer> expectedList = generateSubSubList();
 
 		assertThat(page.getItems().size(), IsEqual.equalTo(expectedList.size()));
 		assertThat(page.getItems(), IsEqual.equalTo(expectedList));
@@ -202,14 +229,7 @@ public class ComputerDAOITest {
 
 		Computer c1 = Computer.builder().id(1).name("MacBook Pro 15.4 inch").company(company1).build();
 
-		Computer c2 = Computer.builder().id(2).name("CM-2a").company(company2).build();
-
-		Computer c3 = Computer.builder().id(3).name("CM-200").company(company2).build();
-
-		Computer c4 = Computer.builder().id(4).name("CM-5e").company(company2).build();
-
-		Computer c5 = Computer.builder().id(5).name("CM-5").introduced(LocalDate.parse("1991-01-01", df))
-				.company(company2).build();
+		List<Computer> subList = generateSubList();
 
 		Computer c6 = Computer.builder().id(6).name("MacBook Pro").introduced(LocalDate.parse("2006-01-10", df))
 				.company(company1).build();
@@ -223,15 +243,58 @@ public class ComputerDAOITest {
 		Computer c10 = Computer.builder().id(10).name("Apple IIc Plus").build();
 
 		temp.add(c1);
-		temp.add(c2);
-		temp.add(c3);
-		temp.add(c4);
-		temp.add(c5);
+		for (Computer computer : subList) {
+			temp.add(computer);
+		}
 		temp.add(c6);
 		temp.add(c7);
 		temp.add(c8);
 		temp.add(c9);
 		temp.add(c10);
+
+		return temp;
+	}
+
+	/**
+	 * Generate a list used representing the data with CM in their name for
+	 * search purpose
+	 *
+	 * @return
+	 */
+	private List<Computer> generateSubList() {
+		List<Computer> temp = new ArrayList<Computer>();
+
+		Computer c2 = Computer.builder().id(2).name("CM-2a").company(company2).build();
+
+		Computer c3 = Computer.builder().id(3).name("CM-200").company(company2).build();
+
+		List<Computer> subsubList = generateSubSubList();
+
+		temp.add(c2);
+		temp.add(c3);
+		for (Computer computer : subsubList) {
+			temp.add(computer);
+		}
+
+		return temp;
+	}
+
+	/**
+	 * Generate a list used representing the data with CM in their name for
+	 * search purpose
+	 *
+	 * @return
+	 */
+	private List<Computer> generateSubSubList() {
+		List<Computer> temp = new ArrayList<Computer>();
+
+		Computer c4 = Computer.builder().id(4).name("CM-5e").company(company2).build();
+
+		Computer c5 = Computer.builder().id(5).name("CM-5").introduced(LocalDate.parse("1991-01-01", df))
+				.company(company2).build();
+
+		temp.add(c4);
+		temp.add(c5);
 
 		return temp;
 	}

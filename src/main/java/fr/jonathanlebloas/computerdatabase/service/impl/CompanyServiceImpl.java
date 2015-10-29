@@ -84,7 +84,7 @@ public enum CompanyServiceImpl implements CompanyService {
 				page.setSize(10);
 			}
 
-			int nbElements = companyDAO.count();
+			int nbElements = companyDAO.count(page.getSearch());
 			int maxPerpage = page.getSize();
 			int nbTotalPages = (nbElements + maxPerpage - 1) / maxPerpage;
 

@@ -45,11 +45,11 @@ public interface DAO<T> {
 	}
 
 	/**
-	 * Get the number of Object in the db
+	 * Get the number of Object in the db that matches
 	 *
 	 * @param obj
 	 */
-	public default int count() throws PersistenceException {
+	public default int count(String search) throws PersistenceException {
 		throw new UnsupportedOperationException();
 	}
 

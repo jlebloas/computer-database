@@ -21,7 +21,13 @@ import fr.jonathanlebloas.computerdatabase.service.impl.ComputerServiceImpl;
 
 @WebServlet("/dashboard")
 public class DashboardServlet extends HttpServlet {
+
 	private static final String PATH_DASHBOARD_VIEW = "/WEB-INF/views/dashboard.jsp";
+
+	private static final String PARAM_SIZE = "size";
+	private static final String PARAM_SEARCH = "search";
+
+	private static final String ATTR_PAGE = "page";
 
 	private static final long serialVersionUID = 959108770761115729L;
 
@@ -38,20 +44,22 @@ public class DashboardServlet extends HttpServlet {
 	public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 		int pageIndex = getPage(request);
 		int size = getSize(request);
-		LOGGER.info("Dashboard : GET index={} size={}", pageIndex, size);
+		String search = getSearch(request);
 
-		Page<Computer> page = new Page<>(pageIndex, size);
+		LOGGER.info("Dashboard : GET index={} size={} search={}", pageIndex, size, search);
+
+		Page<Computer> page = new Page<>(pageIndex, size, search);
 		COMPUTERSERVICE.populatePage(page);
 		List<ComputerDTO> computers = COMPUTERMAPPER.toDTO(page.getItems());
 
 		request.setAttribute("computers", computers);
-		request.setAttribute("page", page);
+		request.setAttribute(ATTR_PAGE, page);
 
 		getServletContext().getRequestDispatcher(PATH_DASHBOARD_VIEW).forward(request, response);
 	}
 
 	private int getPage(HttpServletRequest request) {
-		String param = request.getParameter("page");
+		String param = request.getParameter(ATTR_PAGE);
 
 		if (param == null) {
 			return 1;
@@ -70,7 +78,7 @@ public class DashboardServlet extends HttpServlet {
 	}
 
 	private int getSize(HttpServletRequest request) {
-		String param = request.getParameter("size");
+		String param = request.getParameter(PARAM_SIZE);
 
 		if (param == null) {
 			return 10;
@@ -86,5 +94,15 @@ public class DashboardServlet extends HttpServlet {
 		}
 
 		return 10;
+	}
+
+	private String getSearch(HttpServletRequest request) {
+		String param = request.getParameter(PARAM_SEARCH);
+
+		if (param == null) {
+			return "";
+		}
+
+		return param;
 	}
 }

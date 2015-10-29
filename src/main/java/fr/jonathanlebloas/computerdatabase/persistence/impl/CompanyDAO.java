@@ -90,7 +90,7 @@ public enum CompanyDAO implements DAO<Company> {
 		Connection connect = DBConnection.INSTANCE.getConnection();
 
 		try {
-			PreparedStatement prepared = connect.prepareStatement("UPDATE company SET name = ? WHERE id = ?");
+			PreparedStatement prepared = connect.prepareStatement("UPDATE company c SET c.name = ? WHERE c.id = ?");
 			prepared.setString(1, obj.getName());
 			prepared.setLong(2, obj.getId());
 
@@ -113,7 +113,7 @@ public enum CompanyDAO implements DAO<Company> {
 		Connection connect = DBConnection.INSTANCE.getConnection();
 
 		try {
-			PreparedStatement prepared = connect.prepareStatement("DELETE FROM company WHERE id=?");
+			PreparedStatement prepared = connect.prepareStatement("DELETE FROM company c WHERE c.id=?");
 			prepared.setLong(1, obj.getId());
 
 			prepared.executeUpdate();
@@ -129,14 +129,17 @@ public enum CompanyDAO implements DAO<Company> {
 	}
 
 	@Override
-	public int count() throws PersistenceException {
+	public int count(String search) throws PersistenceException {
 		LOGGER.trace("Counting companies");
 		Connection connect = DBConnection.INSTANCE.getConnection();
 
 		int tmp = 0;
 		try {
-			Statement stmt = connect.createStatement();
-			ResultSet result = stmt.executeQuery("SELECT count(*) FROM company");
+			PreparedStatement prepared = connect.prepareStatement("SELECT count(*) FROM company c WHERE c.name LIKE ?");
+
+			prepared.setString(1, "%" + search + "%");
+
+			ResultSet result = prepared.executeQuery();
 
 			if (result.first()) {
 				tmp = result.getInt(1);
@@ -186,12 +189,14 @@ public enum CompanyDAO implements DAO<Company> {
 		Connection connect = DBConnection.INSTANCE.getConnection();
 
 		try {
-			PreparedStatement prepared = connect.prepareStatement("SELECT c.id, c.name FROM company c LIMIT ?,?");
+			PreparedStatement prepared = connect
+					.prepareStatement("SELECT c.id, c.name FROM company c WHERE c.name LIKE ? LIMIT ?, ?");
 
 			int beginIndex = (page.getIndex() - 1) * page.getSize();
 
-			prepared.setInt(1, beginIndex);
-			prepared.setInt(2, page.getSize());
+			prepared.setString(1, "%" + page.getSearch() + "%");
+			prepared.setInt(2, beginIndex);
+			prepared.setInt(3, page.getSize());
 
 			ResultSet rs = prepared.executeQuery();
 
@@ -223,7 +228,7 @@ public enum CompanyDAO implements DAO<Company> {
 		List<Company> list = new ArrayList<Company>();
 		try {
 			PreparedStatement prepared = connect
-					.prepareStatement("SELECT c.id, c.name FROM company c WHERE name LIKE ?");
+					.prepareStatement("SELECT c.id, c.name FROM company c WHERE c.name LIKE ?");
 			prepared.setString(1, "%" + name + "%");
 
 			ResultSet rs = prepared.executeQuery();

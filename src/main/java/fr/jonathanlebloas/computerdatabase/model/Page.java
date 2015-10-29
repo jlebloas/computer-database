@@ -37,6 +37,11 @@ public class Page<T> {
 	private int nbTotalPages;
 
 	/**
+	 * The name pattern of the element
+	 */
+	private String search;
+
+	/**
 	 * The items of the page
 	 */
 	private List<T> items;
@@ -45,6 +50,14 @@ public class Page<T> {
 		super();
 		this.index = index;
 		this.size = size;
+		this.search = "";
+	}
+
+	public Page(int index, int size, String search) {
+		super();
+		this.index = index;
+		this.size = size;
+		this.search = search;
 	}
 
 	public int getIndex() {
@@ -77,6 +90,14 @@ public class Page<T> {
 
 	public void setNbTotalPages(int nbTotalPages) {
 		this.nbTotalPages = nbTotalPages;
+	}
+
+	public String getSearch() {
+		return search;
+	}
+
+	public void setSearch(String search) {
+		this.search = search;
 	}
 
 	public List<T> getItems() {
@@ -121,6 +142,7 @@ public class Page<T> {
 		result = prime * result + ((items == null) ? 0 : items.hashCode());
 		result = prime * result + nbTotalElement;
 		result = prime * result + nbTotalPages;
+		result = prime * result + ((search == null) ? 0 : search.hashCode());
 		result = prime * result + size;
 		return result;
 	}
@@ -153,6 +175,13 @@ public class Page<T> {
 		if (nbTotalPages != other.nbTotalPages) {
 			return false;
 		}
+		if (search == null) {
+			if (other.search != null) {
+				return false;
+			}
+		} else if (!search.equals(other.search)) {
+			return false;
+		}
 		if (size != other.size) {
 			return false;
 		}
@@ -162,6 +191,7 @@ public class Page<T> {
 	@Override
 	public String toString() {
 		return "Page [index=" + index + ", size=" + size + ", nbTotalElement=" + nbTotalElement + ", nbTotalPages="
-				+ nbTotalPages + ", items=" + (items == null ? "null" : "size=" + items.size()) + "]";
+				+ nbTotalPages + ", search=" + search + ", items=" + (items == null ? "null" : "size=" + items.size())
+				+ "]";
 	}
 }
