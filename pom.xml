@@ -9,6 +9,10 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<skipIntegrationTests>false</skipIntegrationTests>
+
+		<cargo.servlet.port>18080</cargo.servlet.port>
+		<cargo.tomcat.ajp.port>18009</cargo.tomcat.ajp.port>
 
 		<slf4j-api-version>1.7.7</slf4j-api-version>
 		<logback-version>1.1.3</logback-version>
@@ -21,10 +25,14 @@
 		<mockito-all-version>1.9.5</mockito-all-version>
 		<powermock-module-junit4-version>1.6.3</powermock-module-junit4-version>
 		<powermock-api-mockito-version>1.5.5</powermock-api-mockito-version>
+		<selenium-java-version>2.48.2</selenium-java-version>
 
 		<maven-compiler-plugin-version>3.3</maven-compiler-plugin-version>
 		<java-source-version>1.8</java-source-version>
 		<java-target-version>1.8</java-target-version>
+		<cargo-maven2-version>1.4.16</cargo-maven2-version>
+		<maven-failsafe-version>2.12</maven-failsafe-version>
+		<maven-surefire-version>2.18</maven-surefire-version>
 	</properties>
 
 	<dependencies>
@@ -99,8 +107,16 @@
 			<version>${powermock-api-mockito-version}</version>
 			<scope>test</scope>
 		</dependency>
-	</dependencies>
 
+		<!-- Tests Selenium -->
+		<dependency>
+			<groupId>org.seleniumhq.selenium</groupId>
+			<artifactId>selenium-java</artifactId>
+			<version>${selenium-java-version}</version>
+			<scope>test</scope>
+		</dependency>
+
+	</dependencies>
 
 	<build>
 		<plugins>
@@ -112,6 +128,84 @@
 					<source>${java-source-version}</source>
 					<target>${java-target-version}</target>
 				</configuration>
+			</plugin>
+			<!-- Excludes integration tests when unit tests are run -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>${maven-surefire-version}</version>
+				<configuration>
+					<excludes>
+						<exclude>**/integration/*.java</exclude>
+					</excludes>
+				</configuration>
+			</plugin>
+
+			<!-- Configure embedded tomcat server for integration tests (ie. Selenium 
+				tests) -->
+			<plugin>
+				<groupId>org.codehaus.cargo</groupId>
+				<artifactId>cargo-maven2-plugin</artifactId>
+				<version>${cargo-maven2-version}</version>
+				<configuration>
+					<skip>${skipIntegrationTests}</skip>
+					<type>embedded</type>
+					<container>
+						<containerId>tomcat8x</containerId>
+						<output>${project.build.directory}/tomcat8x/container.log</output>
+						<append>false</append>
+						<log>${project.build.directory}/tomcat8x/cargo.log</log>
+					</container>
+					<configuration>
+						<properties>
+							<cargo.logging>high</cargo.logging>
+							<cargo.servlet.port>${cargo.servlet.port}</cargo.servlet.port>
+							<cargo.tomcat.ajp.port>${cargo.tomcat.ajp.port}</cargo.tomcat.ajp.port>
+						</properties>
+					</configuration>
+				</configuration>
+				<executions>
+					<execution>
+						<id>start</id>
+						<phase>pre-integration-test</phase>
+						<goals>
+							<goal>start</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>stop</id>
+						<phase>post-integration-test</phase>
+						<goals>
+							<goal>stop</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<!-- Configure integration tests -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-failsafe-plugin</artifactId>
+				<version>${maven-failsafe-version}</version>
+				<configuration>
+					<skipTests>${skipIntegrationTests}</skipTests>
+					<includes>
+						<include>**/integration/*.java</include>
+					</includes>
+				</configuration>
+				<executions>
+					<execution>
+						<id>integration-tests</id>
+						<goals>
+							<goal>integration-test</goal>
+							<goal>verify</goal>
+						</goals>
+						<configuration>
+							<encoding>${project.build.sourceEncoding}</encoding>
+							<printSummary>true</printSummary>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>
