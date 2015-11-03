@@ -66,7 +66,7 @@ public enum ComputerDAO implements DAO<Computer> {
 			throw new PersistenceException("SQL exception during find by id : " + id, se);
 
 		} finally {
-			DBConnection.INSTANCE.closeConnection(connect);
+			DBConnection.INSTANCE.closeConnection();
 		}
 
 		return computer;
@@ -117,7 +117,7 @@ public enum ComputerDAO implements DAO<Computer> {
 			throw new PersistenceException("SQL exception during creation of a computer : " + computer.toString(), se);
 
 		} finally {
-			DBConnection.INSTANCE.closeConnection(connect);
+			DBConnection.INSTANCE.closeConnection();
 		}
 	}
 
@@ -161,7 +161,7 @@ public enum ComputerDAO implements DAO<Computer> {
 			throw new PersistenceException("SQL exception during update of a computer : " + obj.toString(), se);
 
 		} finally {
-			DBConnection.INSTANCE.closeConnection(connect);
+			DBConnection.INSTANCE.closeConnection();
 		}
 
 		return obj;
@@ -183,7 +183,7 @@ public enum ComputerDAO implements DAO<Computer> {
 			throw new PersistenceException("SQL exception during deletion of a computer : " + obj.toString(), se);
 
 		} finally {
-			DBConnection.INSTANCE.closeConnection(connect);
+			DBConnection.INSTANCE.closeConnection();
 		}
 
 	}
@@ -213,7 +213,7 @@ public enum ComputerDAO implements DAO<Computer> {
 			throw new PersistenceException("SQL exception during count of computers ", se);
 
 		} finally {
-			DBConnection.INSTANCE.closeConnection(connect);
+			DBConnection.INSTANCE.closeConnection();
 		}
 
 		return tmp;
@@ -241,7 +241,7 @@ public enum ComputerDAO implements DAO<Computer> {
 			throw new PersistenceException("SQL exception during listing of computers ", se);
 
 		} finally {
-			DBConnection.INSTANCE.closeConnection(connect);
+			DBConnection.INSTANCE.closeConnection();
 		}
 
 		return list;
@@ -289,7 +289,7 @@ public enum ComputerDAO implements DAO<Computer> {
 			throw new PersistenceException("SQL exception during sublisting of computers ", se);
 
 		} finally {
-			DBConnection.INSTANCE.closeConnection(connect);
+			DBConnection.INSTANCE.closeConnection();
 		}
 	}
 
@@ -317,7 +317,7 @@ public enum ComputerDAO implements DAO<Computer> {
 			throw new PersistenceException("SQL exception during Computer findByName : " + name, se);
 
 		} finally {
-			DBConnection.INSTANCE.closeConnection(connect);
+			DBConnection.INSTANCE.closeConnection();
 		}
 
 		return list;

@@ -9,12 +9,16 @@ import java.util.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import fr.jonathanlebloas.computerdatabase.persistence.exceptions.PersistenceException;
+
 public enum DBConnection {
 	INSTANCE;
 
 	private static final String DRIVER_NAME = "com.mysql.jdbc.Driver";
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(DBConnection.class);
+
+	private static ThreadLocal<Connection> threadLocal = new ThreadLocal<>();
 
 	private String url;
 
@@ -39,22 +43,35 @@ public enum DBConnection {
 		}
 	}
 
-	public Connection getConnection() {
+	public Connection getConnection() throws PersistenceException {
 		LOGGER.trace("Getting a connection to the database");
 		try {
-			return DriverManager.getConnection(url, properties);
+			Connection connect = threadLocal.get();
+			if (connect == null || connect.isClosed()) {
+				connect = DriverManager.getConnection(url, properties);
+				threadLocal.set(connect);
+				return connect;
+			} else {
+				return connect;
+			}
 		} catch (SQLException e) {
 			LOGGER.error("Error while getting a connection", e);
+			throw new PersistenceException();
 		}
-		return null;
 	}
 
-	public void closeConnection(Connection connection) {
+	/**
+	 * Close the connection of the current Thread
+	 */
+	public void closeConnection() {
 		LOGGER.trace("Closing the database connection");
 		try {
-			connection.close();
+			Connection connect = threadLocal.get();
+			if (connect != null && !connect.isClosed()) {
+				connect.close();
+			}
 		} catch (SQLException e) {
-			LOGGER.error("Error while closing the connection", e);
+			throw new RuntimeException("Error while closing the connection", e);
 		}
 	}
 

@@ -59,7 +59,7 @@ public enum CompanyDAO implements DAO<Company> {
 			throw new PersistenceException("SQL exception during find by id : " + id, se);
 
 		} finally {
-			DBConnection.INSTANCE.closeConnection(connect);
+			DBConnection.INSTANCE.closeConnection();
 		}
 
 		return company;
@@ -88,7 +88,7 @@ public enum CompanyDAO implements DAO<Company> {
 			throw new PersistenceException("SQL exception during creation of company : " + company.toString(), se);
 
 		} finally {
-			DBConnection.INSTANCE.closeConnection(connect);
+			DBConnection.INSTANCE.closeConnection();
 		}
 	}
 
@@ -109,7 +109,7 @@ public enum CompanyDAO implements DAO<Company> {
 			throw new PersistenceException("SQL exception during update of company : " + obj.toString(), se);
 
 		} finally {
-			DBConnection.INSTANCE.closeConnection(connect);
+			DBConnection.INSTANCE.closeConnection();
 		}
 
 		return obj;
@@ -131,7 +131,7 @@ public enum CompanyDAO implements DAO<Company> {
 			throw new PersistenceException("SQL exception during deletion of company : " + obj.toString(), se);
 
 		} finally {
-			DBConnection.INSTANCE.closeConnection(connect);
+			DBConnection.INSTANCE.closeConnection();
 		}
 
 	}
@@ -158,7 +158,7 @@ public enum CompanyDAO implements DAO<Company> {
 			throw new PersistenceException("SQL exception during count of companies", se);
 
 		} finally {
-			DBConnection.INSTANCE.closeConnection(connect);
+			DBConnection.INSTANCE.closeConnection();
 		}
 
 		return tmp;
@@ -185,7 +185,7 @@ public enum CompanyDAO implements DAO<Company> {
 			throw new PersistenceException("SQL exception during listing of companies", se);
 
 		} finally {
-			DBConnection.INSTANCE.closeConnection(connect);
+			DBConnection.INSTANCE.closeConnection();
 		}
 
 		return list;
@@ -232,7 +232,7 @@ public enum CompanyDAO implements DAO<Company> {
 			throw new PersistenceException("SQL exception during sublisting of companies", se);
 
 		} finally {
-			DBConnection.INSTANCE.closeConnection(connect);
+			DBConnection.INSTANCE.closeConnection();
 		}
 	}
 
@@ -260,7 +260,7 @@ public enum CompanyDAO implements DAO<Company> {
 			throw new PersistenceException("SQL exception during a Company findByName : " + name, se);
 
 		} finally {
-			DBConnection.INSTANCE.closeConnection(connect);
+			DBConnection.INSTANCE.closeConnection();
 		}
 
 		return list;
