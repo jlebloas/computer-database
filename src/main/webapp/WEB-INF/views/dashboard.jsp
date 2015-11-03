@@ -47,10 +47,9 @@
 						style="vertical-align: top;"> - <a href="#"
 							id="deleteSelected"> <i class="fa fa-trash-o fa-lg"></i></a>
 					</span></th>
-					<th>Computer name</th>
-					<th>Introduced date</th>
-					<th>Discontinued date</th>
-					<th>Company</th>
+					<c:forEach items="${columns}" var="column">
+						<p:column page="${page}" column="${column}" ></p:column>
+					</c:forEach>
 				</tr>
 			</thead>
 			<!-- Browse attribute computers -->
@@ -66,7 +65,6 @@
 						<td><c:out value="${computer.introduced}" /></td>
 						<td><c:out value="${computer.discontinued}" /></td>
 						<td><c:out value="${computer.companyName}" /></td>
-
 					</tr>
 				</c:forEach>
 			</tbody>

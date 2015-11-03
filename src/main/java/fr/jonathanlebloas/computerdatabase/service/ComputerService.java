@@ -65,6 +65,8 @@ public interface ComputerService {
 	/**
 	 * Fill the page with all elements
 	 *
+	 * The authorized indexes are 1,2,3,4,6
+	 *
 	 * @param page
 	 */
 	void populatePage(Page<Computer> page);

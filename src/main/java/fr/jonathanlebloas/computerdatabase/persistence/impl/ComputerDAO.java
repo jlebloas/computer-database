@@ -7,7 +7,9 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,6 +31,16 @@ public enum ComputerDAO implements DAO<Computer> {
 	private ComputerRowMapper rowMapper = new ComputerRowMapper();
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(ComputerDAO.class);
+
+	public static final Map<Integer, String> COLUMN_ORDER = new HashMap<>();
+
+	static {
+		COLUMN_ORDER.put(1, "c.id");
+		COLUMN_ORDER.put(2, "c.name");
+		COLUMN_ORDER.put(3, "c.introduced");
+		COLUMN_ORDER.put(4, "c.discontinued");
+		COLUMN_ORDER.put(6, "m.name");
+	}
 
 	@Override
 	public Computer find(long id) throws PersistenceException {
@@ -235,6 +247,13 @@ public enum ComputerDAO implements DAO<Computer> {
 		return list;
 	}
 
+	/**
+	 * Populate the item list of the page
+	 *
+	 * Available indexes of sort are the keys of COLUMN_ORDER
+	 *
+	 * @param page
+	 */
 	@Override
 	public void populateItems(Page<Computer> page) throws PersistenceException {
 		LOGGER.trace("Populating computers page : {}", page);
@@ -242,7 +261,8 @@ public enum ComputerDAO implements DAO<Computer> {
 
 		try {
 			PreparedStatement prepared = connect.prepareStatement(
-					"SELECT c.id, c.name, c.introduced, c.discontinued, c.company_id, m.name FROM computer c LEFT JOIN company m ON c.company_id=m.id WHERE c.name LIKE ? OR m.name LIKE ? LIMIT ?, ?");
+					"SELECT c.id, c.name, c.introduced, c.discontinued, c.company_id, m.name FROM computer c LEFT JOIN company m ON c.company_id=m.id WHERE c.name LIKE ? OR m.name LIKE ? ORDER BY "
+							+ COLUMN_ORDER.get(page.getOrder()) + " " + page.getDirection().name() + " LIMIT ?, ?");
 
 			int beginIndex = (page.getIndex() - 1) * page.getSize();
 
@@ -326,5 +346,4 @@ public enum ComputerDAO implements DAO<Computer> {
 		}
 
 	}
-
 }

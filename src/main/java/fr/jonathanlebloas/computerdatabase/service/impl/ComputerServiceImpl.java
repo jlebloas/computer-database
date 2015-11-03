@@ -152,6 +152,10 @@ public enum ComputerServiceImpl implements ComputerService {
 				page.setSize(10);
 			}
 
+			if (!ComputerDAO.COLUMN_ORDER.containsKey(page.getOrder())) {
+				throw new IllegalArgumentException("The page has a wrong order index : " + page.getOrder());
+			}
+
 			int total = computerDAO.count(page.getSearch());
 			int maxPerpage = page.getSize();
 			int nbTotalPages = (total + maxPerpage - 1) / maxPerpage;

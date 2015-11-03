@@ -23,6 +23,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 
 import fr.jonathanlebloas.computerdatabase.model.Company;
 import fr.jonathanlebloas.computerdatabase.model.Page;
+import fr.jonathanlebloas.computerdatabase.model.Page.Direction;
 import fr.jonathanlebloas.computerdatabase.persistence.exceptions.PersistenceException;
 import fr.jonathanlebloas.computerdatabase.persistence.impl.CompanyDAO;
 import fr.jonathanlebloas.computerdatabase.service.exceptions.CompanyNotFoundException;
@@ -137,5 +138,11 @@ public class CompanyServiceImplTest {
 
 		assertEquals(1, page.getIndex());
 		assertEquals(10, page.getSize());
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void testPopulateIllegalOrder() throws PersistenceException, ServiceException {
+		Page<Company> page = new Page<>(1, 10, "", 3, Direction.ASC);
+		service.populatePage(page);
 	}
 }

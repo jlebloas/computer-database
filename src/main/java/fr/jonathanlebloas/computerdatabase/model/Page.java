@@ -10,6 +10,9 @@ import java.util.stream.IntStream;
  * @param <T>
  */
 public class Page<T> {
+	public enum Direction {
+		ASC, DESC
+	};
 
 	/**
 	 * The maximum of pages for page menu, preferably odd
@@ -42,22 +45,35 @@ public class Page<T> {
 	private String search;
 
 	/**
+	 * The field index to sort the page
+	 */
+	private int order;
+
+	/**
+	 * The direction of the order sort
+	 */
+	private Direction direction;
+
+	/**
 	 * The items of the page
 	 */
 	private List<T> items;
 
 	public Page(int index, int size) {
-		super();
-		this.index = index;
-		this.size = size;
-		this.search = "";
+		this(index, size, "", 1, Direction.ASC);
 	}
 
 	public Page(int index, int size, String search) {
+		this(index, size, search, 1, Direction.ASC);
+	}
+
+	public Page(int index, int size, String search, int order, Direction direction) {
 		super();
 		this.index = index;
 		this.size = size;
 		this.search = search;
+		this.order = order;
+		this.direction = direction;
 	}
 
 	public int getIndex() {
@@ -100,6 +116,22 @@ public class Page<T> {
 		this.search = search;
 	}
 
+	public int getOrder() {
+		return order;
+	}
+
+	public void setOrder(int order) {
+		this.order = order;
+	}
+
+	public Direction getDirection() {
+		return direction;
+	}
+
+	public void setDirection(Direction direction) {
+		this.direction = direction;
+	}
+
 	public List<T> getItems() {
 		return items;
 	}
@@ -138,10 +170,12 @@ public class Page<T> {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
+		result = prime * result + ((direction == null) ? 0 : direction.hashCode());
 		result = prime * result + index;
 		result = prime * result + ((items == null) ? 0 : items.hashCode());
 		result = prime * result + nbTotalElement;
 		result = prime * result + nbTotalPages;
+		result = prime * result + order;
 		result = prime * result + ((search == null) ? 0 : search.hashCode());
 		result = prime * result + size;
 		return result;
@@ -159,6 +193,9 @@ public class Page<T> {
 			return false;
 		}
 		Page<?> other = (Page<?>) obj;
+		if (direction != other.direction) {
+			return false;
+		}
 		if (index != other.index) {
 			return false;
 		}
@@ -173,6 +210,9 @@ public class Page<T> {
 			return false;
 		}
 		if (nbTotalPages != other.nbTotalPages) {
+			return false;
+		}
+		if (order != other.order) {
 			return false;
 		}
 		if (search == null) {
@@ -191,7 +231,7 @@ public class Page<T> {
 	@Override
 	public String toString() {
 		return "Page [index=" + index + ", size=" + size + ", nbTotalElement=" + nbTotalElement + ", nbTotalPages="
-				+ nbTotalPages + ", search=" + search + ", items=" + (items == null ? "null" : "size=" + items.size())
-				+ "]";
+				+ nbTotalPages + ", search=" + search + ", order=" + order + ", direction=" + direction + ", items="
+				+ (items == null ? "null" : "size=" + items.size()) + "]";
 	}
 }

@@ -1,6 +1,7 @@
 package fr.jonathanlebloas.computerdatabase.controller;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.ServletException;
@@ -16,18 +17,24 @@ import fr.jonathanlebloas.computerdatabase.dto.ComputerDTO;
 import fr.jonathanlebloas.computerdatabase.mapper.impl.ComputerMapper;
 import fr.jonathanlebloas.computerdatabase.model.Computer;
 import fr.jonathanlebloas.computerdatabase.model.Page;
+import fr.jonathanlebloas.computerdatabase.model.Page.Direction;
 import fr.jonathanlebloas.computerdatabase.service.ComputerService;
 import fr.jonathanlebloas.computerdatabase.service.impl.ComputerServiceImpl;
 
 @WebServlet("/dashboard")
 public class DashboardServlet extends HttpServlet {
 
+
 	private static final String PATH_DASHBOARD_VIEW = "/WEB-INF/views/dashboard.jsp";
 
 	private static final String PARAM_SIZE = "size";
 	private static final String PARAM_SEARCH = "search";
+	private static final String PARAM_ORDER = "order";
+	private static final String PARAM_DIRECTION = "direction";
 
 	private static final String ATTR_PAGE = "page";
+	private static final String ATTR_COMPUTERS = "computers";
+	private static final String ATTR_COLUMNS = "columns";
 
 	private static final long serialVersionUID = 959108770761115729L;
 
@@ -37,6 +44,7 @@ public class DashboardServlet extends HttpServlet {
 
 	private static final ComputerService COMPUTERSERVICE = ComputerServiceImpl.INSTANCE;
 
+
 	public DashboardServlet() {
 	}
 
@@ -45,15 +53,19 @@ public class DashboardServlet extends HttpServlet {
 		int pageIndex = getPage(request);
 		int size = getSize(request);
 		String search = getSearch(request);
+		int order = getOrder(request);
+		Direction direction = getDirection(request);
 
 		LOGGER.info("Dashboard : GET index={} size={} search={}", pageIndex, size, search);
 
-		Page<Computer> page = new Page<>(pageIndex, size, search);
+		Page<Computer> page = new Page<>(pageIndex, size, search, order, direction);
 		COMPUTERSERVICE.populatePage(page);
 		List<ComputerDTO> computers = COMPUTERMAPPER.toDTO(page.getItems());
 
-		request.setAttribute("computers", computers);
+		List<OrderColumn> columns = generateOrderColumns(page);
+		request.setAttribute(ATTR_COMPUTERS, computers);
 		request.setAttribute(ATTR_PAGE, page);
+		request.setAttribute(ATTR_COLUMNS, columns);
 
 		getServletContext().getRequestDispatcher(PATH_DASHBOARD_VIEW).forward(request, response);
 	}
@@ -104,5 +116,80 @@ public class DashboardServlet extends HttpServlet {
 		}
 
 		return param;
+	}
+
+	private int getOrder(HttpServletRequest request) {
+		String param = request.getParameter(PARAM_ORDER);
+
+		if (param == null) {
+			return 1;
+		}
+		if (!param.matches("^\\d*$")) {
+			throw new IllegalArgumentException("The order asked is not an number");
+		}
+
+		int order = Integer.valueOf(param);
+		if (order > 0) {
+			return order;
+		}
+
+		return order;
+	}
+
+	private Direction getDirection(HttpServletRequest request) {
+		String param = request.getParameter(PARAM_DIRECTION);
+
+		if (param == null) {
+			return Direction.ASC;
+		}
+
+		// Don't catch IllegalParameter exception
+		return Direction.valueOf(param);
+	}
+
+	private List<OrderColumn> generateOrderColumns(Page<Computer> page) {
+		List<OrderColumn> columns = new ArrayList<>();
+		columns.add(new OrderColumn("Computer name", 2, generateDirection(2, page)));
+		columns.add(new OrderColumn("Introduced date", 3, generateDirection(3, page)));
+		columns.add(new OrderColumn("Discontinued date", 4, generateDirection(4, page)));
+		columns.add(new OrderColumn("Company", 6, generateDirection(6, page)));
+
+		return columns;
+	}
+
+	/**
+	 * Generate the order of the given index Column given the current page
+	 *
+	 * @param index
+	 * @param page
+	 * @return
+	 */
+	private Direction generateDirection(int index, Page<Computer> page) {
+		return page.getOrder() == index && page.getDirection() == Direction.ASC ? Direction.DESC : Direction.ASC;
+	}
+
+	public class OrderColumn {
+		private String name;
+		private int index;
+		private Direction direction;
+
+		public OrderColumn(String name, int index, Direction direction) {
+			super();
+			this.name = name;
+			this.index = index;
+			this.direction = direction;
+		}
+
+		public String getName() {
+			return name;
+		}
+
+		public int getIndex() {
+			return index;
+		}
+
+		public Direction getDirection() {
+			return direction;
+		}
 	}
 }

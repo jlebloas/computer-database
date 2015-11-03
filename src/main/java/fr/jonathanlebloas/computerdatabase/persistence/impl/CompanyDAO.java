@@ -6,7 +6,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,6 +30,12 @@ public enum CompanyDAO implements DAO<Company> {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(CompanyDAO.class);
 
+	public static final Map<Integer, String> COLUMN_ORDER = new HashMap<>();
+
+	static {
+		COLUMN_ORDER.put(1, "c.id");
+		COLUMN_ORDER.put(2, "c.name");
+	}
 
 	@Override
 	public Company find(long id) throws PersistenceException {
@@ -183,6 +191,13 @@ public enum CompanyDAO implements DAO<Company> {
 		return list;
 	}
 
+	/**
+	 * Populate the item list of the page
+	 *
+	 * Available indexes of sort are the keys of COLUMN_ORDER
+	 *
+	 * @param page
+	 */
 	@Override
 	public void populateItems(Page<Company> page) throws PersistenceException {
 		LOGGER.trace("Populating companies page : {}", page);
@@ -190,7 +205,8 @@ public enum CompanyDAO implements DAO<Company> {
 
 		try {
 			PreparedStatement prepared = connect
-					.prepareStatement("SELECT c.id, c.name FROM company c WHERE c.name LIKE ? LIMIT ?, ?");
+					.prepareStatement("SELECT c.id, c.name FROM company c WHERE c.name LIKE ? ORDER BY "
+							+ COLUMN_ORDER.get(page.getOrder()) + " " + page.getDirection().name() + " LIMIT ?, ?");
 
 			int beginIndex = (page.getIndex() - 1) * page.getSize();
 

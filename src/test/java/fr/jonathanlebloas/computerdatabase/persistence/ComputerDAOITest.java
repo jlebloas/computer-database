@@ -16,6 +16,7 @@ import org.junit.Test;
 import fr.jonathanlebloas.computerdatabase.model.Company;
 import fr.jonathanlebloas.computerdatabase.model.Computer;
 import fr.jonathanlebloas.computerdatabase.model.Page;
+import fr.jonathanlebloas.computerdatabase.model.Page.Direction;
 import fr.jonathanlebloas.computerdatabase.persistence.exceptions.PersistenceException;
 import fr.jonathanlebloas.computerdatabase.persistence.impl.ComputerDAO;
 
@@ -181,8 +182,36 @@ public class ComputerDAOITest {
 
 		computerDAO.populateItems(page);
 
-		// "CM something" computers only are expected (c2, c", c4, c5)
+		// "CM something" computers only are expected (c2, c3, c4, c5)
 		List<Computer> expectedList = generateSubList();
+
+		assertThat(page.getItems().size(), IsEqual.equalTo(expectedList.size()));
+		assertThat(page.getItems(), IsEqual.equalTo(expectedList));
+	}
+
+	@Test
+	public void testPopulatePageOfComputerWithSearchAndSortByNameAsc() throws PersistenceException {
+		Page<Computer> page = new Page<>(1, 10, "CM", 2, Direction.ASC);
+
+		computerDAO.populateItems(page);
+
+		List<Computer> expectedList = generateSubList();
+
+		expectedList.sort((c1, c2) -> c1.getName().compareTo(c2.getName()));
+
+		assertThat(page.getItems().size(), IsEqual.equalTo(expectedList.size()));
+		assertThat(page.getItems(), IsEqual.equalTo(expectedList));
+	}
+
+	@Test
+	public void testPopulatePageOfComputerWithSearchAndSortByNameDesc() throws PersistenceException {
+		Page<Computer> page = new Page<>(1, 10, "CM", 2, Direction.DESC);
+
+		computerDAO.populateItems(page);
+
+		List<Computer> expectedList = generateSubList();
+
+		expectedList.sort((c1, c2) -> c2.getName().compareTo(c1.getName()));
 
 		assertThat(page.getItems().size(), IsEqual.equalTo(expectedList.size()));
 		assertThat(page.getItems(), IsEqual.equalTo(expectedList));

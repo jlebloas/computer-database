@@ -83,6 +83,9 @@ public enum CompanyServiceImpl implements CompanyService {
 			if (page.getSize() <= 0) {
 				page.setSize(10);
 			}
+			if (!CompanyDAO.COLUMN_ORDER.containsKey(page.getOrder())) {
+				throw new IllegalArgumentException("The page has a wrong order index : " + page.getOrder());
+			}
 
 			int nbElements = companyDAO.count(page.getSearch());
 			int maxPerpage = page.getSize();

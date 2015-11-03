@@ -36,6 +36,8 @@ public interface CompanyService {
 	/**
 	 * Fill the page with all elements
 	 *
+	 * index order possibles are 1 and 2
+	 *
 	 * @param page
 	 */
 	void populatePage(Page<Company> page);
