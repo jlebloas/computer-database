@@ -2,12 +2,14 @@ package fr.jonathanlebloas.computerdatabase.persistence;
 
 import java.io.InputStream;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Properties;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.jolbox.bonecp.BoneCP;
+import com.jolbox.bonecp.BoneCPConfig;
 
 public enum DBConnection {
 	INSTANCE;
@@ -18,7 +20,7 @@ public enum DBConnection {
 
 	private static ThreadLocal<Connection> threadLocal = new ThreadLocal<>();
 
-	private String url;
+	private BoneCP connectionPool = null;
 
 	private Properties properties;
 
@@ -35,9 +37,16 @@ public enum DBConnection {
 		try {
 			InputStream is = DBConnection.class.getClassLoader().getResourceAsStream("config/config.properties");
 			properties.load(is);
-			url = properties.getProperty("url");
 		} catch (Exception e) {
 			throw new RuntimeException("Error while loading config.properties", e);
+		}
+
+		// Configure the database connection pool
+		try {
+			BoneCPConfig config = new BoneCPConfig(properties);
+			connectionPool = new BoneCP(config);
+		} catch (Exception e) {
+			throw new RuntimeException("Error while configuring the database connection pool", e);
 		}
 	}
 
@@ -46,7 +55,7 @@ public enum DBConnection {
 		try {
 			Connection connect = threadLocal.get();
 			if (connect == null || connect.isClosed()) {
-				connect = DriverManager.getConnection(url, properties);
+				connect = connectionPool.getConnection();
 				threadLocal.set(connect);
 				return connect;
 			} else {
