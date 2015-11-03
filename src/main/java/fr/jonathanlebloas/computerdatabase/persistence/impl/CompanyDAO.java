@@ -58,8 +58,6 @@ public enum CompanyDAO implements DAO<Company> {
 			LOGGER.error("Error while finding the company with id : " + id, se);
 			throw new PersistenceException("SQL exception during find by id : " + id, se);
 
-		} finally {
-			DBConnection.INSTANCE.closeConnection();
 		}
 
 		return company;
@@ -87,8 +85,6 @@ public enum CompanyDAO implements DAO<Company> {
 			LOGGER.error("Error while creating the company : " + company, se);
 			throw new PersistenceException("SQL exception during creation of company : " + company.toString(), se);
 
-		} finally {
-			DBConnection.INSTANCE.closeConnection();
 		}
 	}
 
@@ -108,8 +104,6 @@ public enum CompanyDAO implements DAO<Company> {
 			LOGGER.error("Error while updating the company : " + obj, se);
 			throw new PersistenceException("SQL exception during update of company : " + obj.toString(), se);
 
-		} finally {
-			DBConnection.INSTANCE.closeConnection();
 		}
 
 		return obj;
@@ -121,7 +115,7 @@ public enum CompanyDAO implements DAO<Company> {
 		Connection connect = DBConnection.INSTANCE.getConnection();
 
 		try {
-			PreparedStatement prepared = connect.prepareStatement("DELETE FROM company c WHERE c.id=?");
+			PreparedStatement prepared = connect.prepareStatement("DELETE FROM company WHERE id=?");
 			prepared.setLong(1, obj.getId());
 
 			prepared.executeUpdate();
@@ -130,10 +124,7 @@ public enum CompanyDAO implements DAO<Company> {
 			LOGGER.error("Error while deleting the company : " + obj, se);
 			throw new PersistenceException("SQL exception during deletion of company : " + obj.toString(), se);
 
-		} finally {
-			DBConnection.INSTANCE.closeConnection();
 		}
-
 	}
 
 	@Override
@@ -157,8 +148,6 @@ public enum CompanyDAO implements DAO<Company> {
 			LOGGER.error("Error while counting the companies", se);
 			throw new PersistenceException("SQL exception during count of companies", se);
 
-		} finally {
-			DBConnection.INSTANCE.closeConnection();
 		}
 
 		return tmp;
@@ -184,8 +173,6 @@ public enum CompanyDAO implements DAO<Company> {
 			LOGGER.error("Error while listing the companies", se);
 			throw new PersistenceException("SQL exception during listing of companies", se);
 
-		} finally {
-			DBConnection.INSTANCE.closeConnection();
 		}
 
 		return list;
@@ -231,8 +218,6 @@ public enum CompanyDAO implements DAO<Company> {
 			LOGGER.error("Error while populating the companies page : " + page, se);
 			throw new PersistenceException("SQL exception during sublisting of companies", se);
 
-		} finally {
-			DBConnection.INSTANCE.closeConnection();
 		}
 	}
 
@@ -259,22 +244,18 @@ public enum CompanyDAO implements DAO<Company> {
 			LOGGER.error("Error while searching companies with name : " + name, se);
 			throw new PersistenceException("SQL exception during a Company findByName : " + name, se);
 
-		} finally {
-			DBConnection.INSTANCE.closeConnection();
 		}
 
 		return list;
 	}
 
 	private class CompanyRowMapper implements RowMapper<Company> {
-
 		@Override
 		public Company mapRow(ResultSet rs) throws SQLException {
 			Company company = Company.builder().id(rs.getLong(1)).name(rs.getString(2)).build();
 
 			return company;
 		}
-
 	}
 
 }

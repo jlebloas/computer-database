@@ -154,6 +154,20 @@ public class ComputerDAOITest {
 	}
 
 	@Test
+	public void testDeleteWithCompanyId() throws PersistenceException {
+		int nb = computerDAO.count("");
+
+		computerDAO.deleteWithCompanyId(2);
+
+		// Check the numbers of computers now
+		assertThat(computerDAO.count(""), IsEqual.equalTo(nb - 4));
+		assertThat(computerDAO.find(2), IsNull.nullValue());
+		assertThat(computerDAO.find(3), IsNull.nullValue());
+		assertThat(computerDAO.find(4), IsNull.nullValue());
+		assertThat(computerDAO.find(5), IsNull.nullValue());
+	}
+
+	@Test
 	public void testList() throws PersistenceException {
 		int nb = computerDAO.count("");
 

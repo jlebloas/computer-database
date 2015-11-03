@@ -65,8 +65,6 @@ public enum ComputerDAO implements DAO<Computer> {
 			LOGGER.error("Error while finding the computer with id : " + id, se);
 			throw new PersistenceException("SQL exception during find by id : " + id, se);
 
-		} finally {
-			DBConnection.INSTANCE.closeConnection();
 		}
 
 		return computer;
@@ -115,9 +113,6 @@ public enum ComputerDAO implements DAO<Computer> {
 		} catch (SQLException se) {
 			LOGGER.error("Error while creating the computer : " + computer, se);
 			throw new PersistenceException("SQL exception during creation of a computer : " + computer.toString(), se);
-
-		} finally {
-			DBConnection.INSTANCE.closeConnection();
 		}
 	}
 
@@ -159,9 +154,6 @@ public enum ComputerDAO implements DAO<Computer> {
 		} catch (SQLException se) {
 			LOGGER.error("Error while updating the computer : " + obj, se);
 			throw new PersistenceException("SQL exception during update of a computer : " + obj.toString(), se);
-
-		} finally {
-			DBConnection.INSTANCE.closeConnection();
 		}
 
 		return obj;
@@ -181,9 +173,23 @@ public enum ComputerDAO implements DAO<Computer> {
 		} catch (SQLException se) {
 			LOGGER.error("Error while deleting the computer : " + obj, se);
 			throw new PersistenceException("SQL exception during deletion of a computer : " + obj.toString(), se);
+		}
 
-		} finally {
-			DBConnection.INSTANCE.closeConnection();
+	}
+
+	public void deleteWithCompanyId(long id) throws PersistenceException {
+		LOGGER.trace("Deleting computer with company id : {}", id);
+		Connection connect = DBConnection.INSTANCE.getConnection();
+
+		try {
+			PreparedStatement prepared = connect.prepareStatement("DELETE FROM computer WHERE company_id=?");
+			prepared.setLong(1, id);
+
+			prepared.executeUpdate();
+
+		} catch (SQLException se) {
+			LOGGER.error("Error while deleting the computers with company id : " + id, se);
+			throw new PersistenceException("SQL exception during deletion of a computers with company id : " + id, se);
 		}
 
 	}
@@ -211,9 +217,6 @@ public enum ComputerDAO implements DAO<Computer> {
 		} catch (SQLException se) {
 			LOGGER.error("Error while counting the computers", se);
 			throw new PersistenceException("SQL exception during count of computers ", se);
-
-		} finally {
-			DBConnection.INSTANCE.closeConnection();
 		}
 
 		return tmp;
@@ -239,9 +242,6 @@ public enum ComputerDAO implements DAO<Computer> {
 		} catch (SQLException se) {
 			LOGGER.error("Error while listing the computers", se);
 			throw new PersistenceException("SQL exception during listing of computers ", se);
-
-		} finally {
-			DBConnection.INSTANCE.closeConnection();
 		}
 
 		return list;
@@ -287,9 +287,6 @@ public enum ComputerDAO implements DAO<Computer> {
 		} catch (SQLException se) {
 			LOGGER.error("Error while populating the computers page : " + page, se);
 			throw new PersistenceException("SQL exception during sublisting of computers ", se);
-
-		} finally {
-			DBConnection.INSTANCE.closeConnection();
 		}
 	}
 
@@ -315,9 +312,6 @@ public enum ComputerDAO implements DAO<Computer> {
 		} catch (SQLException se) {
 			LOGGER.error("Error while searching computers with name : " + name, se);
 			throw new PersistenceException("SQL exception during Computer findByName : " + name, se);
-
-		} finally {
-			DBConnection.INSTANCE.closeConnection();
 		}
 
 		return list;

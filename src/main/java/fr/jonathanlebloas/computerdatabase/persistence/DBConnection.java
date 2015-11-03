@@ -9,8 +9,6 @@ import java.util.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import fr.jonathanlebloas.computerdatabase.persistence.exceptions.PersistenceException;
-
 public enum DBConnection {
 	INSTANCE;
 
@@ -43,7 +41,7 @@ public enum DBConnection {
 		}
 	}
 
-	public Connection getConnection() throws PersistenceException {
+	public Connection getConnection() {
 		LOGGER.trace("Getting a connection to the database");
 		try {
 			Connection connect = threadLocal.get();
@@ -56,7 +54,19 @@ public enum DBConnection {
 			}
 		} catch (SQLException e) {
 			LOGGER.error("Error while getting a connection", e);
-			throw new PersistenceException();
+			throw new RuntimeException("Error while getting a connection", e);
+		}
+	}
+
+	/**
+	 * Close the connection of the current Thread
+	 */
+	public void rollbackConnection() {
+		LOGGER.trace("Rollback the transaction");
+		try {
+			threadLocal.get().rollback();
+		} catch (SQLException e) {
+			throw new RuntimeException("Error while rollback", e);
 		}
 	}
 

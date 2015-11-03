@@ -38,15 +38,18 @@ public final class CLI {
 	private static final String CONSOLE_ARG_DISCONTINUED = "discontinued";
 	private static final String CONSOLE_ARG_MANUFACTURER = "manufacturer";
 	private static final String CONSOLE_ARG_PAGE = "page";
+	private static final String CONSOLE_ARG_SEARCH = "search";
 
 	/**
 	 * Usable commands enumerate
 	 */
 	private enum Command {
 		LISTCOMPANIES("Display the list of companies", new Options()
-				.addOption(new Option("p", CONSOLE_ARG_PAGE, true, "The optional page"))),
+				.addOption(new Option("p", CONSOLE_ARG_PAGE, true, "The optional page"))
+				.addOption(new Option("s", CONSOLE_ARG_SEARCH, true, "The search of the page"))),
 		LISTCOMPUTERS("Display the list of computers", new Options()
-				.addOption(new Option("p", CONSOLE_ARG_PAGE, true, "The optional page"))),
+				.addOption(new Option("p", CONSOLE_ARG_PAGE, true, "The optional page"))
+				.addOption(new Option("s", CONSOLE_ARG_SEARCH, true, "The search of the page"))),
 		SHOW("Display the details of a computer", new Options()
 				.addOption(new Option(CONSOLE_ARG_ID, CONSOLE_ARG_ID, true, "The id of the computer"))),
 		CREATE("Create a computer", new Options()
@@ -62,6 +65,8 @@ public final class CLI {
 				.addOption("m",	CONSOLE_ARG_MANUFACTURER, true, "The id of the new manufacturer")),
 		DELETE("Delete a computer", new Options()
 				.addOption(CONSOLE_ARG_ID, CONSOLE_ARG_ID, true, "The mandatory id of the computer to be deleted")),
+		DELETECOMPANY("Delete a company", new Options()
+				.addOption(CONSOLE_ARG_ID, CONSOLE_ARG_ID, true, "The mandatory id of the company to be deleted")),
 		HELP("Display the commands", new Options());
 
 		// TODO Look for optional args and naming args values
@@ -147,6 +152,10 @@ public final class CLI {
 					delete(options);
 					break;
 
+				case DELETECOMPANY:
+					deleteCompany(options);
+					break;
+
 				case SHOW:
 					show(options);
 					break;
@@ -190,7 +199,13 @@ public final class CLI {
 				} else {
 					int index = Integer.parseInt(options.getOptionValue(CONSOLE_ARG_PAGE));
 
-					Page<Company> page = new Page<>(index, 10);
+					Page<Company> page;
+					System.out.println(options.getOptionValue(CONSOLE_ARG_SEARCH));
+					if (options.hasOption(CONSOLE_ARG_SEARCH)) {
+						page = new Page<>(index, 10, options.getOptionValue(CONSOLE_ARG_SEARCH));
+					} else {
+						page = new Page<>(index, 10);
+					}
 
 					companyService.populatePage(page);
 
@@ -219,7 +234,12 @@ public final class CLI {
 				} else {
 					int index = Integer.parseInt(options.getOptionValue(CONSOLE_ARG_PAGE));
 
-					Page<Computer> page = new Page<>(index, 10);
+					Page<Computer> page;
+					if (options.hasOption(CONSOLE_ARG_SEARCH)) {
+						page = new Page<>(index, 10, options.getOptionValue(CONSOLE_ARG_SEARCH));
+					} else {
+						page = new Page<>(index, 10);
+					}
 
 					computerService.populatePage(page);
 
@@ -362,6 +382,31 @@ public final class CLI {
 			// Update the computer with the service
 			computerService.delete(computer);
 			System.out.println("\t Your computer as been successfully deleted ! : " + computer.toString());
+
+		} catch (ComputerNotFoundException e) {
+			System.out.println("\t The computer requested with this id does not exist.");
+		} catch (NumberFormatException e) {
+			System.out.println("\t Your id has a wrong format.");
+		} catch (ServiceException e) {
+			System.out.println("\t" + e.getMessage());
+		}
+	}
+
+	private static void deleteCompany(CommandLine options) {
+		try {
+			// Get the mandatory id
+			if (options == null || !options.hasOption(CONSOLE_ARG_ID)) {
+				System.out.println("\t You must specify the id of the company");
+				return;
+			}
+			// Check id type
+			Long id = Long.parseLong(options.getOptionValue(CONSOLE_ARG_ID));
+
+			Company company = companyService.find(id);
+
+			// Update the computer with the service
+			companyService.delete(company);
+			System.out.println("\t Your company as been successfully deleted ! : " + company.toString());
 
 		} catch (ComputerNotFoundException e) {
 			System.out.println("\t The computer requested with this id does not exist.");

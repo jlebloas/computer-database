@@ -42,4 +42,9 @@ public interface CompanyService {
 	 */
 	void populatePage(Page<Company> page);
 
+	/**
+	 * Delete the given company
+	 */
+	void delete(Company c);
+
 }

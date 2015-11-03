@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 
 import fr.jonathanlebloas.computerdatabase.model.Computer;
 import fr.jonathanlebloas.computerdatabase.model.Page;
+import fr.jonathanlebloas.computerdatabase.persistence.DBConnection;
 import fr.jonathanlebloas.computerdatabase.persistence.exceptions.PersistenceException;
 import fr.jonathanlebloas.computerdatabase.persistence.impl.ComputerDAO;
 import fr.jonathanlebloas.computerdatabase.service.ComputerService;
@@ -33,6 +34,9 @@ public enum ComputerServiceImpl implements ComputerService {
 		} catch (PersistenceException e) {
 			LOGGER.error("An error occurred during listing of computer", e);
 			throw new ServiceException();
+
+		} finally {
+			DBConnection.INSTANCE.closeConnection();
 		}
 	}
 
@@ -49,6 +53,9 @@ public enum ComputerServiceImpl implements ComputerService {
 		} catch (PersistenceException e) {
 			LOGGER.error("An error occurred during getting details of computer : " + c, e);
 			throw new ServiceException();
+
+		} finally {
+			DBConnection.INSTANCE.closeConnection();
 		}
 	}
 
@@ -65,6 +72,9 @@ public enum ComputerServiceImpl implements ComputerService {
 		} catch (PersistenceException e) {
 			LOGGER.error("An error occurred finding the computer with id : " + id, e);
 			throw new ServiceException();
+
+		} finally {
+			DBConnection.INSTANCE.closeConnection();
 		}
 	}
 
@@ -80,6 +90,9 @@ public enum ComputerServiceImpl implements ComputerService {
 		} catch (PersistenceException e) {
 			LOGGER.error("An error occurred finding the computers having '" + s + "' in their name", e);
 			throw new ServiceException();
+
+		} finally {
+			DBConnection.INSTANCE.closeConnection();
 		}
 	}
 
@@ -95,6 +108,9 @@ public enum ComputerServiceImpl implements ComputerService {
 		} catch (PersistenceException e) {
 			LOGGER.error("An error occurred during creation of the computer : " + c, e);
 			throw new ServiceException();
+
+		} finally {
+			DBConnection.INSTANCE.closeConnection();
 		}
 	}
 
@@ -117,6 +133,9 @@ public enum ComputerServiceImpl implements ComputerService {
 		} catch (PersistenceException e) {
 			LOGGER.error("An error occurred during update of the computer : " + c, e);
 			throw new ServiceException();
+
+		} finally {
+			DBConnection.INSTANCE.closeConnection();
 		}
 	}
 
@@ -138,6 +157,9 @@ public enum ComputerServiceImpl implements ComputerService {
 		} catch (PersistenceException e) {
 			LOGGER.error("An error occurred during deletion of the computer : " + c, e);
 			throw new ServiceException();
+
+		} finally {
+			DBConnection.INSTANCE.closeConnection();
 		}
 	}
 
@@ -171,6 +193,9 @@ public enum ComputerServiceImpl implements ComputerService {
 		} catch (PersistenceException e) {
 			LOGGER.error("An error occurred during while populating the computers page : " + page, e);
 			throw new ServiceException();
+
+		} finally {
+			DBConnection.INSTANCE.closeConnection();
 		}
 	}
 
