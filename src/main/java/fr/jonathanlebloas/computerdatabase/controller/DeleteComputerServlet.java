@@ -24,16 +24,14 @@ public class DeleteComputerServlet extends HttpServlet {
 
 	private static final long serialVersionUID = 9049278320734561410L;
 
-	private static final String PATH_REDIRECT_VIEW = "../dashboard";
-
 	private static final Logger LOGGER = LoggerFactory.getLogger(DeleteComputerServlet.class);
+
+	private static final String PATH_REDIRECT_VIEW = "../dashboard";
 
 	private static final ComputerService COMPUTER_SERVICE = ComputerServiceImpl.INSTANCE;
 
 	public static final String PARAM_DELETE_ID = "selection";
 
-	public DeleteComputerServlet() {
-	}
 
 	@Override
 	public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {

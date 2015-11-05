@@ -1,5 +1,7 @@
 package fr.jonathanlebloas.computerdatabase.controller;
 
+import static fr.jonathanlebloas.computerdatabase.utils.ServletUtil.ATTR_COMPANIES;
+import static fr.jonathanlebloas.computerdatabase.utils.ServletUtil.PARAM_COMPUTER_ID;
 import static fr.jonathanlebloas.computerdatabase.utils.ServletUtil.*;
 
 import java.io.IOException;
@@ -27,20 +29,17 @@ public class EditComputerServlet extends HttpServlet {
 
 	private static final long serialVersionUID = -7358727501089563696L;
 
+	private static final Logger LOGGER = LoggerFactory.getLogger(EditComputerServlet.class);
+
 	private static final String PATH_ILLEGAL_VIEW = "/WEB-INF/views/403.jsp";
 	private static final String PATH_NOT_FOUND_VIEW = "/WEB-INF/views/404.jsp";
 	private static final String PATH_UPDATE_VIEW = "/WEB-INF/views/editComputer.jsp";
 
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(EditComputerServlet.class);
-
 	private static final ComputerMapper COMPUTER_MAPPER = ComputerMapper.INSTANCE;
 
 	private static final ComputerService COMPUTER_SERVICE = ComputerServiceImpl.INSTANCE;
 
-
-	public EditComputerServlet() {
-	}
 
 	@Override
 	public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
@@ -75,6 +74,7 @@ public class EditComputerServlet extends HttpServlet {
 	@Override
 	public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 		LOGGER.info("Edit Computer : POST");
+		String companyId = getStringFromRequest(request, PARAM_COMPANY_ID);
 
 		// Check validity id
 		String raw_id = getStringFromRequest(request, PARAM_COMPUTER_ID);
@@ -88,7 +88,7 @@ public class EditComputerServlet extends HttpServlet {
 		long computerId = Long.parseLong(raw_id);
 
 		// Return 403 if the companyId is not valid
-		if (!isLegalCompany(request)) {
+		if (!Validator.isPositivInteger(companyId)) {
 			response.setStatus(HttpServletResponse.SC_FORBIDDEN);
 
 			LOGGER.warn("Illegal company given");
@@ -97,7 +97,9 @@ public class EditComputerServlet extends HttpServlet {
 			return;
 		}
 
-		// Redirect if error
+		// Check the different fields and set errors param, so if it's not
+		// acceptable redirect on the edit page with given inputs and errors
+		// messages
 		if (!isAccecptable(request)) {
 			response.setStatus(HttpServletResponse.SC_NOT_ACCEPTABLE);
 

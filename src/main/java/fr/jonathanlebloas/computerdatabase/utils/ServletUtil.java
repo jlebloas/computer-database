@@ -18,17 +18,13 @@ import fr.jonathanlebloas.computerdatabase.validation.Validator;
 
 public final class ServletUtil {
 
+	private static final Logger LOGGER = LoggerFactory.getLogger(ServletUtil.class);
+
 	public static final String PARAM_COMPUTER_ID = "computerId";
 	public static final String PARAM_COMPUTER_NAME = "computerName";
 	public static final String PARAM_INTRODUCED = "introduced";
 	public static final String PARAM_DISCONTINUED = "discontinued";
 	public static final String PARAM_COMPANY_ID = "companyId";
-
-	private static final Logger LOGGER = LoggerFactory.getLogger(ServletUtil.class);
-
-	private static final CompanyMapper COMPANY_MAPPER = CompanyMapper.INSTANCE;
-
-	private static final CompanyService COMPANY_SERVICE = CompanyServiceImpl.INSTANCE;
 
 	public static final String ATTR_COMPANIES = "companies";
 	public static final String ATTR_ORDER_ERROR = "orderError";
@@ -36,6 +32,10 @@ public final class ServletUtil {
 	public static final String ATTR_INTRODUCED_EMPTY_ERROR = "introducedEmptyError";
 	public static final String ATTR_INTRODUCED_ERROR = "introducedError";
 	public static final String ATTR_COMPUTER_NAME_ERROR = "computerNameError";
+
+	private static final CompanyMapper COMPANY_MAPPER = CompanyMapper.INSTANCE;
+
+	private static final CompanyService COMPANY_SERVICE = CompanyServiceImpl.INSTANCE;
 
 	private ServletUtil() {
 	}
@@ -80,17 +80,6 @@ public final class ServletUtil {
 					company.getName());
 		}
 	}
-
-	/**
-	 * Return if the company id given exist
-	 *
-	 * @param request
-	 * @return
-	 */
-	public static boolean isLegalCompany(HttpServletRequest request) {
-		return Validator.isPositivInteger(getStringFromRequest(request, "companyId"));
-	}
-
 
 	/**
 	 * Return the prepared list of companies for the dropDown list

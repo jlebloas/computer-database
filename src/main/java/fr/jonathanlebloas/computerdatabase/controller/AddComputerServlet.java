@@ -1,12 +1,7 @@
 package fr.jonathanlebloas.computerdatabase.controller;
 
 import static fr.jonathanlebloas.computerdatabase.utils.ServletUtil.ATTR_COMPANIES;
-import static fr.jonathanlebloas.computerdatabase.utils.ServletUtil.getCompanies;
-import static fr.jonathanlebloas.computerdatabase.utils.ServletUtil.getComputerDto;
-import static fr.jonathanlebloas.computerdatabase.utils.ServletUtil.isAccecptable;
-import static fr.jonathanlebloas.computerdatabase.utils.ServletUtil.isLegalCompany;
-import static fr.jonathanlebloas.computerdatabase.utils.ServletUtil.prepareAttrs;
-import static fr.jonathanlebloas.computerdatabase.utils.ServletUtil.transferComputerParameterToAttributes;
+import static fr.jonathanlebloas.computerdatabase.utils.ServletUtil.*;
 
 import java.io.IOException;
 
@@ -25,24 +20,22 @@ import fr.jonathanlebloas.computerdatabase.mapper.impl.ComputerMapper;
 import fr.jonathanlebloas.computerdatabase.model.Computer;
 import fr.jonathanlebloas.computerdatabase.service.ComputerService;
 import fr.jonathanlebloas.computerdatabase.service.impl.ComputerServiceImpl;
+import fr.jonathanlebloas.computerdatabase.validation.Validator;
 
 @WebServlet("/computer/add")
 public class AddComputerServlet extends HttpServlet {
 
 	private static final long serialVersionUID = 9049278320734561410L;
 
+	private static final Logger LOGGER = LoggerFactory.getLogger(AddComputerServlet.class);
+
 	private static final String PATH_ILLEGAL_VIEW = "/WEB-INF/views/403.jsp";
 	private static final String PATH_ADD_VIEW = "/WEB-INF/views/addComputer.jsp";
-
-
-	private static final Logger LOGGER = LoggerFactory.getLogger(AddComputerServlet.class);
 
 	private static final ComputerMapper COMPUTER_MAPPER = ComputerMapper.INSTANCE;
 
 	private static final ComputerService COMPUTER_SERVICE = ComputerServiceImpl.INSTANCE;
 
-	public AddComputerServlet() {
-	}
 
 	@Override
 	public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
@@ -57,9 +50,10 @@ public class AddComputerServlet extends HttpServlet {
 	@Override
 	public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 		LOGGER.info("Add Computer : POST");
+		String companyId = getStringFromRequest(request, "companyId");
 
 		// Return 403 if the companyId is not valid
-		if (!isLegalCompany(request)) {
+		if (!Validator.isPositivInteger(companyId)) {
 			response.setStatus(HttpServletResponse.SC_FORBIDDEN);
 			LOGGER.warn("Illegal company given");
 
@@ -67,7 +61,9 @@ public class AddComputerServlet extends HttpServlet {
 			return;
 		}
 
-		// Redirect if error
+		// Check the different fields and set errors param, so if it's not
+		// acceptable redirect on the add page with given inputs and errors
+		// messages
 		if (!isAccecptable(request)) {
 			response.setStatus(HttpServletResponse.SC_NOT_ACCEPTABLE);
 
