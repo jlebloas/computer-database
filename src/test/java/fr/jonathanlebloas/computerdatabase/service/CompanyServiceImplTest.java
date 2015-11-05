@@ -24,13 +24,14 @@ import org.powermock.modules.junit4.PowerMockRunner;
 
 import fr.jonathanlebloas.computerdatabase.model.Company;
 import fr.jonathanlebloas.computerdatabase.model.Page;
-import fr.jonathanlebloas.computerdatabase.model.Page.Direction;
+import fr.jonathanlebloas.computerdatabase.sort.Sort.Direction;
 import fr.jonathanlebloas.computerdatabase.persistence.exceptions.PersistenceException;
 import fr.jonathanlebloas.computerdatabase.persistence.impl.CompanyDAO;
 import fr.jonathanlebloas.computerdatabase.service.exceptions.CompanyNotFoundException;
 import fr.jonathanlebloas.computerdatabase.service.exceptions.EmptyNameException;
 import fr.jonathanlebloas.computerdatabase.service.exceptions.ServiceException;
 import fr.jonathanlebloas.computerdatabase.service.impl.CompanyServiceImpl;
+import fr.jonathanlebloas.computerdatabase.sort.CompanySort;
 
 /**
  * Test Company service Use PowerMock to mock the CompanyDAO
@@ -112,7 +113,7 @@ public class CompanyServiceImplTest {
 		doReturn(52).when(dao).count(any());
 		PowerMockito.doNothing().when(dao).populateItems(any());
 
-		Page<Company> page = new Page<>(6, 10);
+		Page<Company> page = new Page<>(6, 10, "", CompanySort.getSort(1, Direction.ASC));
 		service.populatePage(page);
 
 		assertEquals(6, page.getIndex());
@@ -120,7 +121,7 @@ public class CompanyServiceImplTest {
 		assertEquals(52, page.getNbTotalElement());
 		assertEquals(6, page.getNbTotalPages());
 
-		page = new Page<>(5, 100);
+		page = new Page<>(5, 100, "", CompanySort.getSort(1, Direction.ASC));
 		service.populatePage(page);
 
 		assertEquals(5, page.getIndex());
@@ -135,7 +136,7 @@ public class CompanyServiceImplTest {
 		doReturn(52).when(dao).count(any());
 		PowerMockito.doNothing().when(dao).populateItems(any());
 
-		Page<Company> page = new Page<>(0, -12);
+		Page<Company> page = new Page<>(0, -12, "", CompanySort.getSort(1, Direction.ASC));
 		service.populatePage(page);
 
 		assertEquals(1, page.getIndex());
@@ -144,7 +145,7 @@ public class CompanyServiceImplTest {
 
 	@Test(expected = IllegalArgumentException.class)
 	public void testPopulateIllegalOrder() throws PersistenceException, ServiceException {
-		Page<Company> page = new Page<>(1, 10, "", 3, Direction.ASC);
+		Page<Company> page = new Page<>(1, 10, "", CompanySort.getSort(3, Direction.ASC));
 		service.populatePage(page);
 	}
 }

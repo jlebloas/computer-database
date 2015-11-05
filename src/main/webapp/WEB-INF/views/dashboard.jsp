@@ -15,6 +15,8 @@
 			<div class="pull-left">
 				<form id="searchForm" action="" method="GET" class="form-inline">
 					<input type="hidden" name="size" value="${page.size}">
+					<input type="hidden" name="order" value="${orderIndex}">
+					<input type="hidden" name="direction" value="${page.sort.direction}">
 					<input type="search" id="searchbox" name="search" class="form-control" placeholder="Search name" value="${page.search}" />
 					&nbsp;
 					<input type="submit" id="searchsubmit" value="Filter by name" class="btn btn-primary" />
@@ -48,7 +50,7 @@
 							id="deleteSelected"> <i class="fa fa-trash-o fa-lg"></i></a>
 					</span></th>
 					<c:forEach items="${columns}" var="column">
-						<p:column page="${page}" column="${column}" ></p:column>
+						<p:column page="${page}" orderIndex="${orderIndex}" column="${column}" ></p:column>
 					</c:forEach>
 				</tr>
 			</thead>

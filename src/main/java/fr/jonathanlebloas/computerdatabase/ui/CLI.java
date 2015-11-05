@@ -25,6 +25,10 @@ import fr.jonathanlebloas.computerdatabase.service.exceptions.EmptyNameException
 import fr.jonathanlebloas.computerdatabase.service.exceptions.ServiceException;
 import fr.jonathanlebloas.computerdatabase.service.impl.CompanyServiceImpl;
 import fr.jonathanlebloas.computerdatabase.service.impl.ComputerServiceImpl;
+import fr.jonathanlebloas.computerdatabase.sort.CompanySort;
+import fr.jonathanlebloas.computerdatabase.sort.ComputerSort;
+import fr.jonathanlebloas.computerdatabase.sort.Sort;
+import fr.jonathanlebloas.computerdatabase.sort.Sort.Direction;
 import fr.jonathanlebloas.computerdatabase.utils.StringUtils;
 
 /**
@@ -201,10 +205,12 @@ public final class CLI {
 
 					Page<Company> page;
 					System.out.println(options.getOptionValue(CONSOLE_ARG_SEARCH));
+
+					Sort sort = CompanySort.getSort(1, Direction.ASC);
 					if (options.hasOption(CONSOLE_ARG_SEARCH)) {
-						page = new Page<>(index, 10, options.getOptionValue(CONSOLE_ARG_SEARCH));
+						page = new Page<>(index, 10, options.getOptionValue(CONSOLE_ARG_SEARCH), sort);
 					} else {
-						page = new Page<>(index, 10);
+						page = new Page<>(index, 10, "", sort);
 					}
 
 					companyService.populatePage(page);
@@ -235,10 +241,11 @@ public final class CLI {
 					int index = Integer.parseInt(options.getOptionValue(CONSOLE_ARG_PAGE));
 
 					Page<Computer> page;
+					Sort sort = ComputerSort.getSort(1, Direction.ASC);
 					if (options.hasOption(CONSOLE_ARG_SEARCH)) {
-						page = new Page<>(index, 10, options.getOptionValue(CONSOLE_ARG_SEARCH));
+						page = new Page<>(index, 10, options.getOptionValue(CONSOLE_ARG_SEARCH), sort);
 					} else {
-						page = new Page<>(index, 10);
+						page = new Page<>(index, 10, "", sort);
 					}
 
 					computerService.populatePage(page);

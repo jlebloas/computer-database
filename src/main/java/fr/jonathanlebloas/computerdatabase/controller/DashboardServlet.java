@@ -17,7 +17,8 @@ import fr.jonathanlebloas.computerdatabase.dto.ComputerDTO;
 import fr.jonathanlebloas.computerdatabase.mapper.impl.ComputerMapper;
 import fr.jonathanlebloas.computerdatabase.model.Computer;
 import fr.jonathanlebloas.computerdatabase.model.Page;
-import fr.jonathanlebloas.computerdatabase.model.Page.Direction;
+import fr.jonathanlebloas.computerdatabase.sort.ComputerSort;
+import fr.jonathanlebloas.computerdatabase.sort.Sort.Direction;
 import fr.jonathanlebloas.computerdatabase.service.ComputerService;
 import fr.jonathanlebloas.computerdatabase.service.impl.ComputerServiceImpl;
 
@@ -33,6 +34,7 @@ public class DashboardServlet extends HttpServlet {
 	private static final String PARAM_DIRECTION = "direction";
 
 	private static final String ATTR_PAGE = "page";
+	private static final String ATTR_ORDER_INDEX = "orderIndex";
 	private static final String ATTR_COMPUTERS = "computers";
 	private static final String ATTR_COLUMNS = "columns";
 
@@ -45,26 +47,24 @@ public class DashboardServlet extends HttpServlet {
 	private static final ComputerService COMPUTERSERVICE = ComputerServiceImpl.INSTANCE;
 
 
-	public DashboardServlet() {
-	}
-
 	@Override
 	public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 		int pageIndex = getPage(request);
 		int size = getSize(request);
 		String search = getSearch(request);
-		int order = getOrder(request);
+		int order = getOrderField(request);
 		Direction direction = getDirection(request);
 
 		LOGGER.info("Dashboard : GET index={} size={} search={}", pageIndex, size, search);
 
-		Page<Computer> page = new Page<>(pageIndex, size, search, order, direction);
+		Page<Computer> page = new Page<>(pageIndex, size, search, ComputerSort.getSort(order, direction));
 		COMPUTERSERVICE.populatePage(page);
 		List<ComputerDTO> computers = COMPUTERMAPPER.toDTO(page.getItems());
 
 		List<OrderColumn> columns = generateOrderColumns(page);
 		request.setAttribute(ATTR_COMPUTERS, computers);
 		request.setAttribute(ATTR_PAGE, page);
+		request.setAttribute(ATTR_ORDER_INDEX, ComputerSort.getFieldIndex(page.getSort().getField()));
 		request.setAttribute(ATTR_COLUMNS, columns);
 
 		getServletContext().getRequestDispatcher(PATH_DASHBOARD_VIEW).forward(request, response);
@@ -118,7 +118,7 @@ public class DashboardServlet extends HttpServlet {
 		return param;
 	}
 
-	private int getOrder(HttpServletRequest request) {
+	private int getOrderField(HttpServletRequest request) {
 		String param = request.getParameter(PARAM_ORDER);
 
 		if (param == null) {
@@ -152,7 +152,7 @@ public class DashboardServlet extends HttpServlet {
 		columns.add(new OrderColumn("Computer name", 2, generateDirection(2, page)));
 		columns.add(new OrderColumn("Introduced date", 3, generateDirection(3, page)));
 		columns.add(new OrderColumn("Discontinued date", 4, generateDirection(4, page)));
-		columns.add(new OrderColumn("Company", 6, generateDirection(6, page)));
+		columns.add(new OrderColumn("Company", 5, generateDirection(5, page)));
 
 		return columns;
 	}
@@ -165,7 +165,12 @@ public class DashboardServlet extends HttpServlet {
 	 * @return
 	 */
 	private Direction generateDirection(int index, Page<Computer> page) {
-		return page.getOrder() == index && page.getDirection() == Direction.ASC ? Direction.DESC : Direction.ASC;
+		if (ComputerSort.getFieldIndex(page.getSort().getField()) == index
+				&& page.getSort().getDirection() == Direction.ASC) {
+			return Direction.DESC;
+		} else {
+			return Direction.ASC;
+		}
 	}
 
 	public class OrderColumn {

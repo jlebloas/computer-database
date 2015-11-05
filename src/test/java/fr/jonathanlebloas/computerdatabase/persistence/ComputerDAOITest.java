@@ -16,7 +16,8 @@ import org.junit.Test;
 import fr.jonathanlebloas.computerdatabase.model.Company;
 import fr.jonathanlebloas.computerdatabase.model.Computer;
 import fr.jonathanlebloas.computerdatabase.model.Page;
-import fr.jonathanlebloas.computerdatabase.model.Page.Direction;
+import fr.jonathanlebloas.computerdatabase.sort.ComputerSort;
+import fr.jonathanlebloas.computerdatabase.sort.Sort.Direction;
 import fr.jonathanlebloas.computerdatabase.persistence.exceptions.PersistenceException;
 import fr.jonathanlebloas.computerdatabase.persistence.impl.ComputerDAO;
 
@@ -181,7 +182,7 @@ public class ComputerDAOITest {
 
 	@Test
 	public void testPopulatePageOfComputer() throws PersistenceException {
-		Page<Computer> page = new Page<>(1, 10);
+		Page<Computer> page = new Page<>(1, 10, "", ComputerSort.getSort(1, Direction.ASC));
 
 		computerDAO.populateItems(page);
 		List<Computer> expectedList = generateList();
@@ -192,7 +193,7 @@ public class ComputerDAOITest {
 
 	@Test
 	public void testPopulatePageOfComputerWithSearch() throws PersistenceException {
-		Page<Computer> page = new Page<>(1, 10, "CM");
+		Page<Computer> page = new Page<>(1, 10, "CM", ComputerSort.getSort(1, Direction.ASC));
 
 		computerDAO.populateItems(page);
 
@@ -205,7 +206,7 @@ public class ComputerDAOITest {
 
 	@Test
 	public void testPopulatePageOfComputerWithSearchAndSortByNameAsc() throws PersistenceException {
-		Page<Computer> page = new Page<>(1, 10, "CM", 2, Direction.ASC);
+		Page<Computer> page = new Page<>(1, 10, "CM", ComputerSort.getSort(2, Direction.ASC));
 
 		computerDAO.populateItems(page);
 
@@ -219,7 +220,7 @@ public class ComputerDAOITest {
 
 	@Test
 	public void testPopulatePageOfComputerWithSearchAndSortByNameDesc() throws PersistenceException {
-		Page<Computer> page = new Page<>(1, 10, "CM", 2, Direction.DESC);
+		Page<Computer> page = new Page<>(1, 10, "CM", ComputerSort.getSort(2, Direction.DESC));
 
 		computerDAO.populateItems(page);
 
@@ -233,7 +234,7 @@ public class ComputerDAOITest {
 
 	@Test
 	public void testPopulatePageOfComputerWithSearchAndLimit() throws PersistenceException {
-		Page<Computer> page = new Page<>(2, 2, "CM");
+		Page<Computer> page = new Page<>(2, 2, "CM", ComputerSort.getSort(1, Direction.ASC));
 
 		computerDAO.populateItems(page);
 
@@ -246,7 +247,7 @@ public class ComputerDAOITest {
 
 	@Test
 	public void testPopulatePageEmpty() throws PersistenceException {
-		Page<Computer> page = new Page<>(50, 10);
+		Page<Computer> page = new Page<>(50, 10, "", ComputerSort.getSort(1, Direction.ASC));
 
 		computerDAO.populateItems(page);
 

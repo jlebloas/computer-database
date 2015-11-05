@@ -30,11 +30,11 @@ public enum CompanyDAO implements DAO<Company> {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(CompanyDAO.class);
 
-	public static final Map<Integer, String> COLUMN_ORDER = new HashMap<>();
+	public static final Map<String, String> COLUMN_ORDER = new HashMap<>();
 
 	static {
-		COLUMN_ORDER.put(1, "c.id");
-		COLUMN_ORDER.put(2, "c.name");
+		COLUMN_ORDER.put("id", "c.id");
+		COLUMN_ORDER.put("name", "c.name");
 	}
 
 	@Override
@@ -193,7 +193,8 @@ public enum CompanyDAO implements DAO<Company> {
 		try {
 			PreparedStatement prepared = connect
 					.prepareStatement("SELECT c.id, c.name FROM company c WHERE c.name LIKE ? ORDER BY "
-							+ COLUMN_ORDER.get(page.getOrder()) + " " + page.getDirection().name() + " LIMIT ?, ?");
+							+ COLUMN_ORDER.get(page.getSort().getField()) + " " + page.getSort().getDirection().name()
+							+ " LIMIT ?, ?");
 
 			int beginIndex = (page.getIndex() - 1) * page.getSize();
 

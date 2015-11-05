@@ -32,14 +32,17 @@ public enum ComputerDAO implements DAO<Computer> {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(ComputerDAO.class);
 
-	public static final Map<Integer, String> COLUMN_ORDER = new HashMap<>();
+	/**
+	 * Map a sort field to database column
+	 */
+	private static final Map<String, String> COLUMN_ORDER = new HashMap<>();
 
 	static {
-		COLUMN_ORDER.put(1, "c.id");
-		COLUMN_ORDER.put(2, "c.name");
-		COLUMN_ORDER.put(3, "c.introduced");
-		COLUMN_ORDER.put(4, "c.discontinued");
-		COLUMN_ORDER.put(6, "m.name");
+		COLUMN_ORDER.put("id", "c.id");
+		COLUMN_ORDER.put("name", "c.name");
+		COLUMN_ORDER.put("introduced", "c.introduced");
+		COLUMN_ORDER.put("discontinued", "c.discontinued");
+		COLUMN_ORDER.put("companyName", "m.name");
 	}
 
 	@Override
@@ -262,7 +265,8 @@ public enum ComputerDAO implements DAO<Computer> {
 		try {
 			PreparedStatement prepared = connect.prepareStatement(
 					"SELECT c.id, c.name, c.introduced, c.discontinued, c.company_id, m.name FROM computer c LEFT JOIN company m ON c.company_id=m.id WHERE c.name LIKE ? OR m.name LIKE ? ORDER BY "
-							+ COLUMN_ORDER.get(page.getOrder()) + " " + page.getDirection().name() + " LIMIT ?, ?");
+							+ COLUMN_ORDER.get(page.getSort().getField()) + " " + page.getSort().getDirection().name()
+							+ " LIMIT ?, ?");
 
 			int beginIndex = (page.getIndex() - 1) * page.getSize();
 
