@@ -6,6 +6,8 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import fr.jonathanlebloas.computerdatabase.dto.CompanyDTO;
 import fr.jonathanlebloas.computerdatabase.dto.ComputerDTO;
@@ -13,10 +15,10 @@ import fr.jonathanlebloas.computerdatabase.mapper.impl.CompanyMapper;
 import fr.jonathanlebloas.computerdatabase.model.Company;
 import fr.jonathanlebloas.computerdatabase.model.Computer;
 import fr.jonathanlebloas.computerdatabase.service.CompanyService;
-import fr.jonathanlebloas.computerdatabase.service.impl.CompanyServiceImpl;
 import fr.jonathanlebloas.computerdatabase.validation.Validator;
 
-public final class ServletUtil {
+@Component
+public class ServletUtil {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(ServletUtil.class);
 
@@ -33,14 +35,13 @@ public final class ServletUtil {
 	public static final String ATTR_INTRODUCED_ERROR = "introducedError";
 	public static final String ATTR_COMPUTER_NAME_ERROR = "computerNameError";
 
-	private static final CompanyMapper COMPANY_MAPPER = CompanyMapper.INSTANCE;
+	@Autowired
+	private CompanyMapper companyMapper;
 
-	private static final CompanyService COMPANY_SERVICE = CompanyServiceImpl.INSTANCE;
+	@Autowired
+	private CompanyService companyService;
 
-	private ServletUtil() {
-	}
-
-	public static String getStringFromRequest(HttpServletRequest request, String name) {
+	public String getStringFromRequest(HttpServletRequest request, String name) {
 		String string = request.getParameter(name);
 		if (string == null) {
 			throw new IllegalArgumentException("The argument '" + name + "' is not provided");
@@ -55,7 +56,7 @@ public final class ServletUtil {
 		return string.trim();
 	}
 
-	public static ComputerDTO getComputerDto(HttpServletRequest request) {
+	public ComputerDTO getComputerDto(HttpServletRequest request) {
 		// The Id can be null for add
 		String computerId = request.getParameter(PARAM_COMPUTER_ID);
 
@@ -70,7 +71,7 @@ public final class ServletUtil {
 			companyId = null;
 		} else {
 			long idParsed = Long.parseLong(companyId);
-			company = COMPANY_SERVICE.find(idParsed);
+			company = companyService.find(idParsed);
 		}
 
 		if (company == null) {
@@ -87,10 +88,10 @@ public final class ServletUtil {
 	 * @param request
 	 * @return
 	 */
-	public static List<CompanyDTO> getCompanies() {
-		List<Company> companies = COMPANY_SERVICE.listCompanies();
+	public List<CompanyDTO> getCompanies() {
+		List<Company> companies = companyService.listCompanies();
 		companies.add(0, Company.builder().id(0).name("--").build());
-		return COMPANY_MAPPER.toDTO(companies);
+		return companyMapper.toDTO(companies);
 	}
 
 	/**
@@ -98,14 +99,14 @@ public final class ServletUtil {
 	 *
 	 * @param request
 	 */
-	public static void transferComputerParameterToAttributes(HttpServletRequest request) {
+	public void transferComputerParameterToAttributes(HttpServletRequest request) {
 		request.setAttribute(PARAM_COMPUTER_NAME, request.getParameter(PARAM_COMPUTER_NAME));
 		request.setAttribute(PARAM_INTRODUCED, request.getParameter(PARAM_INTRODUCED));
 		request.setAttribute(PARAM_DISCONTINUED, request.getParameter(PARAM_DISCONTINUED));
 		request.setAttribute(PARAM_COMPANY_ID, request.getParameter(PARAM_COMPANY_ID));
 	}
 
-	public static void prepareAttrs(HttpServletRequest request) {
+	public void prepareAttrs(HttpServletRequest request) {
 		request.setAttribute(ATTR_COMPUTER_NAME_ERROR, false);
 		request.setAttribute(ATTR_INTRODUCED_ERROR, false);
 		request.setAttribute(ATTR_INTRODUCED_EMPTY_ERROR, false);
@@ -114,7 +115,7 @@ public final class ServletUtil {
 		request.setAttribute(ATTR_COMPANIES, getCompanies());
 	}
 
-	public static void prepareEditAttrs(HttpServletRequest request, Computer computer) {
+	public void prepareEditAttrs(HttpServletRequest request, Computer computer) {
 		prepareAttrs(request);
 		request.setAttribute(PARAM_COMPUTER_ID, computer.getId());
 		request.setAttribute(PARAM_COMPUTER_NAME, computer.getName());
@@ -132,7 +133,7 @@ public final class ServletUtil {
 	 * @param request
 	 * @return
 	 */
-	public static boolean isAccecptable(HttpServletRequest request) {
+	public boolean isAccecptable(HttpServletRequest request) {
 		boolean acceptable = true;
 		// Check the introduced date
 		if (StringUtils.isEmpty(getStringFromRequest(request, PARAM_COMPUTER_NAME))) {

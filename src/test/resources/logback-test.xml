@@ -10,7 +10,11 @@
 		</encoder>
 	</appender>
 
-  <!-- turn OFF all logging for tests -->
+	<logger name="fr.jonathanlebloas.computerdatabase">
+		<level value="OFF" />
+	</logger>
+
+	<!-- turn OFF others logging for tests -->
 	<root level="OFF">
 		<appender-ref ref="STDOUT" />
 	</root>

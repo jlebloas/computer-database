@@ -14,6 +14,9 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.stereotype.Component;
 
 import fr.jonathanlebloas.computerdatabase.model.Company;
 import fr.jonathanlebloas.computerdatabase.model.Computer;
@@ -23,8 +26,6 @@ import fr.jonathanlebloas.computerdatabase.service.ComputerService;
 import fr.jonathanlebloas.computerdatabase.service.exceptions.ComputerNotFoundException;
 import fr.jonathanlebloas.computerdatabase.service.exceptions.EmptyNameException;
 import fr.jonathanlebloas.computerdatabase.service.exceptions.ServiceException;
-import fr.jonathanlebloas.computerdatabase.service.impl.CompanyServiceImpl;
-import fr.jonathanlebloas.computerdatabase.service.impl.ComputerServiceImpl;
 import fr.jonathanlebloas.computerdatabase.sort.CompanySort;
 import fr.jonathanlebloas.computerdatabase.sort.ComputerSort;
 import fr.jonathanlebloas.computerdatabase.sort.Sort;
@@ -34,6 +35,7 @@ import fr.jonathanlebloas.computerdatabase.utils.StringUtils;
 /**
  * Command Line Interface used to manage Computers (List, Create, Update ...)
  */
+@Component
 public final class CLI {
 
 	private static final String CONSOLE_ARG_ID = "id";
@@ -97,15 +99,15 @@ public final class CLI {
 		}
 	}
 
-	private static ComputerService computerService = ComputerServiceImpl.INSTANCE;
-	private static CompanyService companyService = CompanyServiceImpl.INSTANCE;
+	@Autowired
+	private ComputerService computerService;
+
+	@Autowired
+	private CompanyService companyService;
 
 	private static DateTimeFormatter df = DateTimeFormatter.ISO_LOCAL_DATE;
 
 	private static HelpFormatter formatter = new HelpFormatter();
-
-	private CLI() {
-	}
 
 	private static void help() {
 		EnumSet<Command> enumSet = EnumSet.allOf(Command.class);
@@ -117,8 +119,13 @@ public final class CLI {
 	}
 
 	public static final void main(String[] args) {
+		CLI cli;
 		Command command = null;
-		try {
+
+		// Load context spring with a try-with-resource that will automatically close the context at the end
+		try (ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("applicationContext.xml")) {
+			cli = context.getBean(CLI.class);
+
 			// If there is at least a command
 			if (args.length > 0 && !StringUtils.isEmpty(args[0])) {
 				command = Command.valueOf(args[0].toUpperCase());
@@ -137,31 +144,31 @@ public final class CLI {
 				// Process the command
 				switch (command) {
 				case LISTCOMPANIES:
-					listCompanies(options);
+					cli.listCompanies(options);
 					break;
 
 				case LISTCOMPUTERS:
-					listComputers(options);
+					cli.listComputers(options);
 					break;
 
 				case CREATE:
-					create(options);
+					cli.create(options);
 					break;
 
 				case UPDATE:
-					update(options);
+					cli.update(options);
 					break;
 
 				case DELETE:
-					delete(options);
+					cli.delete(options);
 					break;
 
 				case DELETECOMPANY:
-					deleteCompany(options);
+					cli.deleteCompany(options);
 					break;
 
 				case SHOW:
-					show(options);
+					cli.show(options);
 					break;
 
 				case HELP:
@@ -192,7 +199,7 @@ public final class CLI {
 		}
 	}
 
-	private static void listCompanies(CommandLine options) {
+	private void listCompanies(CommandLine options) {
 		try {
 			// Get if a page is wanted
 			if (options != null) {
@@ -229,7 +236,7 @@ public final class CLI {
 		}
 	}
 
-	private static void listComputers(CommandLine options) {
+	private void listComputers(CommandLine options) {
 		try {
 			// Get if a page is wanted
 			if (options != null) {
@@ -264,7 +271,7 @@ public final class CLI {
 		}
 	}
 
-	private static void show(CommandLine options) {
+	private void show(CommandLine options) {
 		try {
 			// Get the mandatory id
 			if (options == null || !options.hasOption(CONSOLE_ARG_ID)) {
@@ -287,7 +294,7 @@ public final class CLI {
 		}
 	}
 
-	private static void create(CommandLine options) {
+	private void create(CommandLine options) {
 		try {
 			// Get the mandatory name asked
 			if (options == null || !options.hasOption(CONSOLE_ARG_NAME)) {
@@ -327,7 +334,7 @@ public final class CLI {
 		}
 	}
 
-	private static void update(CommandLine options) {
+	private void update(CommandLine options) {
 		try {
 			// Get the mandatory id
 			if (options == null || !options.hasOption(CONSOLE_ARG_ID)) {
@@ -374,7 +381,7 @@ public final class CLI {
 		}
 	}
 
-	private static void delete(CommandLine options) {
+	private void delete(CommandLine options) {
 		try {
 			// Get the mandatory id
 			if (options == null || !options.hasOption(CONSOLE_ARG_ID)) {
@@ -399,7 +406,7 @@ public final class CLI {
 		}
 	}
 
-	private static void deleteCompany(CommandLine options) {
+	private void deleteCompany(CommandLine options) {
 		try {
 			// Get the mandatory id
 			if (options == null || !options.hasOption(CONSOLE_ARG_ID)) {

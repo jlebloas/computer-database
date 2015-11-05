@@ -5,12 +5,30 @@
 		<!-- encoders are assigned the type ch.qos.logback.classic.encoder.PatternLayoutEncoder 
 			by default -->
 		<encoder>
-			<pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n
-			</pattern>
+			<pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
 		</encoder>
 	</appender>
 
-	<root level="debug">
+	<logger name="fr.jonathanlebloas.computerdatabase">
+		<level value="DEBUG" />
+	</logger>
+	<logger name="org.springframework">
+		<level value="OFF" />
+	</logger>
+	<logger name="org.springframework.jdbc">
+		<level value="OFF" />
+	</logger>
+	<logger name="org.springframework.transaction">
+		<level value="OFF" />
+	</logger>
+	<logger name="org.springframework.beans">
+		<level value="OFF" />
+	</logger>
+	<logger name="com.jolbox.bonecp">
+		<level value="OFF" />
+	</logger>
+
+	<root level="DEBUG">
 		<appender-ref ref="STDOUT" />
 	</root>
 </configuration>

@@ -11,26 +11,28 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.sql.DataSource;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.datasource.DataSourceUtils;
+import org.springframework.stereotype.Repository;
 
 import fr.jonathanlebloas.computerdatabase.model.Company;
 import fr.jonathanlebloas.computerdatabase.model.Computer;
 import fr.jonathanlebloas.computerdatabase.model.Page;
-import fr.jonathanlebloas.computerdatabase.persistence.DAO;
-import fr.jonathanlebloas.computerdatabase.persistence.DBConnection;
+import fr.jonathanlebloas.computerdatabase.persistence.ComputerDAO;
 import fr.jonathanlebloas.computerdatabase.persistence.RowMapper;
 import fr.jonathanlebloas.computerdatabase.persistence.exceptions.PersistenceException;
 
 /**
  * DAO used for computers Singleton
  */
-public enum ComputerDAO implements DAO<Computer> {
-	INSTANCE;
+@Repository
+public class ComputerDAOImpl implements ComputerDAO {
 
-	private ComputerRowMapper rowMapper = new ComputerRowMapper();
-
-	private static final Logger LOGGER = LoggerFactory.getLogger(ComputerDAO.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(ComputerDAOImpl.class);
 
 	/**
 	 * Map a sort field to database column
@@ -45,40 +47,45 @@ public enum ComputerDAO implements DAO<Computer> {
 		COLUMN_ORDER.put("companyName", "m.name");
 	}
 
+	private ComputerRowMapper rowMapper = new ComputerRowMapper();
+
+	@Autowired
+	private DataSource ds;
+
 	@Override
 	public Computer find(long id) throws PersistenceException {
 		LOGGER.trace("Finding computer with id: {}", id);
-		Connection connect = DBConnection.INSTANCE.getConnection();
-
-		Computer computer = null;
 
 		try {
+			Connection connect = DataSourceUtils.getConnection(ds);
+
 			PreparedStatement prepared = connect.prepareStatement(
 					"SELECT c.id, c.name, c.introduced, c.discontinued, c.company_id, m.name FROM computer c LEFT JOIN company m ON c.company_id=m.id WHERE c.id=?");
 			prepared.setLong(1, id);
 
 			ResultSet rs = prepared.executeQuery();
 
+			Computer computer = null;
+
 			// If there's a result
 			if (rs.first()) {
 				computer = rowMapper.mapRow(rs);
 			}
+			return computer;
 
 		} catch (SQLException se) {
 			LOGGER.error("Error while finding the computer with id : " + id, se);
 			throw new PersistenceException("SQL exception during find by id : " + id, se);
-
 		}
-
-		return computer;
 	}
 
 	@Override
 	public void create(Computer computer) throws PersistenceException {
 		LOGGER.trace("Creating computer : {}", computer);
-		Connection connect = DBConnection.INSTANCE.getConnection();
 
 		try {
+			Connection connect = DataSourceUtils.getConnection(ds);
+
 			PreparedStatement prepared = connect.prepareStatement(
 					"INSERT INTO computer(name, introduced, discontinued, company_id) VALUES (?, ?, ?, ?)",
 					Statement.RETURN_GENERATED_KEYS);
@@ -122,9 +129,10 @@ public enum ComputerDAO implements DAO<Computer> {
 	@Override
 	public Computer update(Computer obj) throws PersistenceException {
 		LOGGER.trace("Updating computer : {}", obj);
-		Connection connect = DBConnection.INSTANCE.getConnection();
 
 		try {
+			Connection connect = DataSourceUtils.getConnection(ds);
+
 			PreparedStatement prepared = connect.prepareStatement(
 					"UPDATE computer c SET c.name = ?, c.introduced = ?, c.discontinued = ?, c.company_id = ? WHERE c.id = ?");
 			prepared.setString(1, obj.getName());
@@ -165,9 +173,10 @@ public enum ComputerDAO implements DAO<Computer> {
 	@Override
 	public void delete(Computer obj) throws PersistenceException {
 		LOGGER.trace("Deleting computer : {}", obj);
-		Connection connect = DBConnection.INSTANCE.getConnection();
 
 		try {
+			Connection connect = DataSourceUtils.getConnection(ds);
+
 			PreparedStatement prepared = connect.prepareStatement("DELETE FROM computer WHERE id=?");
 			prepared.setLong(1, obj.getId());
 
@@ -177,14 +186,15 @@ public enum ComputerDAO implements DAO<Computer> {
 			LOGGER.error("Error while deleting the computer : " + obj, se);
 			throw new PersistenceException("SQL exception during deletion of a computer : " + obj.toString(), se);
 		}
-
 	}
 
+	@Override
 	public void deleteWithCompanyId(long id) throws PersistenceException {
-		LOGGER.trace("Deleting computer with company id : {}", id);
-		Connection connect = DBConnection.INSTANCE.getConnection();
+		LOGGER.trace("Deleting computers with company id : {}", id);
 
 		try {
+			Connection connect = DataSourceUtils.getConnection(ds);
+
 			PreparedStatement prepared = connect.prepareStatement("DELETE FROM computer WHERE company_id=?");
 			prepared.setLong(1, id);
 
@@ -194,16 +204,14 @@ public enum ComputerDAO implements DAO<Computer> {
 			LOGGER.error("Error while deleting the computers with company id : " + id, se);
 			throw new PersistenceException("SQL exception during deletion of a computers with company id : " + id, se);
 		}
-
 	}
 
 	@Override
 	public int count(String search) throws PersistenceException {
 		LOGGER.trace("Counting computers");
-		Connection connect = DBConnection.INSTANCE.getConnection();
 
-		int tmp = 0;
 		try {
+			Connection connect = DataSourceUtils.getConnection(ds);
 
 			PreparedStatement prepared = connect.prepareStatement(
 					"SELECT count(*) FROM computer c LEFT JOIN company m ON c.company_id=m.id WHERE c.name LIKE ? OR m.name LIKE ?");
@@ -213,41 +221,45 @@ public enum ComputerDAO implements DAO<Computer> {
 
 			ResultSet result = prepared.executeQuery();
 
+			int tmp = 0;
+
 			if (result.first()) {
 				tmp = result.getInt(1);
 			}
+
+			return tmp;
 
 		} catch (SQLException se) {
 			LOGGER.error("Error while counting the computers", se);
 			throw new PersistenceException("SQL exception during count of computers ", se);
 		}
-
-		return tmp;
 	}
 
 	@Override
 	public List<Computer> list() throws PersistenceException {
 		LOGGER.trace("Listing computers");
-		Connection connect = DBConnection.INSTANCE.getConnection();
 
-		List<Computer> list = new ArrayList<Computer>();
 		try {
+			Connection connect = DataSourceUtils.getConnection(ds);
+
 			PreparedStatement prepared = connect.prepareStatement(
 					"SELECT c.id, c.name, c.introduced, c.discontinued, c.company_id, m.name FROM computer c LEFT JOIN company m ON c.company_id=m.id");
 
 			ResultSet rs = prepared.executeQuery();
+
+			List<Computer> list = new ArrayList<Computer>();
 
 			while (rs.next()) {
 				Computer computer = rowMapper.mapRow(rs);
 
 				list.add(computer);
 			}
+			return list;
+
 		} catch (SQLException se) {
 			LOGGER.error("Error while listing the computers", se);
 			throw new PersistenceException("SQL exception during listing of computers ", se);
 		}
-
-		return list;
 	}
 
 	/**
@@ -260,9 +272,10 @@ public enum ComputerDAO implements DAO<Computer> {
 	@Override
 	public void populateItems(Page<Computer> page) throws PersistenceException {
 		LOGGER.trace("Populating computers page : {}", page);
-		Connection connect = DBConnection.INSTANCE.getConnection();
 
 		try {
+			Connection connect = DataSourceUtils.getConnection(ds);
+
 			PreparedStatement prepared = connect.prepareStatement(
 					"SELECT c.id, c.name, c.introduced, c.discontinued, c.company_id, m.name FROM computer c LEFT JOIN company m ON c.company_id=m.id WHERE c.name LIKE ? OR m.name LIKE ? ORDER BY "
 							+ COLUMN_ORDER.get(page.getSort().getField()) + " " + page.getSort().getDirection().name()
@@ -297,15 +310,17 @@ public enum ComputerDAO implements DAO<Computer> {
 	@Override
 	public List<Computer> findByName(String name) throws PersistenceException {
 		LOGGER.trace("Searching computers with name : {}", name);
-		Connection connect = DBConnection.INSTANCE.getConnection();
 
-		List<Computer> list = new ArrayList<Computer>();
 		try {
+			Connection connect = DataSourceUtils.getConnection(ds);
+
 			PreparedStatement prepared = connect.prepareStatement(
 					"SELECT c.id, c.name, c.introduced, c.discontinued, c.company_id, m.name FROM computer c LEFT JOIN company m ON c.company_id=m.id WHERE c.name LIKE ?");
 			prepared.setString(1, "%" + name + "%");
 
 			ResultSet rs = prepared.executeQuery();
+
+			List<Computer> list = new ArrayList<Computer>();
 
 			while (rs.next()) {
 				Computer computer = rowMapper.mapRow(rs);
@@ -313,12 +328,12 @@ public enum ComputerDAO implements DAO<Computer> {
 				list.add(computer);
 			}
 
+			return list;
+
 		} catch (SQLException se) {
 			LOGGER.error("Error while searching computers with name : " + name, se);
 			throw new PersistenceException("SQL exception during Computer findByName : " + name, se);
 		}
-
-		return list;
 	}
 
 	private class ComputerRowMapper implements RowMapper<Computer> {
@@ -342,6 +357,5 @@ public enum ComputerDAO implements DAO<Computer> {
 
 			return computer;
 		}
-
 	}
 }

@@ -4,12 +4,14 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import fr.jonathanlebloas.computerdatabase.model.Computer;
 import fr.jonathanlebloas.computerdatabase.model.Page;
-import fr.jonathanlebloas.computerdatabase.persistence.DBConnection;
+import fr.jonathanlebloas.computerdatabase.persistence.ComputerDAO;
 import fr.jonathanlebloas.computerdatabase.persistence.exceptions.PersistenceException;
-import fr.jonathanlebloas.computerdatabase.persistence.impl.ComputerDAO;
 import fr.jonathanlebloas.computerdatabase.service.ComputerService;
 import fr.jonathanlebloas.computerdatabase.service.exceptions.ComputerNotFoundException;
 import fr.jonathanlebloas.computerdatabase.service.exceptions.EmptyNameException;
@@ -19,12 +21,14 @@ import fr.jonathanlebloas.computerdatabase.utils.StringUtils;
 /**
  * Service used to manipulate computers Singleton
  */
-public enum ComputerServiceImpl implements ComputerService {
-	INSTANCE;
-
-	private ComputerDAO computerDAO = ComputerDAO.INSTANCE;
+@Transactional
+@Service
+public class ComputerServiceImpl implements ComputerService {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(ComputerServiceImpl.class);
+
+	@Autowired
+	private ComputerDAO computerDAO;
 
 	@Override
 	public List<Computer> listComputers() throws ServiceException {
@@ -34,9 +38,6 @@ public enum ComputerServiceImpl implements ComputerService {
 		} catch (PersistenceException e) {
 			LOGGER.error("An error occurred during listing of computer", e);
 			throw new ServiceException();
-
-		} finally {
-			DBConnection.INSTANCE.closeConnection();
 		}
 	}
 
@@ -53,9 +54,6 @@ public enum ComputerServiceImpl implements ComputerService {
 		} catch (PersistenceException e) {
 			LOGGER.error("An error occurred during getting details of computer : " + c, e);
 			throw new ServiceException();
-
-		} finally {
-			DBConnection.INSTANCE.closeConnection();
 		}
 	}
 
@@ -72,9 +70,6 @@ public enum ComputerServiceImpl implements ComputerService {
 		} catch (PersistenceException e) {
 			LOGGER.error("An error occurred finding the computer with id : " + id, e);
 			throw new ServiceException();
-
-		} finally {
-			DBConnection.INSTANCE.closeConnection();
 		}
 	}
 
@@ -90,9 +85,6 @@ public enum ComputerServiceImpl implements ComputerService {
 		} catch (PersistenceException e) {
 			LOGGER.error("An error occurred finding the computers having '" + s + "' in their name", e);
 			throw new ServiceException();
-
-		} finally {
-			DBConnection.INSTANCE.closeConnection();
 		}
 	}
 
@@ -100,17 +92,11 @@ public enum ComputerServiceImpl implements ComputerService {
 	public Computer create(Computer c) {
 		LOGGER.debug("Create computer : {}", c);
 		try {
-			// The validation is made by the controlers
 			computerDAO.create(c);
-
 			return c;
-
 		} catch (PersistenceException e) {
 			LOGGER.error("An error occurred during creation of the computer : " + c, e);
 			throw new ServiceException();
-
-		} finally {
-			DBConnection.INSTANCE.closeConnection();
 		}
 	}
 
@@ -133,9 +119,6 @@ public enum ComputerServiceImpl implements ComputerService {
 		} catch (PersistenceException e) {
 			LOGGER.error("An error occurred during update of the computer : " + c, e);
 			throw new ServiceException();
-
-		} finally {
-			DBConnection.INSTANCE.closeConnection();
 		}
 	}
 
@@ -157,9 +140,6 @@ public enum ComputerServiceImpl implements ComputerService {
 		} catch (PersistenceException e) {
 			LOGGER.error("An error occurred during deletion of the computer : " + c, e);
 			throw new ServiceException();
-
-		} finally {
-			DBConnection.INSTANCE.closeConnection();
 		}
 	}
 
@@ -189,10 +169,6 @@ public enum ComputerServiceImpl implements ComputerService {
 		} catch (PersistenceException e) {
 			LOGGER.error("An error occurred during while populating the computers page : " + page, e);
 			throw new ServiceException();
-
-		} finally {
-			DBConnection.INSTANCE.closeConnection();
 		}
 	}
-
 }

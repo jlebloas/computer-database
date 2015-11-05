@@ -12,6 +12,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.context.support.SpringBeanAutowiringSupport;
 
 import fr.jonathanlebloas.computerdatabase.dto.ComputerDTO;
 import fr.jonathanlebloas.computerdatabase.mapper.impl.ComputerMapper;
@@ -20,11 +22,9 @@ import fr.jonathanlebloas.computerdatabase.model.Page;
 import fr.jonathanlebloas.computerdatabase.sort.ComputerSort;
 import fr.jonathanlebloas.computerdatabase.sort.Sort.Direction;
 import fr.jonathanlebloas.computerdatabase.service.ComputerService;
-import fr.jonathanlebloas.computerdatabase.service.impl.ComputerServiceImpl;
 
 @WebServlet("/dashboard")
 public class DashboardServlet extends HttpServlet {
-
 
 	private static final String PATH_DASHBOARD_VIEW = "/WEB-INF/views/dashboard.jsp";
 
@@ -42,10 +42,18 @@ public class DashboardServlet extends HttpServlet {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(DashboardServlet.class);
 
-	private static final ComputerMapper COMPUTERMAPPER = ComputerMapper.INSTANCE;
+	@Autowired
+	private ComputerService computerService;
 
-	private static final ComputerService COMPUTERSERVICE = ComputerServiceImpl.INSTANCE;
+	@Autowired
+	private ComputerMapper computerMapper;
 
+
+	@Override
+	public void init() throws ServletException {
+		super.init();
+		SpringBeanAutowiringSupport.processInjectionBasedOnCurrentContext(this);
+	}
 
 	@Override
 	public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
@@ -58,8 +66,8 @@ public class DashboardServlet extends HttpServlet {
 		LOGGER.info("Dashboard : GET index={} size={} search={}", pageIndex, size, search);
 
 		Page<Computer> page = new Page<>(pageIndex, size, search, ComputerSort.getSort(order, direction));
-		COMPUTERSERVICE.populatePage(page);
-		List<ComputerDTO> computers = COMPUTERMAPPER.toDTO(page.getItems());
+		computerService.populatePage(page);
+		List<ComputerDTO> computers = computerMapper.toDTO(page.getItems());
 
 		List<OrderColumn> columns = generateOrderColumns(page);
 		request.setAttribute(ATTR_COMPUTERS, computers);

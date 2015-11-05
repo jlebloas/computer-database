@@ -10,25 +10,27 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.sql.DataSource;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.datasource.DataSourceUtils;
+import org.springframework.stereotype.Repository;
 
 import fr.jonathanlebloas.computerdatabase.model.Company;
 import fr.jonathanlebloas.computerdatabase.model.Page;
-import fr.jonathanlebloas.computerdatabase.persistence.DAO;
-import fr.jonathanlebloas.computerdatabase.persistence.DBConnection;
+import fr.jonathanlebloas.computerdatabase.persistence.CompanyDAO;
 import fr.jonathanlebloas.computerdatabase.persistence.RowMapper;
 import fr.jonathanlebloas.computerdatabase.persistence.exceptions.PersistenceException;
 
 /**
  * DAO used for companies Singleton
  */
-public enum CompanyDAO implements DAO<Company> {
-	INSTANCE;
+@Repository
+public class CompanyDAOImpl implements CompanyDAO {
 
-	private CompanyRowMapper rowMapper = new CompanyRowMapper();
-
-	private static final Logger LOGGER = LoggerFactory.getLogger(CompanyDAO.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(CompanyDAOImpl.class);
 
 	public static final Map<String, String> COLUMN_ORDER = new HashMap<>();
 
@@ -37,38 +39,45 @@ public enum CompanyDAO implements DAO<Company> {
 		COLUMN_ORDER.put("name", "c.name");
 	}
 
+	private CompanyRowMapper rowMapper = new CompanyRowMapper();
+
+	@Autowired
+	private DataSource ds;
+
 	@Override
 	public Company find(long id) throws PersistenceException {
 		LOGGER.trace("Finding company with id: {}", id);
-		Connection connect = DBConnection.INSTANCE.getConnection();
 
-		Company company = null;
 		try {
+			Connection connect = DataSourceUtils.getConnection(ds);
+
 			PreparedStatement prepared = connect.prepareStatement("SELECT c.id, c.name FROM company c WHERE id=?");
 
 			prepared.setLong(1, id);
 
 			ResultSet rs = prepared.executeQuery();
 
+			Company company = null;
+
 			if (rs.first()) {
 				company = rowMapper.mapRow(rs);
 			}
 
+			return company;
+
 		} catch (SQLException se) {
 			LOGGER.error("Error while finding the company with id : " + id, se);
 			throw new PersistenceException("SQL exception during find by id : " + id, se);
-
 		}
-
-		return company;
 	}
 
 	@Override
 	public void create(Company company) throws PersistenceException {
 		LOGGER.trace("Creating company : {}", company);
-		Connection connect = DBConnection.INSTANCE.getConnection();
 
 		try {
+			Connection connect = DataSourceUtils.getConnection(ds);
+
 			PreparedStatement prepared = connect.prepareStatement("INSERT INTO company(name) VALUES (?)",
 					Statement.RETURN_GENERATED_KEYS);
 			prepared.setString(1, company.getName());
@@ -84,37 +93,36 @@ public enum CompanyDAO implements DAO<Company> {
 		} catch (SQLException se) {
 			LOGGER.error("Error while creating the company : " + company, se);
 			throw new PersistenceException("SQL exception during creation of company : " + company.toString(), se);
-
 		}
 	}
 
 	@Override
 	public Company update(Company obj) throws PersistenceException {
 		LOGGER.trace("Updating company : {}", obj);
-		Connection connect = DBConnection.INSTANCE.getConnection();
 
 		try {
+			Connection connect = DataSourceUtils.getConnection(ds);
+
 			PreparedStatement prepared = connect.prepareStatement("UPDATE company c SET c.name = ? WHERE c.id = ?");
 			prepared.setString(1, obj.getName());
 			prepared.setLong(2, obj.getId());
 
 			prepared.executeUpdate();
 
+			return obj;
 		} catch (SQLException se) {
 			LOGGER.error("Error while updating the company : " + obj, se);
 			throw new PersistenceException("SQL exception during update of company : " + obj.toString(), se);
-
 		}
-
-		return obj;
 	}
 
 	@Override
 	public void delete(Company obj) throws PersistenceException {
 		LOGGER.trace("Deleting company : {}", obj);
-		Connection connect = DBConnection.INSTANCE.getConnection();
 
 		try {
+			Connection connect = DataSourceUtils.getConnection(ds);
+
 			PreparedStatement prepared = connect.prepareStatement("DELETE FROM company WHERE id=?");
 			prepared.setLong(1, obj.getId());
 
@@ -123,59 +131,60 @@ public enum CompanyDAO implements DAO<Company> {
 		} catch (SQLException se) {
 			LOGGER.error("Error while deleting the company : " + obj, se);
 			throw new PersistenceException("SQL exception during deletion of company : " + obj.toString(), se);
-
 		}
 	}
 
 	@Override
 	public int count(String search) throws PersistenceException {
 		LOGGER.trace("Counting companies");
-		Connection connect = DBConnection.INSTANCE.getConnection();
 
-		int tmp = 0;
 		try {
+			Connection connect = DataSourceUtils.getConnection(ds);
+
 			PreparedStatement prepared = connect.prepareStatement("SELECT count(*) FROM company c WHERE c.name LIKE ?");
 
 			prepared.setString(1, "%" + search + "%");
 
 			ResultSet result = prepared.executeQuery();
 
+			int tmp = 0;
+
 			if (result.first()) {
 				tmp = result.getInt(1);
 			}
 
+			return tmp;
+
 		} catch (SQLException se) {
 			LOGGER.error("Error while counting the companies", se);
 			throw new PersistenceException("SQL exception during count of companies", se);
-
 		}
-
-		return tmp;
 	}
 
 	@Override
 	public List<Company> list() throws PersistenceException {
 		LOGGER.trace("Listing companies");
-		Connection connect = DBConnection.INSTANCE.getConnection();
 
-		List<Company> list = new ArrayList<Company>();
 		try {
+			Connection connect = DataSourceUtils.getConnection(ds);
+
 			PreparedStatement prepared = connect.prepareStatement("SELECT c.id, c.name FROM company c");
 
 			ResultSet rs = prepared.executeQuery();
+
+			List<Company> list = new ArrayList<Company>();
 
 			while (rs.next()) {
 				Company company = rowMapper.mapRow(rs);
 				list.add(company);
 			}
 
+			return list;
+
 		} catch (SQLException se) {
 			LOGGER.error("Error while listing the companies", se);
 			throw new PersistenceException("SQL exception during listing of companies", se);
-
 		}
-
-		return list;
 	}
 
 	/**
@@ -188,9 +197,10 @@ public enum CompanyDAO implements DAO<Company> {
 	@Override
 	public void populateItems(Page<Company> page) throws PersistenceException {
 		LOGGER.trace("Populating companies page : {}", page);
-		Connection connect = DBConnection.INSTANCE.getConnection();
 
 		try {
+			Connection connect = DataSourceUtils.getConnection(ds);
+
 			PreparedStatement prepared = connect
 					.prepareStatement("SELECT c.id, c.name FROM company c WHERE c.name LIKE ? ORDER BY "
 							+ COLUMN_ORDER.get(page.getSort().getField()) + " " + page.getSort().getDirection().name()
@@ -218,22 +228,23 @@ public enum CompanyDAO implements DAO<Company> {
 		} catch (SQLException se) {
 			LOGGER.error("Error while populating the companies page : " + page, se);
 			throw new PersistenceException("SQL exception during sublisting of companies", se);
-
 		}
 	}
 
 	@Override
 	public List<Company> findByName(String name) throws PersistenceException {
 		LOGGER.trace("Searching companies with name : {}", name);
-		Connection connect = DBConnection.INSTANCE.getConnection();
 
-		List<Company> list = new ArrayList<Company>();
 		try {
+			Connection connect = DataSourceUtils.getConnection(ds);
+
 			PreparedStatement prepared = connect
 					.prepareStatement("SELECT c.id, c.name FROM company c WHERE c.name LIKE ?");
 			prepared.setString(1, "%" + name + "%");
 
 			ResultSet rs = prepared.executeQuery();
+
+			List<Company> list = new ArrayList<Company>();
 
 			while (rs.next()) {
 				Company company = rowMapper.mapRow(rs);
@@ -241,13 +252,12 @@ public enum CompanyDAO implements DAO<Company> {
 				list.add(company);
 			}
 
+			return list;
+
 		} catch (SQLException se) {
 			LOGGER.error("Error while searching companies with name : " + name, se);
 			throw new PersistenceException("SQL exception during a Company findByName : " + name, se);
-
 		}
-
-		return list;
 	}
 
 	private class CompanyRowMapper implements RowMapper<Company> {

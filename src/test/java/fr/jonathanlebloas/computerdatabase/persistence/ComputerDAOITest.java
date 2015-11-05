@@ -12,22 +12,30 @@ import org.hamcrest.core.IsEqual;
 import org.hamcrest.core.IsNull;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.transaction.annotation.Transactional;
 
 import fr.jonathanlebloas.computerdatabase.model.Company;
 import fr.jonathanlebloas.computerdatabase.model.Computer;
 import fr.jonathanlebloas.computerdatabase.model.Page;
+import fr.jonathanlebloas.computerdatabase.persistence.exceptions.PersistenceException;
 import fr.jonathanlebloas.computerdatabase.sort.ComputerSort;
 import fr.jonathanlebloas.computerdatabase.sort.Sort.Direction;
-import fr.jonathanlebloas.computerdatabase.persistence.exceptions.PersistenceException;
-import fr.jonathanlebloas.computerdatabase.persistence.impl.ComputerDAO;
 
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(locations = "classpath:test-applicationContext.xml")
+@Transactional
 public class ComputerDAOITest {
 
-	private static ComputerDAO computerDAO = ComputerDAO.INSTANCE;
+	private static Runtime runtime = Runtime.getRuntime();
+
+	@Autowired
+	private ComputerDAO computerDAO;
 
 	private DateTimeFormatter df = DateTimeFormatter.ISO_LOCAL_DATE;
-
-	private static Runtime runtime = Runtime.getRuntime();
 
 	Company company1;
 	Company company2;

@@ -6,16 +6,20 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import fr.jonathanlebloas.computerdatabase.dto.CompanyDTO;
 import fr.jonathanlebloas.computerdatabase.dto.ComputerDTO;
 import fr.jonathanlebloas.computerdatabase.mapper.Mapper;
 import fr.jonathanlebloas.computerdatabase.model.Company;
 import fr.jonathanlebloas.computerdatabase.model.Computer;
 
-public enum ComputerMapper implements Mapper<Computer, ComputerDTO> {
-	INSTANCE;
+@Component
+public class ComputerMapper implements Mapper<Computer, ComputerDTO> {
 
-	CompanyMapper companyMapper = CompanyMapper.INSTANCE;
+	@Autowired
+	private CompanyMapper companyMapper;
 
 	private DateTimeFormatter df = DateTimeFormatter.ISO_LOCAL_DATE;
 

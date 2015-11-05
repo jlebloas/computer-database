@@ -4,12 +4,14 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.springframework.stereotype.Component;
+
 import fr.jonathanlebloas.computerdatabase.dto.CompanyDTO;
 import fr.jonathanlebloas.computerdatabase.mapper.Mapper;
 import fr.jonathanlebloas.computerdatabase.model.Company;
 
-public enum CompanyMapper implements Mapper<Company, CompanyDTO> {
-	INSTANCE;
+@Component
+public class CompanyMapper implements Mapper<Company, CompanyDTO> {
 
 	private CompanyMapper() {
 	}

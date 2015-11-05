@@ -12,10 +12,11 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.context.support.SpringBeanAutowiringSupport;
 
 import fr.jonathanlebloas.computerdatabase.service.ComputerService;
 import fr.jonathanlebloas.computerdatabase.service.exceptions.ComputerNotFoundException;
-import fr.jonathanlebloas.computerdatabase.service.impl.ComputerServiceImpl;
 import fr.jonathanlebloas.computerdatabase.utils.ServletUtil;
 
 
@@ -28,14 +29,23 @@ public class DeleteComputerServlet extends HttpServlet {
 
 	private static final String PATH_REDIRECT_VIEW = "../dashboard";
 
-	private static final ComputerService COMPUTER_SERVICE = ComputerServiceImpl.INSTANCE;
-
 	public static final String PARAM_DELETE_ID = "selection";
 
+	@Autowired
+	private ComputerService computerService;
+
+	@Autowired
+	private ServletUtil servletUtil;
+
+	@Override
+	public void init() throws ServletException {
+		super.init();
+		SpringBeanAutowiringSupport.processInjectionBasedOnCurrentContext(this);
+	}
 
 	@Override
 	public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-		String selection = ServletUtil.getStringFromRequest(request, PARAM_DELETE_ID);
+		String selection = servletUtil.getStringFromRequest(request, PARAM_DELETE_ID);
 
 		LOGGER.info("Delete computers = {}", selection);
 
@@ -44,7 +54,7 @@ public class DeleteComputerServlet extends HttpServlet {
 			Stream<Long> stream = Arrays.stream(selection.split(",")).map(Long::parseLong);
 
 			// Find and delete the computers (and log them)
-			stream.map(COMPUTER_SERVICE::find).map(COMPUTER_SERVICE::delete)
+			stream.map(computerService::find).map(computerService::delete)
 					.forEach((r) -> LOGGER.info("Computer deleted: {}", r));
 
 			response.sendRedirect(PATH_REDIRECT_VIEW);
