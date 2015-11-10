@@ -71,16 +71,16 @@ public class ComputerDAOITest {
 
 		Computer founded = computerDAO.find(5);
 		assertThat(founded, IsEqual.equalTo(c));
+	}
 
-		// Check if find return null if there's no computer
-		Computer expectedNull = computerDAO.find(-1216461261261216555L);
-		assertThat(expectedNull, IsNull.nullValue());
-		expectedNull = computerDAO.find(Long.MAX_VALUE);
-		assertThat(expectedNull, IsNull.nullValue());
-		expectedNull = computerDAO.find(Long.MIN_VALUE);
-		assertThat(expectedNull, IsNull.nullValue());
-		expectedNull = computerDAO.find(0);
-		assertThat(expectedNull, IsNull.nullValue());
+	@Test(expected = PersistenceException.class)
+	public void testFindEmpty() throws PersistenceException {
+		computerDAO.find(-1216461261261216555L);
+	}
+
+	@Test(expected = PersistenceException.class)
+	public void testFindEmpty0() throws PersistenceException {
+		computerDAO.find(0);
 	}
 
 	@Test
@@ -99,7 +99,6 @@ public class ComputerDAOITest {
 		computerDAO.create(c3);
 		computerDAO.create(c4);
 
-		assertThat(computerDAO.find(0), IsNull.nullValue());
 		assertThat(computerDAO.find(c1.getId()), IsEqual.equalTo(c1));
 		assertThat(computerDAO.find(c2.getId()), IsEqual.equalTo(c2));
 		assertThat(computerDAO.find(c3.getId()), IsEqual.equalTo(c3));
@@ -150,7 +149,7 @@ public class ComputerDAOITest {
 		computerDAO.update(c);
 	}
 
-	@Test
+	@Test(expected = PersistenceException.class)
 	public void testDelete() throws PersistenceException {
 		int nb = computerDAO.count("");
 
@@ -170,10 +169,6 @@ public class ComputerDAOITest {
 
 		// Check the numbers of computers now
 		assertThat(computerDAO.count(""), IsEqual.equalTo(nb - 4));
-		assertThat(computerDAO.find(2), IsNull.nullValue());
-		assertThat(computerDAO.find(3), IsNull.nullValue());
-		assertThat(computerDAO.find(4), IsNull.nullValue());
-		assertThat(computerDAO.find(5), IsNull.nullValue());
 	}
 
 	@Test

@@ -1,11 +1,7 @@
 package fr.jonathanlebloas.computerdatabase.persistence.impl;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,13 +11,18 @@ import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.datasource.DataSourceUtils;
+import org.springframework.dao.DataAccessException;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.core.namedparam.SqlParameterSource;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
 import fr.jonathanlebloas.computerdatabase.model.Company;
 import fr.jonathanlebloas.computerdatabase.model.Page;
 import fr.jonathanlebloas.computerdatabase.persistence.CompanyDAO;
-import fr.jonathanlebloas.computerdatabase.persistence.RowMapper;
 import fr.jonathanlebloas.computerdatabase.persistence.exceptions.PersistenceException;
 
 /**
@@ -41,31 +42,25 @@ public class CompanyDAOImpl implements CompanyDAO {
 
 	private CompanyRowMapper rowMapper = new CompanyRowMapper();
 
+	private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
+
 	@Autowired
-	private DataSource ds;
+	public void setDataSource(DataSource dataSource) {
+		this.namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(dataSource);
+	}
 
 	@Override
 	public Company find(long id) throws PersistenceException {
 		LOGGER.trace("Finding company with id: {}", id);
 
 		try {
-			Connection connect = DataSourceUtils.getConnection(ds);
+			final String sql = "SELECT c.id, c.name FROM company c WHERE id=:id";
 
-			PreparedStatement prepared = connect.prepareStatement("SELECT c.id, c.name FROM company c WHERE id=?");
+			SqlParameterSource namedParameters = new MapSqlParameterSource("id", id);
 
-			prepared.setLong(1, id);
+			return this.namedParameterJdbcTemplate.queryForObject(sql, namedParameters, rowMapper);
 
-			ResultSet rs = prepared.executeQuery();
-
-			Company company = null;
-
-			if (rs.first()) {
-				company = rowMapper.mapRow(rs);
-			}
-
-			return company;
-
-		} catch (SQLException se) {
+		} catch (DataAccessException se) {
 			LOGGER.error("Error while finding the company with id : " + id, se);
 			throw new PersistenceException("SQL exception during find by id : " + id, se);
 		}
@@ -76,61 +71,53 @@ public class CompanyDAOImpl implements CompanyDAO {
 		LOGGER.trace("Creating company : {}", company);
 
 		try {
-			Connection connect = DataSourceUtils.getConnection(ds);
+			final String sql = "INSERT INTO company (name) VALUES (:name)";
 
-			PreparedStatement prepared = connect.prepareStatement("INSERT INTO company(name) VALUES (?)",
-					Statement.RETURN_GENERATED_KEYS);
-			prepared.setString(1, company.getName());
-			prepared.executeUpdate();
+			SqlParameterSource namedParameters = new MapSqlParameterSource("name", company.getName());
 
-			ResultSet rs = prepared.getGeneratedKeys();
-			if (rs.first()) {
-				company.setId(rs.getLong(1));
-			} else {
-				throw new SQLException("The company was not inserted : " + company.toString());
-			}
+			KeyHolder keyHolder = new GeneratedKeyHolder();
+			this.namedParameterJdbcTemplate.update(sql, namedParameters, keyHolder);
+			company.setId(keyHolder.getKey().longValue());
 
-		} catch (SQLException se) {
+		} catch (DataAccessException se) {
 			LOGGER.error("Error while creating the company : " + company, se);
 			throw new PersistenceException("SQL exception during creation of company : " + company.toString(), se);
 		}
 	}
 
 	@Override
-	public Company update(Company obj) throws PersistenceException {
-		LOGGER.trace("Updating company : {}", obj);
+	public void update(Company company) throws PersistenceException {
+		LOGGER.trace("Updating company : {}", company);
 
 		try {
-			Connection connect = DataSourceUtils.getConnection(ds);
+			final String sql = "UPDATE company c SET c.name = :name WHERE c.id = :id";
 
-			PreparedStatement prepared = connect.prepareStatement("UPDATE company c SET c.name = ? WHERE c.id = ?");
-			prepared.setString(1, obj.getName());
-			prepared.setLong(2, obj.getId());
+			MapSqlParameterSource namedParameters = new MapSqlParameterSource();
+			namedParameters.addValue("id", company.getId());
+			namedParameters.addValue("name", company.getName());
 
-			prepared.executeUpdate();
+			this.namedParameterJdbcTemplate.update(sql, namedParameters);
 
-			return obj;
-		} catch (SQLException se) {
-			LOGGER.error("Error while updating the company : " + obj, se);
-			throw new PersistenceException("SQL exception during update of company : " + obj.toString(), se);
+		} catch (DataAccessException se) {
+			LOGGER.error("Error while updating the company : " + company, se);
+			throw new PersistenceException("SQL exception during update of company : " + company.toString(), se);
 		}
 	}
 
 	@Override
-	public void delete(Company obj) throws PersistenceException {
-		LOGGER.trace("Deleting company : {}", obj);
+	public void delete(Company company) throws PersistenceException {
+		LOGGER.trace("Deleting company : {}", company);
 
 		try {
-			Connection connect = DataSourceUtils.getConnection(ds);
+			final String sql = "DELETE FROM company WHERE id = :id";
 
-			PreparedStatement prepared = connect.prepareStatement("DELETE FROM company WHERE id=?");
-			prepared.setLong(1, obj.getId());
+			SqlParameterSource namedParameters = new MapSqlParameterSource("id", company.getId());
 
-			prepared.executeUpdate();
+			this.namedParameterJdbcTemplate.update(sql, namedParameters);
 
-		} catch (SQLException se) {
-			LOGGER.error("Error while deleting the company : " + obj, se);
-			throw new PersistenceException("SQL exception during deletion of company : " + obj.toString(), se);
+		} catch (DataAccessException se) {
+			LOGGER.error("Error while deleting the company : " + company, se);
+			throw new PersistenceException("SQL exception during deletion of company : " + company.toString(), se);
 		}
 	}
 
@@ -139,23 +126,13 @@ public class CompanyDAOImpl implements CompanyDAO {
 		LOGGER.trace("Counting companies");
 
 		try {
-			Connection connect = DataSourceUtils.getConnection(ds);
+			final String sql = "SELECT count(*) FROM company c WHERE c.name LIKE :search";
 
-			PreparedStatement prepared = connect.prepareStatement("SELECT count(*) FROM company c WHERE c.name LIKE ?");
+			SqlParameterSource namedParameters = new MapSqlParameterSource("search", "%" + search + "%");
 
-			prepared.setString(1, "%" + search + "%");
+			return this.namedParameterJdbcTemplate.queryForObject(sql, namedParameters, Integer.class);
 
-			ResultSet result = prepared.executeQuery();
-
-			int tmp = 0;
-
-			if (result.first()) {
-				tmp = result.getInt(1);
-			}
-
-			return tmp;
-
-		} catch (SQLException se) {
+		} catch (DataAccessException se) {
 			LOGGER.error("Error while counting the companies", se);
 			throw new PersistenceException("SQL exception during count of companies", se);
 		}
@@ -166,22 +143,11 @@ public class CompanyDAOImpl implements CompanyDAO {
 		LOGGER.trace("Listing companies");
 
 		try {
-			Connection connect = DataSourceUtils.getConnection(ds);
+			final String sql = "SELECT c.id, c.name FROM company c";
 
-			PreparedStatement prepared = connect.prepareStatement("SELECT c.id, c.name FROM company c");
+			return this.namedParameterJdbcTemplate.query(sql, rowMapper);
 
-			ResultSet rs = prepared.executeQuery();
-
-			List<Company> list = new ArrayList<Company>();
-
-			while (rs.next()) {
-				Company company = rowMapper.mapRow(rs);
-				list.add(company);
-			}
-
-			return list;
-
-		} catch (SQLException se) {
+		} catch (DataAccessException se) {
 			LOGGER.error("Error while listing the companies", se);
 			throw new PersistenceException("SQL exception during listing of companies", se);
 		}
@@ -199,33 +165,26 @@ public class CompanyDAOImpl implements CompanyDAO {
 		LOGGER.trace("Populating companies page : {}", page);
 
 		try {
-			Connection connect = DataSourceUtils.getConnection(ds);
-
-			PreparedStatement prepared = connect
-					.prepareStatement("SELECT c.id, c.name FROM company c WHERE c.name LIKE ? ORDER BY "
-							+ COLUMN_ORDER.get(page.getSort().getField()) + " " + page.getSort().getDirection().name()
-							+ " LIMIT ?, ?");
+			final StringBuilder sql = new StringBuilder("SELECT c.id, c.name FROM company c WHERE c.name LIKE :search ORDER BY ");
+			sql.append(COLUMN_ORDER.get(page.getSort().getField()));
+			sql.append(" ");
+			sql.append(page.getSort().getDirection().name());
+			sql.append(" LIMIT :beginIndex, :size");
 
 			int beginIndex = (page.getIndex() - 1) * page.getSize();
 
-			prepared.setString(1, "%" + page.getSearch() + "%");
-			prepared.setInt(2, beginIndex);
-			prepared.setInt(3, page.getSize());
+			MapSqlParameterSource namedParameters = new MapSqlParameterSource();
+			namedParameters.addValue("search", "%" + page.getSearch() + "%");
+			namedParameters.addValue("beginIndex", beginIndex);
+			namedParameters.addValue("size", page.getSize());
 
-			ResultSet rs = prepared.executeQuery();
+			List<Company> items = this.namedParameterJdbcTemplate.query(sql.toString(), namedParameters, rowMapper);
 
-			// Populate the temporary list then set it to the page
-			List<Company> list = new ArrayList<Company>();
-			while (rs.next()) {
-				Company company = rowMapper.mapRow(rs);
-				list.add(company);
-			}
-
-			page.setItems(list);
+			page.setItems(items);
 
 			LOGGER.trace("Populated page : {}", page);
 
-		} catch (SQLException se) {
+		} catch (DataAccessException se) {
 			LOGGER.error("Error while populating the companies page : " + page, se);
 			throw new PersistenceException("SQL exception during sublisting of companies", se);
 		}
@@ -236,37 +195,25 @@ public class CompanyDAOImpl implements CompanyDAO {
 		LOGGER.trace("Searching companies with name : {}", name);
 
 		try {
-			Connection connect = DataSourceUtils.getConnection(ds);
+			final String sql = "SELECT c.id, c.name FROM company c WHERE c.name LIKE :name";
 
-			PreparedStatement prepared = connect
-					.prepareStatement("SELECT c.id, c.name FROM company c WHERE c.name LIKE ?");
-			prepared.setString(1, "%" + name + "%");
+			SqlParameterSource namedParameters = new MapSqlParameterSource("name", "%" + name + "%");
 
-			ResultSet rs = prepared.executeQuery();
-
-			List<Company> list = new ArrayList<Company>();
-
-			while (rs.next()) {
-				Company company = rowMapper.mapRow(rs);
-
-				list.add(company);
-			}
+			List<Company> list = this.namedParameterJdbcTemplate.query(sql.toString(), namedParameters, rowMapper);
 
 			return list;
 
-		} catch (SQLException se) {
+		} catch (DataAccessException se) {
 			LOGGER.error("Error while searching companies with name : " + name, se);
 			throw new PersistenceException("SQL exception during a Company findByName : " + name, se);
 		}
 	}
 
-	private class CompanyRowMapper implements RowMapper<Company> {
+	private static final class CompanyRowMapper implements RowMapper<Company> {
 		@Override
-		public Company mapRow(ResultSet rs) throws SQLException {
-			Company company = Company.builder().id(rs.getLong(1)).name(rs.getString(2)).build();
-
+		public Company mapRow(ResultSet rs, int rowNum) throws SQLException {
+			Company company = Company.builder().id(rs.getLong("id")).name(rs.getString("name")).build();
 			return company;
 		}
 	}
-
 }

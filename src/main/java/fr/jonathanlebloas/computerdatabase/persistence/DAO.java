@@ -29,9 +29,8 @@ public interface DAO<T> {
 	/**
 	 * Allow to update an Object in the db
 	 *
-	 * @param obj
 	 */
-	public default T update(T obj) throws PersistenceException {
+	public default void update(T obj) throws PersistenceException {
 		throw new UnsupportedOperationException();
 	}
 

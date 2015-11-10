@@ -1,12 +1,7 @@
 package fr.jonathanlebloas.computerdatabase.persistence.impl;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,14 +11,19 @@ import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.datasource.DataSourceUtils;
+import org.springframework.dao.DataAccessException;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.core.namedparam.SqlParameterSource;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
 import fr.jonathanlebloas.computerdatabase.model.Company;
 import fr.jonathanlebloas.computerdatabase.model.Computer;
 import fr.jonathanlebloas.computerdatabase.model.Page;
 import fr.jonathanlebloas.computerdatabase.persistence.ComputerDAO;
-import fr.jonathanlebloas.computerdatabase.persistence.RowMapper;
 import fr.jonathanlebloas.computerdatabase.persistence.exceptions.PersistenceException;
 
 /**
@@ -49,31 +49,25 @@ public class ComputerDAOImpl implements ComputerDAO {
 
 	private ComputerRowMapper rowMapper = new ComputerRowMapper();
 
+	private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
+
 	@Autowired
-	private DataSource ds;
+	public void setDataSource(DataSource dataSource) {
+		this.namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(dataSource);
+	}
 
 	@Override
 	public Computer find(long id) throws PersistenceException {
 		LOGGER.trace("Finding computer with id: {}", id);
 
 		try {
-			Connection connect = DataSourceUtils.getConnection(ds);
+			final String sql = "SELECT c.id, c.name, c.introduced, c.discontinued, c.company_id, m.name FROM computer c LEFT JOIN company m ON c.company_id=m.id WHERE c.id = :id";
 
-			PreparedStatement prepared = connect.prepareStatement(
-					"SELECT c.id, c.name, c.introduced, c.discontinued, c.company_id, m.name FROM computer c LEFT JOIN company m ON c.company_id=m.id WHERE c.id=?");
-			prepared.setLong(1, id);
+			SqlParameterSource namedParameters = new MapSqlParameterSource("id", id);
 
-			ResultSet rs = prepared.executeQuery();
+			return this.namedParameterJdbcTemplate.queryForObject(sql, namedParameters, rowMapper);
 
-			Computer computer = null;
-
-			// If there's a result
-			if (rs.first()) {
-				computer = rowMapper.mapRow(rs);
-			}
-			return computer;
-
-		} catch (SQLException se) {
+		} catch (DataAccessException se) {
 			LOGGER.error("Error while finding the computer with id : " + id, se);
 			throw new PersistenceException("SQL exception during find by id : " + id, se);
 		}
@@ -84,107 +78,61 @@ public class ComputerDAOImpl implements ComputerDAO {
 		LOGGER.trace("Creating computer : {}", computer);
 
 		try {
-			Connection connect = DataSourceUtils.getConnection(ds);
+			final String sql = "INSERT INTO computer(name, introduced, discontinued, company_id) VALUES (:name, :introduced, :discontinued, :companyId)";
 
-			PreparedStatement prepared = connect.prepareStatement(
-					"INSERT INTO computer(name, introduced, discontinued, company_id) VALUES (?, ?, ?, ?)",
-					Statement.RETURN_GENERATED_KEYS);
-			prepared.setString(1, computer.getName());
+			MapSqlParameterSource namedParameters = new MapSqlParameterSource();
+			namedParameters.addValue("name", computer.getName());
+			namedParameters.addValue("introduced", computer.getIntroduced());
+			namedParameters.addValue("discontinued", computer.getDiscontinued());
+			namedParameters.addValue("companyId", computer.getCompany() != null ? computer.getCompany().getId() : null);
 
-			// Set the introduced or null if needed
-			if (computer.getIntroduced() == null) {
-				prepared.setNull(2, java.sql.Types.TIMESTAMP);
-			} else {
-				prepared.setTimestamp(2, Timestamp.valueOf(computer.getIntroduced().atStartOfDay()));
-			}
+			KeyHolder keyHolder = new GeneratedKeyHolder();
+			this.namedParameterJdbcTemplate.update(sql, namedParameters, keyHolder);
 
-			// Set the discontinued or null if needed
-			if (computer.getDiscontinued() == null) {
-				prepared.setNull(3, java.sql.Types.TIMESTAMP);
-			} else {
-				prepared.setTimestamp(3, Timestamp.valueOf(computer.getDiscontinued().atStartOfDay()));
-			}
+			computer.setId(keyHolder.getKey().longValue());
 
-			// Set the company_id foreign key on company
-			if (computer.getCompany() == null) {
-				prepared.setNull(4, java.sql.Types.BIGINT);
-			} else {
-				prepared.setLong(4, computer.getCompany().getId());
-			}
-			prepared.executeUpdate();
-
-			ResultSet rs = prepared.getGeneratedKeys();
-			if (rs.first()) {
-				computer.setId(rs.getLong(1));
-			} else {
-				throw new SQLException("The computer was not inserted : " + computer.toString());
-			}
-
-		} catch (SQLException se) {
+		} catch (DataAccessException se) {
 			LOGGER.error("Error while creating the computer : " + computer, se);
 			throw new PersistenceException("SQL exception during creation of a computer : " + computer.toString(), se);
 		}
 	}
 
 	@Override
-	public Computer update(Computer obj) throws PersistenceException {
-		LOGGER.trace("Updating computer : {}", obj);
+	public void update(Computer computer) throws PersistenceException {
+		LOGGER.trace("Updating computer : {}", computer);
 
 		try {
-			Connection connect = DataSourceUtils.getConnection(ds);
+			final String sql = "UPDATE computer c SET c.name = :name, c.introduced = :introduced, c.discontinued = :discontinued, c.company_id = :companyId WHERE c.id = :id";
 
-			PreparedStatement prepared = connect.prepareStatement(
-					"UPDATE computer c SET c.name = ?, c.introduced = ?, c.discontinued = ?, c.company_id = ? WHERE c.id = ?");
-			prepared.setString(1, obj.getName());
+			MapSqlParameterSource namedParameters = new MapSqlParameterSource();
+			namedParameters.addValue("id", computer.getId());
+			namedParameters.addValue("name", computer.getName());
+			namedParameters.addValue("introduced", computer.getIntroduced());
+			namedParameters.addValue("discontinued", computer.getDiscontinued());
+			namedParameters.addValue("companyId", computer.getCompany() != null ? computer.getCompany().getId() : null);
 
-			// Set the introduced or null if needed
-			if (obj.getIntroduced() == null) {
-				prepared.setNull(2, java.sql.Types.TIMESTAMP);
-			} else {
-				prepared.setTimestamp(2, Timestamp.valueOf(obj.getIntroduced().atStartOfDay()));
-			}
+			this.namedParameterJdbcTemplate.update(sql, namedParameters);
 
-			// Set the discontinued or null if needed
-			if (obj.getDiscontinued() == null) {
-				prepared.setNull(3, java.sql.Types.TIMESTAMP);
-			} else {
-				prepared.setTimestamp(3, Timestamp.valueOf(obj.getDiscontinued().atStartOfDay()));
-			}
-
-			// Set the company_id foreign key on company
-			if (obj.getCompany() == null) {
-				prepared.setNull(4, java.sql.Types.BIGINT);
-			} else {
-				prepared.setLong(4, obj.getCompany().getId());
-			}
-
-			prepared.setLong(5, obj.getId());
-
-			prepared.executeUpdate();
-
-		} catch (SQLException se) {
-			LOGGER.error("Error while updating the computer : " + obj, se);
-			throw new PersistenceException("SQL exception during update of a computer : " + obj.toString(), se);
+		} catch (DataAccessException se) {
+			LOGGER.error("Error while updating the computer : " + computer, se);
+			throw new PersistenceException("SQL exception during update of a computer : " + computer.toString(), se);
 		}
-
-		return obj;
 	}
 
 	@Override
-	public void delete(Computer obj) throws PersistenceException {
-		LOGGER.trace("Deleting computer : {}", obj);
+	public void delete(Computer computer) throws PersistenceException {
+		LOGGER.trace("Deleting computer : {}", computer);
 
 		try {
-			Connection connect = DataSourceUtils.getConnection(ds);
+			final String sql = "DELETE FROM computer WHERE id = :id";
 
-			PreparedStatement prepared = connect.prepareStatement("DELETE FROM computer WHERE id=?");
-			prepared.setLong(1, obj.getId());
+			SqlParameterSource namedParameters = new MapSqlParameterSource("id", computer.getId());
 
-			prepared.executeUpdate();
+			this.namedParameterJdbcTemplate.update(sql, namedParameters);
 
-		} catch (SQLException se) {
-			LOGGER.error("Error while deleting the computer : " + obj, se);
-			throw new PersistenceException("SQL exception during deletion of a computer : " + obj.toString(), se);
+		} catch (DataAccessException se) {
+			LOGGER.error("Error while deleting the computer : " + computer, se);
+			throw new PersistenceException("SQL exception during deletion of a computer : " + computer.toString(), se);
 		}
 	}
 
@@ -193,14 +141,13 @@ public class ComputerDAOImpl implements ComputerDAO {
 		LOGGER.trace("Deleting computers with company id : {}", id);
 
 		try {
-			Connection connect = DataSourceUtils.getConnection(ds);
+			final String sql = "DELETE FROM computer WHERE company_id = :companyId";
 
-			PreparedStatement prepared = connect.prepareStatement("DELETE FROM computer WHERE company_id=?");
-			prepared.setLong(1, id);
+			SqlParameterSource namedParameters = new MapSqlParameterSource("companyId", id);
 
-			prepared.executeUpdate();
+			this.namedParameterJdbcTemplate.update(sql, namedParameters);
 
-		} catch (SQLException se) {
+		} catch (DataAccessException se) {
 			LOGGER.error("Error while deleting the computers with company id : " + id, se);
 			throw new PersistenceException("SQL exception during deletion of a computers with company id : " + id, se);
 		}
@@ -211,25 +158,13 @@ public class ComputerDAOImpl implements ComputerDAO {
 		LOGGER.trace("Counting computers");
 
 		try {
-			Connection connect = DataSourceUtils.getConnection(ds);
+			final String sql = "SELECT count(*) FROM computer c LEFT JOIN company m ON c.company_id=m.id WHERE c.name LIKE :search OR m.name LIKE :search";
 
-			PreparedStatement prepared = connect.prepareStatement(
-					"SELECT count(*) FROM computer c LEFT JOIN company m ON c.company_id=m.id WHERE c.name LIKE ? OR m.name LIKE ?");
+			SqlParameterSource namedParameters = new MapSqlParameterSource("search", "%" + search + "%");
 
-			prepared.setString(1, "%" + search + "%");
-			prepared.setString(2, "%" + search + "%");
+			return this.namedParameterJdbcTemplate.queryForObject(sql, namedParameters, Integer.class);
 
-			ResultSet result = prepared.executeQuery();
-
-			int tmp = 0;
-
-			if (result.first()) {
-				tmp = result.getInt(1);
-			}
-
-			return tmp;
-
-		} catch (SQLException se) {
+		} catch (DataAccessException se) {
 			LOGGER.error("Error while counting the computers", se);
 			throw new PersistenceException("SQL exception during count of computers ", se);
 		}
@@ -240,23 +175,11 @@ public class ComputerDAOImpl implements ComputerDAO {
 		LOGGER.trace("Listing computers");
 
 		try {
-			Connection connect = DataSourceUtils.getConnection(ds);
+			final String sql = "SELECT c.id, c.name, c.introduced, c.discontinued, c.company_id, m.name FROM computer c LEFT JOIN company m ON c.company_id = m.id";
 
-			PreparedStatement prepared = connect.prepareStatement(
-					"SELECT c.id, c.name, c.introduced, c.discontinued, c.company_id, m.name FROM computer c LEFT JOIN company m ON c.company_id=m.id");
+			return this.namedParameterJdbcTemplate.query(sql, rowMapper);
 
-			ResultSet rs = prepared.executeQuery();
-
-			List<Computer> list = new ArrayList<Computer>();
-
-			while (rs.next()) {
-				Computer computer = rowMapper.mapRow(rs);
-
-				list.add(computer);
-			}
-			return list;
-
-		} catch (SQLException se) {
+		} catch (DataAccessException se) {
 			LOGGER.error("Error while listing the computers", se);
 			throw new PersistenceException("SQL exception during listing of computers ", se);
 		}
@@ -274,34 +197,27 @@ public class ComputerDAOImpl implements ComputerDAO {
 		LOGGER.trace("Populating computers page : {}", page);
 
 		try {
-			Connection connect = DataSourceUtils.getConnection(ds);
-
-			PreparedStatement prepared = connect.prepareStatement(
-					"SELECT c.id, c.name, c.introduced, c.discontinued, c.company_id, m.name FROM computer c LEFT JOIN company m ON c.company_id=m.id WHERE c.name LIKE ? OR m.name LIKE ? ORDER BY "
-							+ COLUMN_ORDER.get(page.getSort().getField()) + " " + page.getSort().getDirection().name()
-							+ " LIMIT ?, ?");
+			final StringBuilder sql = new StringBuilder(
+					"SELECT c.id, c.name, c.introduced, c.discontinued, c.company_id, m.name FROM computer c LEFT JOIN company m ON c.company_id=m.id WHERE c.name LIKE :search OR m.name LIKE :search ORDER BY ");
+			sql.append(COLUMN_ORDER.get(page.getSort().getField()));
+			sql.append(" ");
+			sql.append(page.getSort().getDirection().name());
+			sql.append(" LIMIT :beginIndex, :size");
 
 			int beginIndex = (page.getIndex() - 1) * page.getSize();
 
-			prepared.setString(1, "%" + page.getSearch() + "%");
-			prepared.setString(2, "%" + page.getSearch() + "%");
-			prepared.setInt(3, beginIndex);
-			prepared.setInt(4, page.getSize());
+			MapSqlParameterSource namedParameters = new MapSqlParameterSource();
+			namedParameters.addValue("search", "%" + page.getSearch() + "%");
+			namedParameters.addValue("beginIndex", beginIndex);
+			namedParameters.addValue("size", page.getSize());
 
-			ResultSet rs = prepared.executeQuery();
+			List<Computer> items = this.namedParameterJdbcTemplate.query(sql.toString(), namedParameters, rowMapper);
 
-			// Populate the temporary list then set it to the page
-			List<Computer> list = new ArrayList<Computer>();
-			while (rs.next()) {
-				Computer computer = rowMapper.mapRow(rs);
+			page.setItems(items);
 
-				list.add(computer);
-			}
-
-			page.setItems(list);
 			LOGGER.trace("Populated page : {}", page);
 
-		} catch (SQLException se) {
+		} catch (DataAccessException se) {
 			LOGGER.error("Error while populating the computers page : " + page, se);
 			throw new PersistenceException("SQL exception during sublisting of computers ", se);
 		}
@@ -312,34 +228,23 @@ public class ComputerDAOImpl implements ComputerDAO {
 		LOGGER.trace("Searching computers with name : {}", name);
 
 		try {
-			Connection connect = DataSourceUtils.getConnection(ds);
+			final String sql = "SELECT c.id, c.name, c.introduced, c.discontinued, c.company_id, m.name FROM computer c LEFT JOIN company m ON c.company_id = m.id WHERE c.name LIKE :name";
 
-			PreparedStatement prepared = connect.prepareStatement(
-					"SELECT c.id, c.name, c.introduced, c.discontinued, c.company_id, m.name FROM computer c LEFT JOIN company m ON c.company_id=m.id WHERE c.name LIKE ?");
-			prepared.setString(1, "%" + name + "%");
+			SqlParameterSource namedParameters = new MapSqlParameterSource("name", "%" + name + "%");
 
-			ResultSet rs = prepared.executeQuery();
-
-			List<Computer> list = new ArrayList<Computer>();
-
-			while (rs.next()) {
-				Computer computer = rowMapper.mapRow(rs);
-
-				list.add(computer);
-			}
+			List<Computer> list = this.namedParameterJdbcTemplate.query(sql.toString(), namedParameters, rowMapper);
 
 			return list;
 
-		} catch (SQLException se) {
+		} catch (DataAccessException se) {
 			LOGGER.error("Error while searching computers with name : " + name, se);
 			throw new PersistenceException("SQL exception during Computer findByName : " + name, se);
 		}
 	}
 
-	private class ComputerRowMapper implements RowMapper<Computer> {
-
+	private static final class ComputerRowMapper implements RowMapper<Computer> {
 		@Override
-		public Computer mapRow(ResultSet rs) throws SQLException {
+		public Computer mapRow(ResultSet rs, int rowNum) throws SQLException {
 			Computer computer = Computer.builder().id(rs.getLong(1)).name(rs.getString(2)).build();
 
 			if (rs.getDate(3) != null) {
