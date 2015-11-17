@@ -2,6 +2,7 @@
 	pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
 <%@ taglib tagdir="/WEB-INF/tags/pagination" prefix="p"%>
+<%@ taglib uri="http://www.springframework.org/tags" prefix="spring"%>
 
 <jsp:include page="template/header.jsp" />
 
@@ -9,22 +10,22 @@
 	<div class="container">
 		<h1 id="homeTitle">
 			<c:out value="${page.nbTotalElement}" />
-			Computers found
+			<spring:message code="dashboard.title" />
 		</h1>
 		<div id="actions" class="form-horizontal">
 			<div class="pull-left">
 				<form id="searchForm" action="" method="GET" class="form-inline">
 					<input type="hidden" name="page" value="1">
-					<input type="search" id="searchbox" name="search" class="form-control" placeholder="Search name" value="${page.search}" />
+					<input type="search" id="searchbox" name="search" class="form-control" placeholder="<spring:message code="dashboard.search.field" />" value="${page.search}" />
 					&nbsp;
-					<input type="submit" id="searchsubmit" value="Filter by name" class="btn btn-primary" />
+					<input type="submit" id="searchsubmit" value="<spring:message code="dashboard.search.button" />" class="btn btn-primary" />
 				</form>
 			</div>
 			<div class="pull-right">
 				<a class="btn btn-success" id="addComputer"
-					href="<c:url value="/computer/add" />">Add Computer</a> <a
+					href="<c:url value="/computer/add" />"><spring:message code="dashboard.button.add" /></a> <a
 					class="btn btn-default" id="editComputer" href="#"
-					onclick="$.fn.toggleEditMode();">Edit</a>
+					onclick="$.fn.toggleEditMode();"><spring:message code="dashboard.button.edit" /></a>
 			</div>
 		</div>
 	</div>

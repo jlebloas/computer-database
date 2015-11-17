@@ -1,5 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
 	pageEncoding="UTF-8"%>
+<%@ taglib uri="http://www.springframework.org/tags" prefix="spring"%>
 
 <jsp:include page="template/header.jsp" />
 
@@ -7,8 +8,7 @@
 <section id="main">
 	<div class="container">
 		<div class="alert alert-danger">
-			Error 403: Forbidden! <br />
-			<!-- stacktrace -->
+			<spring:message code="error_403"/><br />
 		</div>
 	</div>
 </section>

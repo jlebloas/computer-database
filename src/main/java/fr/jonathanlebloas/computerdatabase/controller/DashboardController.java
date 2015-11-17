@@ -3,6 +3,7 @@ package fr.jonathanlebloas.computerdatabase.controller;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 
 import javax.servlet.http.Cookie;
@@ -12,6 +13,8 @@ import javax.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -48,6 +51,9 @@ public class DashboardController {
 	 * Max age of cookies in seconds
 	 */
 	private static final int COOKIES_MAX_AGE = 300;
+
+	@Autowired
+	private MessageSource messages;
 
 	@Autowired
 	private ComputerService computerService;
@@ -236,11 +242,13 @@ public class DashboardController {
 	}
 
 	private List<OrderColumn> generateOrderColumns(Page<Computer> page) {
+		Locale locale = LocaleContextHolder.getLocale();
+
 		List<OrderColumn> columns = new ArrayList<>();
-		columns.add(new OrderColumn("Computer name", 2, generateDirection(2, page)));
-		columns.add(new OrderColumn("Introduced date", 3, generateDirection(3, page)));
-		columns.add(new OrderColumn("Discontinued date", 4, generateDirection(4, page)));
-		columns.add(new OrderColumn("Company", 5, generateDirection(5, page)));
+		columns.add(new OrderColumn(messages.getMessage("computer.name", null, locale), 2, generateDirection(2, page)));
+		columns.add(new OrderColumn(messages.getMessage("computer.introduced", null, locale), 3, generateDirection(3, page)));
+		columns.add(new OrderColumn(messages.getMessage("computer.discontinued", null, locale), 4, generateDirection(4, page)));
+		columns.add(new OrderColumn(messages.getMessage("computer.company", null, locale), 5, generateDirection(5, page)));
 
 		return columns;
 	}

@@ -1,12 +1,13 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
 	pageEncoding="UTF-8"%>
+<%@ taglib uri="http://www.springframework.org/tags" prefix="spring"%>
 
 <jsp:include page="template/header.jsp" />
 
 <section id="main">
 	<div class="container">
 		<div class="alert alert-danger">
-			Error 400: Bad Request! <br />
+			<spring:message code="error_400"/><br />
 		</div>
 	</div>
 </section>
