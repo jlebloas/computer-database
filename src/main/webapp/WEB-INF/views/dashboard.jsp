@@ -14,9 +14,7 @@
 		<div id="actions" class="form-horizontal">
 			<div class="pull-left">
 				<form id="searchForm" action="" method="GET" class="form-inline">
-					<input type="hidden" name="size" value="${page.size}">
-					<input type="hidden" name="order" value="${orderIndex}">
-					<input type="hidden" name="direction" value="${page.sort.direction}">
+					<input type="hidden" name="page" value="1">
 					<input type="search" id="searchbox" name="search" class="form-control" placeholder="Search name" value="${page.search}" />
 					&nbsp;
 					<input type="submit" id="searchsubmit" value="Filter by name" class="btn btn-primary" />
@@ -62,7 +60,7 @@
 						<td class="editMode"><input type="checkbox" name="cb"
 							class="cb" value="${computer.id}"></td>
 						<td><a
-							href="<c:url value="/computer/edit?id=${computer.id}&search=${page.search}" />"><c:out
+							href="<c:url value="/computer/edit?id=${computer.id}" />"><c:out
 									value="${computer.name}" /></a></td>
 						<td><c:out value="${computer.introduced}" /></td>
 						<td><c:out value="${computer.discontinued}" /></td>

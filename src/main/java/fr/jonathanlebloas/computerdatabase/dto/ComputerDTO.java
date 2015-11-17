@@ -1,16 +1,35 @@
 package fr.jonathanlebloas.computerdatabase.dto;
 
+import javax.validation.GroupSequence;
+
+import org.hibernate.validator.constraints.NotEmpty;
+
+import fr.jonathanlebloas.computerdatabase.validation.constraints.DateAfter;
+import fr.jonathanlebloas.computerdatabase.validation.constraints.IsDate;
+import fr.jonathanlebloas.computerdatabase.validation.constraints.IsFirstNotEmptyIfSecondNotEmpty;
+import fr.jonathanlebloas.computerdatabase.validation.groups.OrderCheck;
+
+// Define a group GroupSequence in order to do the validation in a custom order.
+// The globals check are done first not empty name, valid dates and introduced set if discontinued too.. then check if discontinued is set the introduced must be too and finally check the date order
+@GroupSequence({ ComputerDTO.class, OrderCheck.class })
+@IsFirstNotEmptyIfSecondNotEmpty(first = "introduced", second = "discontinued", message = "The introduced date must be set if the discontinued is set")
+@DateAfter(before = "introduced", after = "discontinued", message = "The discontinued must be after the introduced", groups = OrderCheck.class)
 public class ComputerDTO {
 
 	private String id;
+
+	@NotEmpty
 	private String name;
+
+	@IsDate
 	private String introduced;
+	@IsDate
 	private String discontinued;
+
 	private String companyId;
 	private String companyName;
 
 	public ComputerDTO() {
-		super();
 	}
 
 	public ComputerDTO(String id, String name, String introduced, String discontinued, String companyId,

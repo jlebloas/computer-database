@@ -36,6 +36,9 @@
 	<!-- Enable Annotation based Declarative Transaction Management -->
 	<tx:annotation-driven transaction-manager="transactionManager" />
 
+	<!-- Enable JSR 303 validation -->
+	<bean id="validator" class="org.springframework.validation.beanvalidation.LocalValidatorFactoryBean"/>
+
 	<!-- Enable JMX monitoring of the datasource  -->
 	<bean id="mbeanExporter" class="org.springframework.jmx.export.MBeanExporter" lazy-init="false">
 		<property name="beans">

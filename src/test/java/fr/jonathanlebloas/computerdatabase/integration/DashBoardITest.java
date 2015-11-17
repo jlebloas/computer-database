@@ -36,6 +36,7 @@ public class DashBoardITest {
 
 	@Before
 	public void setUp() throws Exception {
+		driver.manage().deleteAllCookies();
 		driver.get(siteBase.toString());
 	}
 
@@ -59,7 +60,7 @@ public class DashBoardITest {
 		WebElement addLink = driver.findElement(By.linkText("Add Computer"));
 		addLink.click();
 
-		WebElement computerName = driver.findElement(By.name("computerName"));
+		WebElement computerName = driver.findElement(By.name("name"));
 		WebElement introduced = driver.findElement(By.name("introduced"));
 		WebElement discontinued = driver.findElement(By.name("discontinued"));
 		WebElement companyId = driver.findElement(By.name("companyId"));

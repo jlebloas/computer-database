@@ -14,6 +14,7 @@ import fr.jonathanlebloas.computerdatabase.dto.ComputerDTO;
 import fr.jonathanlebloas.computerdatabase.mapper.Mapper;
 import fr.jonathanlebloas.computerdatabase.model.Company;
 import fr.jonathanlebloas.computerdatabase.model.Computer;
+import fr.jonathanlebloas.computerdatabase.utils.StringUtils;
 
 @Component
 public class ComputerMapper implements Mapper<Computer, ComputerDTO> {
@@ -34,10 +35,13 @@ public class ComputerMapper implements Mapper<Computer, ComputerDTO> {
 
 		computerDTO.setName(computer.getName());
 
-		if (computer.getCompany() != null) {
-			computerDTO.setCompanyName(computer.getCompany().getName());
+		Company company = computer.getCompany();
+		if (company != null) {
+			computerDTO.setCompanyName(company.getName());
+			computerDTO.setCompanyId("" + company.getId());
 		} else {
 			computerDTO.setCompanyName(null);
+			computerDTO.setCompanyId("0");
 		}
 		computerDTO.setName(computer.getName());
 		if (computer.getDiscontinued() != null) {
@@ -67,7 +71,7 @@ public class ComputerMapper implements Mapper<Computer, ComputerDTO> {
 	@Override
 	public Computer fromDTO(ComputerDTO dto) {
 		Company company = null;
-		if (dto.getCompanyId() != null && dto.getCompanyName() != null) {
+		if (dto.getCompanyId() != null) {
 			company = companyMapper.fromDTO(new CompanyDTO(dto.getCompanyId(), dto.getCompanyName()));
 		}
 
@@ -77,10 +81,10 @@ public class ComputerMapper implements Mapper<Computer, ComputerDTO> {
 		}
 
 		computer.setName(dto.getName());
-		if (dto.getIntroduced() != null) {
+		if (!StringUtils.isEmpty(dto.getIntroduced())) {
 			computer.setIntroduced(LocalDate.parse(dto.getIntroduced(), df));
 		}
-		if (dto.getDiscontinued() != null) {
+		if (!StringUtils.isEmpty(dto.getDiscontinued())) {
 			computer.setDiscontinued(LocalDate.parse(dto.getDiscontinued()));
 		}
 

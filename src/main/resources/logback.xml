@@ -24,11 +24,14 @@
 	<logger name="org.springframework.beans">
 		<level value="OFF" />
 	</logger>
+	<logger name="org.springframework.web">
+		<level value="OFF" />
+	</logger>
 	<logger name="com.jolbox.bonecp">
 		<level value="OFF" />
 	</logger>
 
-	<root level="DEBUG">
+	<root level="OFF">
 		<appender-ref ref="STDOUT" />
 	</root>
 </configuration>

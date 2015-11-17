@@ -99,9 +99,6 @@ public class Company {
 			if (company.id < 0) {
 				throw new IllegalArgumentException("id is invalid : " + company.id);
 			}
-			if (StringUtils.isEmpty(company.name)) {
-				throw new IllegalArgumentException("name is invalid : " + company.name);
-			}
 			return company;
 		}
 	}

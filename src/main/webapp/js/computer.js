@@ -8,17 +8,17 @@
  * @returns {Boolean}
  */
 function validName() {
-	var name = $("form div input[name=computerName]").val();
+	var name = $("form div input[name=name]").val();
 
 	if (!name) {
-		$("form").find("div").has("input[name=computerName]").addClass(
+		$("form").find("div").has("input[name=name]").addClass(
 				"has-error");
-		$("#computerNameErrorMessage").removeClass("sr-only");
+		$("#computerNameErrorStatus").removeClass("sr-only");
 		return false;
 	}
 	
-	$("form").find("div").has("input[name=computerName]").removeClass("has-error");
-	$("#computerNameErrorMessage").addClass("sr-only");
+	$("form").find("div").has("input[name=name]").removeClass("has-error");
+	$("#computerNameErrorStatus").addClass("sr-only");
 	return true;
 }
 

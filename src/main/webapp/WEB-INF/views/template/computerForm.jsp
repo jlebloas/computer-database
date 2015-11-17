@@ -1,35 +1,50 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
 	pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
+<%@ taglib uri="http://www.springframework.org/tags" prefix="spring"%>
+<%@ taglib uri="http://www.springframework.org/tags/form" prefix="form"%>
 
-<div class="form-group has-feedback<c:if test="${computerNameError}"> has-error</c:if>">
-	<label for="computerName" class="control-label" >Computer name</label>
-	<input type="text" class="form-control" id="computerName" name="computerName" placeholder="Computer name" value="<c:out value="${computerName}" />" aria-describedby="computerNameErrorStatus">
-	<span class="glyphicon glyphicon-remove form-control-feedback<c:if test="${!computerNameError}"> sr-only</c:if>"></span> 
-	<span id="computerNameErrorMessage" class="help-block<c:if test="${!computerNameError}"> sr-only</c:if>">A computer name is required</span>
-</div>
+<spring:bind path="name">
+	<div class="form-group has-feedback ${status.error ? 'has-error' : ''}">
+		<form:label path="name" cssClass="control-label">Computer name</form:label>
+		<form:input type="text" cssClass="form-control" id="computerName"
+			path="name" placeholder="Computer name" value="${computer.name}"
+			aria-describedby="computerNameErrorStatus" />
+		<span class="glyphicon glyphicon-remove form-control-feedback ${!status.error ? 'sr-only' : ''}"></span>
+		<span id="computerNameErrorStatus"	class="help-block ${!status.error ? 'sr-only' : ''}">A computer name is required</span>
+	</div>
+</spring:bind>
 
-<div class="form-group has-feedback<c:if test="${introducedError || introducedEmptyError}"> has-error</c:if>">
-	<label for="introduced" class="control-label" >Introduced date</label>
-	<input type="date" placeholder="2015-10-01" class="form-control" id="introduced" name="introduced" placeholder="Introduced date" value="<c:out value="${introduced}" />" aria-describedby="introducedErrorStatus introducedEmptyErrorStatus">
-	<span class="glyphicon glyphicon-remove form-control-feedback<c:if test="${!introducedError}"> sr-only</c:if>"></span> 
-	<span id="introducedErrorStatus" class="help-block<c:if test="${!introducedError}"> sr-only</c:if>">Your date is invalid</span>
-	<span id="introducedEmptyErrorStatus" class="help-block<c:if test="${!introducedEmptyError}"> sr-only</c:if>">The introduced date must be set if the discontinued date is set</span>
-</div>
+<spring:bind path="introduced">
+	<div class="form-group has-feedback ${status.error || globalError.code == 'IsFirstNotEmptyIfSecondNotEmpty' ? 'has-error' : ''}">
+		<form:label path="introduced" cssClass="control-label">Introduced date</form:label>
+		<form:input type="date" placeholder="2015-10-01"
+			cssClass="form-control" id="introduced" path="introduced"
+			value="${computer.introduced}"
+			aria-describedby="introducedErrorStatus introducedEmptyErrorStatus" />
+		<span class="glyphicon glyphicon-remove form-control-feedback ${!status.error && globalError.code != 'IsFirstNotEmptyIfSecondNotEmpty' ? 'sr-only' : ''}"></span>
+		<span id="introducedErrorStatus"
+			class="help-block ${!status.error ? 'sr-only' : ''}">Your date is invalid</span> <span id="introducedEmptyErrorStatus"
+			class="help-block ${globalError.code != 'IsFirstNotEmptyIfSecondNotEmpty' ? 'sr-only' : ''}">The introduced date must be set if the discontinued date is set</span>
+	</div>
+</spring:bind>
 
-<div class="form-group has-feedback<c:if test="${discontinuedError || orderError}"> has-error</c:if>">
-	<label for="discontinued" class="control-label" >Discontinued date</label>
-	<input type="date" placeholder="2015-12-25" class="form-control" id="discontinued" name="discontinued" placeholder="Discontinued date" value="<c:out value="${discontinued}" />" aria-describedby="discontinuedErrorStatus orderErrorStatus">
-	<span class="glyphicon glyphicon-remove form-control-feedback<c:if test="${!discontinuedError}"> sr-only</c:if>"></span> 
-	<span id="discontinuedErrorStatus" class="help-block<c:if test="${!discontinuedError}"> sr-only</c:if>">Your date is invalid</span>
-	<span id="orderErrorStatus" class="help-block<c:if test="${!orderError}"> sr-only</c:if>">The discontinued date must be greater than the introduced one</span>
-</div>
+<spring:bind path="discontinued">
+	<div class="form-group has-feedback ${status.error || globalError.code == 'DateAfter' ? 'has-error' : ''}">
+		<form:label path="discontinued" cssClass="control-label">Discontinued date</form:label>
+		<form:input type="date" placeholder="2015-12-25"
+			cssClass="form-control" id="discontinued" path="discontinued"
+			value="${computer.discontinued}"
+			aria-describedby="discontinuedErrorStatus orderErrorStatus" />
+		<span class="glyphicon glyphicon-remove form-control-feedback ${!status.error && globalError.code != 'DateAfter' ? 'sr-only' : ''}"></span>
+		<span id="discontinuedErrorStatus"
+			class="help-block ${!status.error ? 'sr-only' : ''}">Your date is invalid</span> <span id="orderErrorStatus"
+			class="help-block ${globalError.code != 'DateAfter' ? 'sr-only' : ''}">The discontinued date must be greater than the introduced one</span>
+	</div>
+</spring:bind>
 
 <div class="form-group has-feedback">
-	<label for="companyId" class="control-label" >Company</label>
-	<select class="form-control" id="companyId" name="companyId">
-		<c:forEach items="${companies}" var="company">
-			<option value="${company.id}" <c:if test="${company.id == companyId}">selected</c:if>><c:out value="${company.name}" /></option>
-		</c:forEach>
-	</select>
+	<form:label path="companyId" cssClass="control-label">Company</form:label>
+	<form:select path="companyId" items="${companies}" itemLabel="name"
+		itemValue="id" cssClass="form-control" id="companyId" />
 </div>

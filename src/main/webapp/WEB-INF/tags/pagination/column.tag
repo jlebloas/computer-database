@@ -3,7 +3,7 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
 <%@ taglib tagdir="/WEB-INF/tags/pagination" prefix="p" %>
 <%@ attribute name="page" required="true" type="fr.jonathanlebloas.computerdatabase.model.Page" rtexprvalue="true"%>
-<%@ attribute name="column" required="true" type="fr.jonathanlebloas.computerdatabase.controller.DashboardServlet.OrderColumn" rtexprvalue="true"%>
+<%@ attribute name="column" required="true" type="fr.jonathanlebloas.computerdatabase.controller.DashboardController.OrderColumn" rtexprvalue="true"%>
 <%@ attribute name="orderIndex" required="true" rtexprvalue="true"%>
 
 <th>
