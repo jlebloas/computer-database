@@ -14,8 +14,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import fr.jonathanlebloas.computerdatabase.controller.utils.ComputerControllerUtil;
 import fr.jonathanlebloas.computerdatabase.dto.ComputerDTO;
+import fr.jonathanlebloas.computerdatabase.mapper.impl.CompanyMapper;
 import fr.jonathanlebloas.computerdatabase.mapper.impl.ComputerMapper;
 import fr.jonathanlebloas.computerdatabase.model.Computer;
 import fr.jonathanlebloas.computerdatabase.service.CompanyService;
@@ -24,6 +24,8 @@ import fr.jonathanlebloas.computerdatabase.service.ComputerService;
 @Controller
 @RequestMapping(path = "/computer/edit")
 public class EditComputerController {
+
+	private static final String ATTR_COMPANIES = "companies";
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(EditComputerController.class);
 
@@ -34,13 +36,13 @@ public class EditComputerController {
 	private ComputerMapper computerMapper;
 
 	@Autowired
+	private CompanyMapper companyMapper;
+
+	@Autowired
 	private ComputerService computerService;
 
 	@Autowired
 	private CompanyService companyService;
-
-	@Autowired
-	private ComputerControllerUtil controllerUtil;
 
 	@RequestMapping(method = RequestMethod.GET)
 	public String doGet(@RequestParam(value = PARAM_COMPUTER_ID, required = true) final int computerId,
@@ -50,7 +52,7 @@ public class EditComputerController {
 		Computer computer = computerService.find(computerId);
 
 		model.addAttribute("computerDTO", computerMapper.toDTO(computer));
-		model.addAttribute("companies", controllerUtil.getCompanies());
+		model.addAttribute(ATTR_COMPANIES, companyMapper.toDTO(companyService.listCompanies()));
 
 		return PATH_UPDATE_VIEW;
 	}
@@ -65,7 +67,7 @@ public class EditComputerController {
 
 			model.addAttribute("globalError", bindingResult.getGlobalError());
 			model.addAttribute("computer", computerDTO);
-			model.addAttribute("companies", controllerUtil.getCompanies());
+			model.addAttribute(ATTR_COMPANIES, companyMapper.toDTO(companyService.listCompanies()));
 
 			return PATH_UPDATE_VIEW;
 		}

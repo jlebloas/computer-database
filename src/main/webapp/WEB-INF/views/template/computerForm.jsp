@@ -45,7 +45,11 @@
 </spring:bind>
 
 <div class="form-group has-feedback">
-	<form:label path="companyId" cssClass="control-label"><spring:message code="computer.company" /></form:label>
-	<form:select path="companyId" items="${companies}" itemLabel="name"
-		itemValue="id" cssClass="form-control" id="companyId" />
+	<form:label path="companyId" cssClass="control-label">
+		<spring:message code="computer.company" />
+	</form:label>
+	<form:select path="companyId" cssClass="form-control" id="companyId">
+		<form:option value="0" label="--"/>
+		<form:options items="${companies}" itemLabel="name" itemValue="id"/>
+	</form:select>
 </div>

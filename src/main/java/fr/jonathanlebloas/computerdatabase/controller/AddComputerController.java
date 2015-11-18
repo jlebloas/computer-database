@@ -13,8 +13,8 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import fr.jonathanlebloas.computerdatabase.controller.utils.ComputerControllerUtil;
 import fr.jonathanlebloas.computerdatabase.dto.ComputerDTO;
+import fr.jonathanlebloas.computerdatabase.mapper.impl.CompanyMapper;
 import fr.jonathanlebloas.computerdatabase.mapper.impl.ComputerMapper;
 import fr.jonathanlebloas.computerdatabase.model.Computer;
 import fr.jonathanlebloas.computerdatabase.service.CompanyService;
@@ -32,20 +32,20 @@ public class AddComputerController {
 	private ComputerMapper computerMapper;
 
 	@Autowired
+	private CompanyMapper companyMapper;
+
+	@Autowired
 	private ComputerService computerService;
 
 	@Autowired
 	private CompanyService companyService;
-
-	@Autowired
-	private ComputerControllerUtil controllerUtil;
 
 	@RequestMapping(method = RequestMethod.GET)
 	public String doGet(ModelMap model) {
 		LOGGER.info("Add Computer : GET");
 
 		model.addAttribute("computerDTO", new ComputerDTO());
-		model.addAttribute("companies", controllerUtil.getCompanies());
+		model.addAttribute("companies", companyMapper.toDTO(companyService.listCompanies()));
 
 		return PATH_ADD_VIEW;
 	}
@@ -60,7 +60,7 @@ public class AddComputerController {
 
 			model.addAttribute("globalError", bindingResult.getGlobalError());
 			model.addAttribute("computer", computerDTO);
-			model.addAttribute("companies", controllerUtil.getCompanies());
+			model.addAttribute("companies", companyMapper.toDTO(companyService.listCompanies()));
 
 			return PATH_ADD_VIEW;
 		}

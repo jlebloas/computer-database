@@ -1,7 +1,5 @@
 package fr.jonathanlebloas.computerdatabase.model;
 
-import fr.jonathanlebloas.computerdatabase.utils.StringUtils;
-
 /**
  * A Company has an id and a name that is mandatory
  */
