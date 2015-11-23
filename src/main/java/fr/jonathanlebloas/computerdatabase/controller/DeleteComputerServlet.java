@@ -31,8 +31,7 @@ public class DeleteComputerServlet {
 		Stream<Long> stream = Arrays.stream(selection.split(",")).map(Long::parseLong);
 
 		// Find and delete the computers (and log them)
-		stream.map(computerService::find).map(computerService::delete)
-				.forEach((r) -> LOGGER.info("Computer deleted: {}", r));
+		stream.map(computerService::find).forEach(computerService::delete);
 
 		return PATH_REDIRECT_VIEW;
 	}

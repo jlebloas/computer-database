@@ -9,14 +9,14 @@
 <section id="main">
 	<div class="container">
 		<h1 id="homeTitle">
-			<c:out value="${page.nbTotalElement}" />
+			<c:out value="${page.totalElements}" />
 			<spring:message code="dashboard.title" />
 		</h1>
 		<div id="actions" class="form-horizontal">
 			<div class="pull-left">
 				<form id="searchForm" action="" method="GET" class="form-inline">
-					<input type="hidden" name="page" value="1">
-					<input type="search" id="searchbox" name="search" class="form-control" placeholder="<spring:message code="dashboard.search.field" />" value="${page.search}" />
+					<input type="hidden" name="page" value="0">
+					<input type="search" id="searchbox" name="search" class="form-control" placeholder="<spring:message code="dashboard.search.field" />" value="${search}" />
 					&nbsp;
 					<input type="submit" id="searchsubmit" value="<spring:message code="dashboard.search.button" />" class="btn btn-primary" />
 				</form>
@@ -49,7 +49,7 @@
 							id="deleteSelected"> <i class="fa fa-trash-o fa-lg"></i></a>
 					</span></th>
 					<c:forEach items="${columns}" var="column">
-						<p:column page="${page}" orderIndex="${orderIndex}" column="${column}" ></p:column>
+						<p:column page="${page}" currentOrder="${order}" column="${column}" ></p:column>
 					</c:forEach>
 				</tr>
 			</thead>

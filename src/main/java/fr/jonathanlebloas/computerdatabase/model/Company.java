@@ -1,10 +1,19 @@
 package fr.jonathanlebloas.computerdatabase.model;
 
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
 /**
  * A Company has an id and a name that is mandatory
  */
+@Entity
+@Table(name = "company")
 public class Company {
 
+	@Id
+	@GeneratedValue
 	private long id;
 
 	private String name;

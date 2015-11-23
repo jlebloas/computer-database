@@ -8,22 +8,26 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.persistence.PersistenceException;
+
 import org.hamcrest.core.IsEqual;
 import org.hamcrest.core.IsNull;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
 
 import fr.jonathanlebloas.computerdatabase.model.Company;
 import fr.jonathanlebloas.computerdatabase.model.Computer;
-import fr.jonathanlebloas.computerdatabase.model.Page;
-import fr.jonathanlebloas.computerdatabase.persistence.exceptions.PersistenceException;
-import fr.jonathanlebloas.computerdatabase.sort.ComputerSort;
-import fr.jonathanlebloas.computerdatabase.sort.Sort.Direction;
+import fr.jonathanlebloas.computerdatabase.repository.ComputerDAO;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = "classpath:test-applicationContext.xml")
@@ -56,37 +60,24 @@ public class ComputerDAOITest {
 	}
 
 	@Test
-	public void testCount() throws PersistenceException {
-		assertThat(computerDAO.count(""), IsEqual.equalTo(10));
-		assertThat(computerDAO.count("Apple"), IsEqual.equalTo(6)); // 4 computer "Apple" + 2 with company "Apple"
-		assertThat(computerDAO.count("CM"), IsEqual.equalTo(4));
-		assertThat(computerDAO.count("Don't exist"), IsEqual.equalTo(0));
-	}
-
-	@Test
-	public void testFind() throws PersistenceException {
+	public void testFind() {
 
 		Computer c = Computer.builder().id(5).name("CM-5").introduced(LocalDate.parse("1991-01-01", df))
 				.company(company2).build();
 
-		Computer founded = computerDAO.find(5);
+		Computer founded = computerDAO.findOne(5L);
 		assertThat(founded, IsEqual.equalTo(c));
 	}
 
-	@Test(expected = PersistenceException.class)
-	public void testFindEmpty() throws PersistenceException {
-		computerDAO.find(-1216461261261216555L);
-	}
-
-	@Test(expected = PersistenceException.class)
-	public void testFindEmpty0() throws PersistenceException {
-		computerDAO.find(0);
+	@Test
+	public void testFindEmpty() {
+		assertThat(computerDAO.findOne(-1216461261261216555L), IsNull.nullValue());
 	}
 
 	@Test
-	public void testCreate() throws PersistenceException {
+	public void testCreate() {
 
-		int nb = computerDAO.count("");
+		long nb = computerDAO.count();
 
 		// Create 4 computers add them and check if they're in base
 		Computer c1 = Computer.builder().name("A name").introduced(LocalDate.parse("1999-12-13", df)).build();
@@ -94,31 +85,36 @@ public class ComputerDAOITest {
 		Computer c3 = Computer.builder().name("A other name").company(company2).build();
 		Computer c4 = Computer.builder().name("A other other name").introduced(LocalDate.parse("1999-12-13", df))
 				.discontinued(LocalDate.parse("2015-12-15", df)).company(company2).build();
-		computerDAO.create(c1);
-		computerDAO.create(c2);
-		computerDAO.create(c3);
-		computerDAO.create(c4);
+		computerDAO.save(c1);
+		computerDAO.save(c2);
+		computerDAO.save(c3);
+		computerDAO.save(c4);
 
-		assertThat(computerDAO.find(c1.getId()), IsEqual.equalTo(c1));
-		assertThat(computerDAO.find(c2.getId()), IsEqual.equalTo(c2));
-		assertThat(computerDAO.find(c3.getId()), IsEqual.equalTo(c3));
-		assertThat(computerDAO.find(c4.getId()), IsEqual.equalTo(c4));
+		computerDAO.flush();
+
+		assertThat(computerDAO.findOne(c1.getId()), IsEqual.equalTo(c1));
+		assertThat(computerDAO.findOne(c2.getId()), IsEqual.equalTo(c2));
+		assertThat(computerDAO.findOne(c3.getId()), IsEqual.equalTo(c3));
+		assertThat(computerDAO.findOne(c4.getId()), IsEqual.equalTo(c4));
 
 		// Check the numbers of computers
-		assertThat(computerDAO.count(""), IsEqual.equalTo(nb + 4));
+		assertThat(computerDAO.count(), IsEqual.equalTo(nb + 4));
 	}
 
 	@Test
-	public void testUpdate() throws PersistenceException {
-		Computer c = computerDAO.find(5);
+	public void testUpdate() {
+		Computer c = computerDAO.findOne(5L);
 		c.setIntroduced(LocalDate.parse("1997-02-15", df));
 		c.setDiscontinued(LocalDate.parse("1999-12-13", df));
 
-		computerDAO.update(c);
-		assertThat(computerDAO.find(c.getId()), IsEqual.equalTo(c));
+		computerDAO.save(c);
+		computerDAO.flush();
 
-		assertThat(computerDAO.find(c.getId()).getIntroduced(), IsEqual.equalTo(LocalDate.parse("1997-02-15", df)));
-		assertThat(computerDAO.find(c.getId()).getDiscontinued(), IsEqual.equalTo(LocalDate.parse("1999-12-13", df)));
+		assertThat(computerDAO.findOne(c.getId()), IsEqual.equalTo(c));
+
+		assertThat(computerDAO.findOne(c.getId()).getIntroduced(), IsEqual.equalTo(LocalDate.parse("1997-02-15", df)));
+		assertThat(computerDAO.findOne(c.getId()).getDiscontinued(),
+				IsEqual.equalTo(LocalDate.parse("1999-12-13", df)));
 	}
 
 	/**
@@ -127,11 +123,12 @@ public class ComputerDAOITest {
 	 *
 	 * @throws PersistenceException
 	 */
-	@Test(expected = PersistenceException.class)
-	public void testCreateWithException() throws PersistenceException {
+	@Test(expected = DataAccessException.class)
+	public void testCreateWithException() {
 		// A wrong date that should throw an Exception
 		Computer c = Computer.builder().name("A name").company(Company.builder().id(0).name("A name").build()).build();
-		computerDAO.create(c);
+		computerDAO.save(c);
+		computerDAO.flush();
 	}
 
 	/**
@@ -140,130 +137,120 @@ public class ComputerDAOITest {
 	 *
 	 * @throws PersistenceException
 	 */
-	@Test(expected = PersistenceException.class)
-	public void testUpdateWithException() throws PersistenceException {
+	@Test(expected = DataAccessException.class)
+	public void testUpdateWithException() {
 		// A wrong date that should throw an Exception
-		Computer c = computerDAO.find(5);
-		c.setDiscontinued(LocalDate.parse("1900-12-13", df));
+		Computer c = computerDAO.findOne(5L);
+		c.setDiscontinued(LocalDate.parse("0000-12-13", df));
 
-		computerDAO.update(c);
+		computerDAO.save(c);
+		computerDAO.flush();
 	}
 
-	@Test(expected = PersistenceException.class)
-	public void testDelete() throws PersistenceException {
-		int nb = computerDAO.count("");
+	@Test
+	public void testDelete() {
+		long nb = computerDAO.count();
 
-		Computer c = computerDAO.find(6);
+		Computer c = computerDAO.findOne(6L);
 		computerDAO.delete(c);
+		computerDAO.flush();
 
 		// Check the numbers of computers now
-		assertThat(computerDAO.count(""), IsEqual.equalTo(nb - 1));
-		assertThat(computerDAO.find(6), IsNull.nullValue());
+		assertThat(computerDAO.count(), IsEqual.equalTo(nb - 1));
+		assertThat(computerDAO.findOne(6L), IsNull.nullValue());
 	}
 
 	@Test
-	public void testDeleteWithCompanyId() throws PersistenceException {
-		int nb = computerDAO.count("");
+	public void testDeleteWithCompanyId() {
+		long nb = computerDAO.count();
 
-		computerDAO.deleteWithCompanyId(2);
+		computerDAO.removeByCompany(Company.builder().id(2).name("Thinking Machines").build());
+		computerDAO.flush();
 
 		// Check the numbers of computers now
-		assertThat(computerDAO.count(""), IsEqual.equalTo(nb - 4));
+		assertThat(computerDAO.count(), IsEqual.equalTo(nb - 4));
 	}
 
 	@Test
-	public void testList() throws PersistenceException {
-		int nb = computerDAO.count("");
+	public void testfindAll() {
+		int nb = (int) computerDAO.count();
 
 		List<Computer> expectedList = generateList();
 
-		List<Computer> returnedList = computerDAO.list();
+		List<Computer> returnedList = computerDAO.findAll();
 
 		assertThat(returnedList.size(), IsEqual.equalTo(nb));
 		assertThat(returnedList, IsEqual.equalTo(expectedList));
 	}
 
 	@Test
-	public void testPopulatePageOfComputer() throws PersistenceException {
-		Page<Computer> page = new Page<>(1, 10, "", ComputerSort.getSort(1, Direction.ASC));
+	public void testGetPage() {
+		PageRequest pageRequest = new PageRequest(0, 10);
 
-		computerDAO.populateItems(page);
+		Page<Computer> page = computerDAO.findAll(pageRequest);
 		List<Computer> expectedList = generateList();
 
-		assertThat(page.getItems().size(), IsEqual.equalTo(expectedList.size()));
-		assertThat(page.getItems(), IsEqual.equalTo(expectedList));
+		assertThat(page.getContent().size(), IsEqual.equalTo(expectedList.size()));
+		assertThat(page.getContent(), IsEqual.equalTo(expectedList));
 	}
 
 	@Test
-	public void testPopulatePageOfComputerWithSearch() throws PersistenceException {
-		Page<Computer> page = new Page<>(1, 10, "CM", ComputerSort.getSort(1, Direction.ASC));
-
-		computerDAO.populateItems(page);
+	public void testGetPageWithSearch() {
+		PageRequest pageRequest = new PageRequest(0, 10);
+		Page<Computer> page = computerDAO.findByNameContainingOrCompany_NameContaining(pageRequest, "CM", "CM");
 
 		// "CM something" computers only are expected (c2, c3, c4, c5)
 		List<Computer> expectedList = generateSubList();
 
-		assertThat(page.getItems().size(), IsEqual.equalTo(expectedList.size()));
-		assertThat(page.getItems(), IsEqual.equalTo(expectedList));
+		assertThat(page.getContent().size(), IsEqual.equalTo(expectedList.size()));
+		assertThat(page.getContent(), IsEqual.equalTo(expectedList));
 	}
 
 	@Test
-	public void testPopulatePageOfComputerWithSearchAndSortByNameAsc() throws PersistenceException {
-		Page<Computer> page = new Page<>(1, 10, "CM", ComputerSort.getSort(2, Direction.ASC));
-
-		computerDAO.populateItems(page);
+	public void testGetPageWithSearchAndSortByNameAsc() {
+		PageRequest pageRequest = new PageRequest(0, 10, new Sort(Direction.ASC, "name"));
+		Page<Computer> page = computerDAO.findByNameContainingOrCompany_NameContaining(pageRequest, "CM", "CM");
 
 		List<Computer> expectedList = generateSubList();
 
 		expectedList.sort((c1, c2) -> c1.getName().compareTo(c2.getName()));
 
-		assertThat(page.getItems().size(), IsEqual.equalTo(expectedList.size()));
-		assertThat(page.getItems(), IsEqual.equalTo(expectedList));
+		assertThat(page.getContent().size(), IsEqual.equalTo(expectedList.size()));
+		assertThat(page.getContent(), IsEqual.equalTo(expectedList));
 	}
 
 	@Test
-	public void testPopulatePageOfComputerWithSearchAndSortByNameDesc() throws PersistenceException {
-		Page<Computer> page = new Page<>(1, 10, "CM", ComputerSort.getSort(2, Direction.DESC));
-
-		computerDAO.populateItems(page);
+	public void testGetPageWithSearchAndSortByNameDesc() {
+		PageRequest pageRequest = new PageRequest(0, 10, new Sort(Direction.DESC, "name"));
+		Page<Computer> page = computerDAO.findByNameContainingOrCompany_NameContaining(pageRequest, "CM", "CM");
 
 		List<Computer> expectedList = generateSubList();
 
 		expectedList.sort((c1, c2) -> c2.getName().compareTo(c1.getName()));
 
-		assertThat(page.getItems().size(), IsEqual.equalTo(expectedList.size()));
-		assertThat(page.getItems(), IsEqual.equalTo(expectedList));
+		assertThat(page.getContent().size(), IsEqual.equalTo(expectedList.size()));
+		assertThat(page.getContent(), IsEqual.equalTo(expectedList));
 	}
 
 	@Test
-	public void testPopulatePageOfComputerWithSearchAndLimit() throws PersistenceException {
-		Page<Computer> page = new Page<>(2, 2, "CM", ComputerSort.getSort(1, Direction.ASC));
-
-		computerDAO.populateItems(page);
+	public void testGetPageWithSearchAndLimit() {
+		PageRequest pageRequest = new PageRequest(1, 2);
+		Page<Computer> page = computerDAO.findByNameContainingOrCompany_NameContaining(pageRequest, "CM", "CM");
 
 		// c4 and c5 only are expected
 		List<Computer> expectedList = generateSubSubList();
 
-		assertThat(page.getItems().size(), IsEqual.equalTo(expectedList.size()));
-		assertThat(page.getItems(), IsEqual.equalTo(expectedList));
+		assertThat(page.getContent().size(), IsEqual.equalTo(expectedList.size()));
+		assertThat(page.getContent(), IsEqual.equalTo(expectedList));
 	}
 
 	@Test
-	public void testPopulatePageEmpty() throws PersistenceException {
-		Page<Computer> page = new Page<>(50, 10, "", ComputerSort.getSort(1, Direction.ASC));
+	public void testGetPageEmpty() {
+		PageRequest pageRequest = new PageRequest(49, 10);
+		Page<Computer> page = computerDAO.findByNameContainingOrCompany_NameContaining(pageRequest, "", "");
 
-		computerDAO.populateItems(page);
 
-		assertThat(page.getItems().size(), IsEqual.equalTo(0));
-	}
-
-	@Test
-	public void testFindByNameString() throws PersistenceException {
-		assertThat(computerDAO.findByName("Apple").size(), IsEqual.equalTo(4));
-
-		assertThat(computerDAO.findByName("CM-200").size(), IsEqual.equalTo(1));
-
-		assertThat(computerDAO.findByName("CM-200").get(0), IsEqual.equalTo(computerDAO.find(3)));
+		assertThat(page.getContent().size(), IsEqual.equalTo(0));
 	}
 
 	/**

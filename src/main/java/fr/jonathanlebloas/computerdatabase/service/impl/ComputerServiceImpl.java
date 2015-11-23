@@ -5,18 +5,15 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import fr.jonathanlebloas.computerdatabase.model.Computer;
-import fr.jonathanlebloas.computerdatabase.model.Page;
-import fr.jonathanlebloas.computerdatabase.persistence.ComputerDAO;
-import fr.jonathanlebloas.computerdatabase.persistence.exceptions.PersistenceException;
+import fr.jonathanlebloas.computerdatabase.repository.ComputerDAO;
 import fr.jonathanlebloas.computerdatabase.service.ComputerService;
 import fr.jonathanlebloas.computerdatabase.service.exceptions.ComputerNotFoundException;
-import fr.jonathanlebloas.computerdatabase.service.exceptions.EmptyNameException;
-import fr.jonathanlebloas.computerdatabase.service.exceptions.ServiceException;
-import fr.jonathanlebloas.computerdatabase.utils.StringUtils;
 
 /**
  * Service used to manipulate computers Singleton
@@ -31,144 +28,65 @@ public class ComputerServiceImpl implements ComputerService {
 	private ComputerDAO computerDAO;
 
 	@Override
-	public List<Computer> listComputers() throws ServiceException {
+	@Transactional(readOnly = true)
+	public List<Computer> listComputers() {
 		LOGGER.debug("List computers");
-		try {
-			return computerDAO.list();
-		} catch (PersistenceException e) {
-			LOGGER.error("An error occurred during listing of computer", e);
-			throw new ServiceException();
-		}
+		return computerDAO.findAll();
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public String getComputerDetails(Computer c) {
 		LOGGER.debug("Getting details of the computer : {}", c);
-		try {
-			Computer computer = computerDAO.find(c.getId());
-			if (computer == null) {
-				throw new ComputerNotFoundException();
-			} else {
-				return computer.toString();
-			}
-		} catch (PersistenceException e) {
-			LOGGER.error("An error occurred during getting details of computer : " + c, e);
-			throw new ServiceException();
+		Computer computer = computerDAO.findOne(c.getId());
+		if (computer == null) {
+			throw new ComputerNotFoundException();
+		} else {
+			return computer.toString();
 		}
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public Computer find(long id) {
 		LOGGER.debug("Find computer with id : {}", id);
-		try {
-			Computer computer = computerDAO.find(id);
-			if (computer == null) {
-				throw new ComputerNotFoundException();
-			} else {
-				return computer;
-			}
-		} catch (PersistenceException e) {
-			LOGGER.error("An error occurred finding the computer with id : " + id, e);
-			throw new ServiceException();
+		Computer computer = computerDAO.findOne(id);
+		if (computer == null) {
+			throw new ComputerNotFoundException();
+		} else {
+			return computer;
 		}
 	}
 
 	@Override
-	public List<Computer> find(String s) {
-		LOGGER.debug("Find computers with {} in their name", s);
-		try {
-			if (StringUtils.isEmpty(s)) {
-				throw new EmptyNameException();
-			}
-
-			return computerDAO.findByName(s);
-		} catch (PersistenceException e) {
-			LOGGER.error("An error occurred finding the computers having '" + s + "' in their name", e);
-			throw new ServiceException();
-		}
-	}
-
-	@Override
-	public Computer create(Computer c) {
+	public void create(Computer c) {
 		LOGGER.debug("Create computer : {}", c);
-		try {
-			computerDAO.create(c);
-			return c;
-		} catch (PersistenceException e) {
-			LOGGER.error("An error occurred during creation of the computer : " + c, e);
-			throw new ServiceException();
-		}
+		computerDAO.save(c);
 	}
 
 	@Override
-	public Computer update(Computer c) {
+	public void update(Computer c) {
 		LOGGER.debug("Update computer : {}", c);
-		try {
-			if (c == null) {
-				throw new IllegalArgumentException("The computer is null");
-			}
-
-			// Check the Computer already exists
-			if (computerDAO.find(c.getId()) == null) {
-				throw new ComputerNotFoundException();
-			}
-
-			computerDAO.update(c);
-			return c;
-
-		} catch (PersistenceException e) {
-			LOGGER.error("An error occurred during update of the computer : " + c, e);
-			throw new ServiceException();
+		if (c == null) {
+			throw new IllegalArgumentException("The computer is null");
 		}
+		// Check the Computer already exists
+		if (computerDAO.findOne(c.getId()) == null) {
+			throw new ComputerNotFoundException();
+		}
+		computerDAO.save(c);
 	}
 
 	@Override
-	public Computer delete(Computer c) {
+	public void delete(Computer c) {
 		LOGGER.debug("Delete computer : {}", c);
-		try {
-			if (c == null) {
-				return null;
-			}
-
-			Computer computer = computerDAO.find(c.getId());
-			if (computer == null) {
-				throw new ComputerNotFoundException();
-			} else {
-				computerDAO.delete(computer);
-				return computer;
-			}
-		} catch (PersistenceException e) {
-			LOGGER.error("An error occurred during deletion of the computer : " + c, e);
-			throw new ServiceException();
-		}
+		computerDAO.delete(c);
 	}
 
 	@Override
-	public void populatePage(Page<Computer> page) {
-		LOGGER.debug("Populating the computers page : {}", page);
-		try {
-			if (page.getIndex() < 1) {
-				page.setIndex(1);
-			}
-			if (page.getSize() <= 0) {
-				page.setSize(10);
-			}
-
-			int total = computerDAO.count(page.getSearch());
-			int maxPerpage = page.getSize();
-			int nbTotalPages = (total + maxPerpage - 1) / maxPerpage;
-
-			page.setNbTotalElement(total);
-
-			page.setNbTotalPages(nbTotalPages);
-
-			computerDAO.populateItems(page);
-
-			LOGGER.debug("Computers page populated : {}", page);
-
-		} catch (PersistenceException e) {
-			LOGGER.error("An error occurred during while populating the computers page : " + page, e);
-			throw new ServiceException();
-		}
+	@Transactional(readOnly = true)
+	public Page<Computer> getPage(Pageable pageable, String search) {
+		LOGGER.debug("Populating the computers page : {}", pageable);
+		return computerDAO.findByNameContainingOrCompany_NameContaining(pageable, search, search);
 	}
 }

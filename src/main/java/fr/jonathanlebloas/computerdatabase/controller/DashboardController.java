@@ -3,8 +3,9 @@ package fr.jonathanlebloas.computerdatabase.controller;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -13,8 +14,12 @@ import javax.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.MessageSource;
-import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.domain.Sort.NullHandling;
+import org.springframework.data.domain.Sort.Order;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,10 +29,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import fr.jonathanlebloas.computerdatabase.dto.ComputerDTO;
 import fr.jonathanlebloas.computerdatabase.mapper.impl.ComputerMapper;
 import fr.jonathanlebloas.computerdatabase.model.Computer;
-import fr.jonathanlebloas.computerdatabase.model.Page;
 import fr.jonathanlebloas.computerdatabase.service.ComputerService;
-import fr.jonathanlebloas.computerdatabase.sort.ComputerSort;
-import fr.jonathanlebloas.computerdatabase.sort.Sort.Direction;
 
 @Controller
 public class DashboardController {
@@ -41,7 +43,9 @@ public class DashboardController {
 	private static final String PARAM_DIRECTION = "direction";
 
 	private static final String ATTR_PAGE = "page";
-	private static final String ATTR_ORDER_INDEX = "orderIndex";
+	private static final String ATTR_PAGE_RANGE = "pageRange";
+	private static final String ATTR_SEARCH = "search";
+	private static final String ATTR_ORDER = "order";
 	private static final String ATTR_COMPUTERS = "computers";
 	private static final String ATTR_COLUMNS = "columns";
 
@@ -52,8 +56,10 @@ public class DashboardController {
 	 */
 	private static final int COOKIES_MAX_AGE = 300;
 
-	@Autowired
-	private MessageSource messages;
+	/**
+	 * The maximum of pages for page menu, preferably odd
+	 */
+	private static final int MAX_INDEXES_MENU = 7;
 
 	@Autowired
 	private ComputerService computerService;
@@ -90,25 +96,54 @@ public class DashboardController {
 		final int pageIndex = getPageIndex(request, pageIndexParam);
 		final int size = getSize(request, sizeParam);
 		final String search = getSearch(request, searchParam);
-		final int order = getOrderField(request, orderParam);
+		final String orderField = getOrderField(request, orderParam);
 		final Direction direction = getDirection(request, directionParam);
 
-		LOGGER.info("Dashboard : GET index={} size={} search={} order={} direction={}", pageIndex, size, search, order,
+		LOGGER.info("Dashboard : GET index={} size={} search={} order={} direction={}", pageIndex, size, search, orderField,
 				direction);
 
-		Page<Computer> page = new Page<>(pageIndex, size, search, ComputerSort.getSort(order, direction));
-		computerService.populatePage(page);
-		List<ComputerDTO> computers = computerMapper.toDTO(page.getItems());
+		Order order = new Order(direction, orderField, NullHandling.NULLS_LAST);
+		PageRequest pageRequest = new PageRequest(pageIndex, size, new Sort(order));
+		Page<Computer> page = computerService.getPage(pageRequest, search);
+		List<ComputerDTO> computers = computerMapper.toDTO(page.getContent());
 
-		List<OrderColumn> columns = generateOrderColumns(page);
 		model.addAttribute(ATTR_COMPUTERS, computers);
 		model.addAttribute(ATTR_PAGE, page);
-		model.addAttribute(ATTR_ORDER_INDEX, ComputerSort.getFieldIndex(page.getSort().getField()));
-		model.addAttribute(ATTR_COLUMNS, columns);
+		model.addAttribute(ATTR_PAGE_RANGE, getRange(page));
+		model.addAttribute(ATTR_SEARCH, search);
+		model.addAttribute(ATTR_ORDER, order);
+		model.addAttribute(ATTR_COLUMNS, generateOrderColumns(page));
 
-		prepareCookies(response, pageIndex, size, search, order, direction);
+		prepareCookies(response, pageIndex, size, search, orderField, direction);
 
 		return PATH_DASHBOARD_VIEW;
+	}
+
+	/**
+	 * Return a list that contains the indexes for the pages menu
+	 *
+	 * @return
+	 */
+	public List<Integer> getRange(Page<?> page) {
+		int ofset = MAX_INDEXES_MENU / 2;
+
+		// If there is not enough pages
+		if (page.getTotalPages() <= MAX_INDEXES_MENU) {
+			return IntStream.range(0, page.getTotalPages()).boxed().collect(Collectors.toList());
+		}
+		// If we're at the beginning
+		if (page.getNumber() <= ofset - 1) {
+			return IntStream.range(0, MAX_INDEXES_MENU).boxed().collect(Collectors.toList());
+		}
+		// If we're at the end
+		if (page.getNumber() >= page.getTotalPages() - ofset) {
+			return IntStream.range(page.getTotalPages() - MAX_INDEXES_MENU, page.getTotalPages()).boxed()
+					.collect(Collectors.toList());
+		} else {
+			// common case
+			return IntStream.range(page.getNumber() - ofset, page.getNumber() + ofset + 1).boxed()
+					.collect(Collectors.toList());
+		}
 	}
 
 	/**
@@ -122,9 +157,9 @@ public class DashboardController {
 	private int getPageIndex(HttpServletRequest request, Optional<String> pageIndexParam) {
 		if (pageIndexParam.isPresent()) {
 			int parsed = Integer.parseInt(pageIndexParam.get());
-			return parsed > 0 ? parsed : 1;
+			return parsed >= 0 ? parsed : 0;
 		} else {
-			return getIntFromCookieOrDefault(request, PARAM_PAGE, 1);
+			return getIntFromCookieOrDefault(request, PARAM_PAGE, 0);
 		}
 	}
 
@@ -134,7 +169,7 @@ public class DashboardController {
 	 *
 	 * @param request
 	 * @param sizeParam
-	 * @returnw<
+	 * @return
 	 */
 	private int getSize(HttpServletRequest request, Optional<String> sizeParam) {
 		if (sizeParam.isPresent()) {
@@ -157,17 +192,8 @@ public class DashboardController {
 		if (searchParam.isPresent()) {
 			return searchParam.get();
 		} else {
-			Cookie[] cookies = request.getCookies();
-			if (cookies != null) {
-				Optional<Cookie> cookie = Arrays.stream(request.getCookies())
-						.filter(c -> PARAM_SEARCH.equals(c.getName())).findFirst();
-				if (cookie.isPresent()) {
-					return cookie.get().getValue();
-				}
-			}
+			return getFromCookieOrDefault(request, PARAM_SEARCH, "");
 		}
-		// Default
-		return "";
 	}
 
 	/**
@@ -178,12 +204,11 @@ public class DashboardController {
 	 * @param orderParam
 	 * @return
 	 */
-	private int getOrderField(HttpServletRequest request, Optional<String> orderParam) {
+	private String getOrderField(HttpServletRequest request, Optional<String> orderParam) {
 		if (orderParam.isPresent()) {
-			int parsed = Integer.parseInt(orderParam.get());
-			return parsed > 0 ? parsed : 1;
+			return orderParam.get();
 		} else {
-			return getIntFromCookieOrDefault(request, PARAM_ORDER, 1);
+			return getFromCookieOrDefault(request, PARAM_ORDER, "id");
 		}
 	}
 
@@ -226,13 +251,25 @@ public class DashboardController {
 		return defaultValue;
 	}
 
-	private static void prepareCookies(HttpServletResponse response, int pageIndex, int size, String search, int order,
-			Direction direction) {
+	private static String getFromCookieOrDefault(HttpServletRequest request, String paramName, String defaultValue) {
+		Cookie[] cookies = request.getCookies();
+		if (cookies != null) {
+			Optional<Cookie> cookie = Arrays.stream(request.getCookies()).filter(c -> paramName.equals(c.getName()))
+					.findFirst();
+			if (cookie.isPresent()) {
+				return cookie.get().getValue();
+			}
+		}
+		return defaultValue;
+	}
+
+	private static void prepareCookies(HttpServletResponse response, int pageIndex, int size, String search,
+			String order, Direction direction) {
 		List<Cookie> cookies = new ArrayList<>();
 		cookies.add(new Cookie(PARAM_PAGE, "" + pageIndex));
 		cookies.add(new Cookie(PARAM_SIZE, "" + size));
 		cookies.add(new Cookie(PARAM_SEARCH, search));
-		cookies.add(new Cookie(PARAM_ORDER, "" + order));
+		cookies.add(new Cookie(PARAM_ORDER, order));
 		cookies.add(new Cookie(PARAM_DIRECTION, direction.name()));
 
 		cookies.stream().forEach(c -> {
@@ -241,56 +278,29 @@ public class DashboardController {
 		});
 	}
 
-	private List<OrderColumn> generateOrderColumns(Page<Computer> page) {
-		Locale locale = LocaleContextHolder.getLocale();
-
-		List<OrderColumn> columns = new ArrayList<>();
-		columns.add(new OrderColumn(messages.getMessage("computer.name", null, locale), 2, generateDirection(2, page)));
-		columns.add(new OrderColumn(messages.getMessage("computer.introduced", null, locale), 3, generateDirection(3, page)));
-		columns.add(new OrderColumn(messages.getMessage("computer.discontinued", null, locale), 4, generateDirection(4, page)));
-		columns.add(new OrderColumn(messages.getMessage("computer.company", null, locale), 5, generateDirection(5, page)));
+	private static List<Order> generateOrderColumns(Page<Computer> page) {
+		List<Order> columns = new ArrayList<>();
+		columns.add(new Order(generateDirection("name", page), "name"));
+		columns.add(new Order(generateDirection("introduced", page), "introduced"));
+		columns.add(new Order(generateDirection("discontinued", page), "discontinued"));
+		columns.add(new Order(generateDirection("company.name", page), "company.name"));
 
 		return columns;
 	}
 
 	/**
-	 * Generate the order of the given index Column given the current page
+	 * Generate the opposite direction of the given field or default ASC
 	 *
 	 * @param index
 	 * @param page
 	 * @return
 	 */
-	private static Direction generateDirection(int index, Page<Computer> page) {
-		if (ComputerSort.getFieldIndex(page.getSort().getField()) == index
-				&& page.getSort().getDirection() == Direction.ASC) {
+	private static Direction generateDirection(String field, Page<Computer> page) {
+		Order order = page.getSort().getOrderFor(field);
+		if (order != null && order.getDirection() == Direction.ASC) {
 			return Direction.DESC;
 		} else {
 			return Direction.ASC;
-		}
-	}
-
-	public static final class OrderColumn {
-		private String name;
-		private int index;
-		private Direction direction;
-
-		public OrderColumn(String name, int index, Direction direction) {
-			super();
-			this.name = name;
-			this.index = index;
-			this.direction = direction;
-		}
-
-		public String getName() {
-			return name;
-		}
-
-		public int getIndex() {
-			return index;
-		}
-
-		public Direction getDirection() {
-			return direction;
 		}
 	}
 }

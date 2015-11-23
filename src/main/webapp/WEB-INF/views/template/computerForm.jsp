@@ -46,7 +46,7 @@
 
 <div class="form-group has-feedback">
 	<form:label path="companyId" cssClass="control-label">
-		<spring:message code="computer.company" />
+		<spring:message code="computer.company.name" />
 	</form:label>
 	<form:select path="companyId" cssClass="form-control" id="companyId">
 		<form:option value="0" label="--"/>

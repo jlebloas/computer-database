@@ -1,19 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <beans xmlns="http://www.springframework.org/schema/beans"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xmlns:context="http://www.springframework.org/schema/context"
-	xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:tx="http://www.springframework.org/schema/tx" xmlns:jpa="http://www.springframework.org/schema/data/jpa"
 	xsi:schemaLocation="
       http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.2.xsd
       http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.2.xsd
-      http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.2.xsd">
+      http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.2.xsd
+      http://www.springframework.org/schema/data/jpa http://www.springframework.org/schema/data/jpa/spring-jpa.xsd">
 
 	<!-- Load properties -->
 	<context:property-placeholder location="classpath:config/config.properties" />
 
 	<!-- Enable Annotation based configuration -->
 	<context:component-scan base-package="fr.jonathanlebloas.computerdatabase" />
+
+	<!-- Enable usage of repositories -->
+	<jpa:repositories base-package="fr.jonathanlebloas.computerdatabase.repository" />
 
 	<!-- BoneCP datasource configuration -->
 	<bean id="dataSource" class="com.jolbox.bonecp.BoneCPDataSource"
@@ -28,22 +31,43 @@
 		<property name="defaultAutoCommit" value="false" />
 	</bean>
 
-	<!-- Transaction Manager -->
-	<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+	<bean id="entityManagerFactory"
+		class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
 		<property name="dataSource" ref="dataSource" />
+		<property name="packagesToScan" value="fr.jonathanlebloas.computerdatabase.model" />
+		<property name="jpaVendorAdapter">
+			<bean class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter">
+				<property name="showSql" value="false" />
+			</bean>
+		</property>
+		<property name="jpaProperties">
+			<props>
+				<prop key="hibernate.format_sql">false</prop>
+			</props>
+		</property>
+	</bean>
+
+	<!-- Transaction Manager -->
+	<bean id="transactionManager"
+		class="org.springframework.orm.jpa.JpaTransactionManager">
+		<property name="entityManagerFactory" ref="entityManagerFactory" />
 	</bean>
 
 	<!-- Enable Annotation based Declarative Transaction Management -->
 	<tx:annotation-driven transaction-manager="transactionManager" />
 
 	<!-- Enable JSR 303 validation -->
-	<bean id="validator" class="org.springframework.validation.beanvalidation.LocalValidatorFactoryBean"/>
+	<bean id="validator"
+		class="org.springframework.validation.beanvalidation.LocalValidatorFactoryBean" />
 
-	<!-- Enable JMX monitoring of the datasource  -->
-	<bean id="mbeanExporter" class="org.springframework.jmx.export.MBeanExporter" lazy-init="false">
+	<!-- Enable JMX monitoring of the datasource -->
+	<bean id="mbeanExporter" class="org.springframework.jmx.export.MBeanExporter"
+		lazy-init="false">
 		<property name="beans">
 			<map>
 				<entry key="computer-database:name=dataSource" value-ref="dataSource" />
+				<entry key="computer-database:name=transactionManager" value-ref="transactionManager" />
+				<entry key="computer-database:name=entityManagerFactory" value-ref="entityManagerFactory" />
 			</map>
 		</property>
 	</bean>

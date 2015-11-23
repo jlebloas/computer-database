@@ -2,8 +2,10 @@ package fr.jonathanlebloas.computerdatabase.service;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import fr.jonathanlebloas.computerdatabase.model.Computer;
-import fr.jonathanlebloas.computerdatabase.model.Page;
 
 public interface ComputerService {
 
@@ -31,44 +33,33 @@ public interface ComputerService {
 	Computer find(long id);
 
 	/**
-	 * Retrieves the List of Computer with the parameter in their name
-	 *
-	 * @param s
-	 * @return The list
-	 */
-	List<Computer> find(String s);
-
-	/**
 	 * Create a new computer
 	 *
 	 * @param c
-	 * @return
 	 */
-	Computer create(Computer c);
+	void create(Computer c);
 
 	/**
 	 * Update the given computer
 	 *
 	 * @param c
-	 * @return
 	 */
-	Computer update(Computer c);
+	void update(Computer c);
 
 	/**
 	 * Delete the given computer
 	 *
 	 * @param c
-	 * @return
 	 */
-	Computer delete(Computer c);
+	void delete(Computer c);
 
 	/**
-	 * Fill the page with all elements
+	 * Return the page asked
 	 *
-	 * The authorized indexes are 1,2,3,4,6
-	 *
-	 * @param page
+	 * @param pageable
+	 * @param search
+	 * @return
 	 */
-	void populatePage(Page<Computer> page);
+	Page<Computer> getPage(Pageable pageable, String search);
 
 }

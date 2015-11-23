@@ -30,6 +30,9 @@
 	<logger name="com.jolbox.bonecp">
 		<level value="OFF" />
 	</logger>
+	<logger name="org.hibernate">
+		<level value="OFF" />
+	</logger>
 
 	<root level="OFF">
 		<appender-ref ref="STDOUT" />

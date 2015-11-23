@@ -28,10 +28,17 @@
 
 		<!-- Spring FrameWork -->
 		<spring-version>4.2.2.RELEASE</spring-version>
+		<spring-data-jpa-version>1.9.1.RELEASE</spring-data-jpa-version>
+
+		<!-- ORM / Entity Manager -->
+		<hibernate-entitymanager-version>5.0.4.Final</hibernate-entitymanager-version>
+		<hibernate-java8-version>5.0.4.Final</hibernate-java8-version>
+		<jta-version>1.1</jta-version>
 
 		<!-- Validation -->
 		<javax-validation-api-version>1.1.0.Final</javax-validation-api-version>
 		<hibernate-validator-version>5.2.2.Final</hibernate-validator-version>
+		<javax.el-api-version>2.2.4</javax.el-api-version>
 		<commons-beanutils-version>1.9.2</commons-beanutils-version>
 
 		<!-- UI CLI -->
@@ -127,6 +134,38 @@
 			<artifactId>spring-jdbc</artifactId>
 			<version>${spring-version}</version>
 		</dependency>
+		<dependency>
+			<groupId>org.springframework.data</groupId>
+			<artifactId>spring-data-jpa</artifactId>
+			<version>${spring-data-jpa-version}</version>
+		</dependency>
+
+		<!-- ORM / Entity Manager -->
+		<dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-entitymanager</artifactId>
+			<version>${hibernate-entitymanager-version}</version>
+			<!-- Exclude dependancy on xml-apis for selenium -->
+			<exclusions>
+				<exclusion>
+					<artifactId>xml-apis</artifactId>
+					<groupId>xml-apis</groupId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>javax.transaction</groupId>
+			<artifactId>jta</artifactId>
+			<version>${jta-version}</version>
+			<scope>runtime</scope>
+		</dependency>
+		<!-- Dependency needed for usage of java 8 Localtime with Hibernate -->
+		<dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-java8</artifactId>
+			<version>${hibernate-java8-version}</version>
+			<scope>runtime</scope>
+		</dependency>
 
 		<!-- Form Validation using Annotations -->
 		<dependency>
@@ -138,6 +177,11 @@
 			<groupId>org.hibernate</groupId>
 			<artifactId>hibernate-validator</artifactId>
 			<version>${hibernate-validator-version}</version>
+		</dependency>
+		<dependency>
+			<groupId>javax.el</groupId>
+			<artifactId>javax.el-api</artifactId>
+			<version>${javax.el-api-version}</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-beanutils</groupId>

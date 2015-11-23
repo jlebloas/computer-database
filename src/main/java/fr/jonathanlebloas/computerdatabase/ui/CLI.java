@@ -16,20 +16,16 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 
 import fr.jonathanlebloas.computerdatabase.model.Company;
 import fr.jonathanlebloas.computerdatabase.model.Computer;
-import fr.jonathanlebloas.computerdatabase.model.Page;
 import fr.jonathanlebloas.computerdatabase.service.CompanyService;
 import fr.jonathanlebloas.computerdatabase.service.ComputerService;
 import fr.jonathanlebloas.computerdatabase.service.exceptions.ComputerNotFoundException;
 import fr.jonathanlebloas.computerdatabase.service.exceptions.EmptyNameException;
 import fr.jonathanlebloas.computerdatabase.service.exceptions.ServiceException;
-import fr.jonathanlebloas.computerdatabase.sort.CompanySort;
-import fr.jonathanlebloas.computerdatabase.sort.ComputerSort;
-import fr.jonathanlebloas.computerdatabase.sort.Sort;
-import fr.jonathanlebloas.computerdatabase.sort.Sort.Direction;
 import fr.jonathanlebloas.computerdatabase.utils.StringUtils;
 
 /**
@@ -210,19 +206,16 @@ public final class CLI {
 				} else {
 					int index = Integer.parseInt(options.getOptionValue(CONSOLE_ARG_PAGE));
 
-					Page<Company> page;
-					System.out.println(options.getOptionValue(CONSOLE_ARG_SEARCH));
-
-					Sort sort = CompanySort.getSort(1, Direction.ASC);
+					String search;
 					if (options.hasOption(CONSOLE_ARG_SEARCH)) {
-						page = new Page<>(index, 10, options.getOptionValue(CONSOLE_ARG_SEARCH), sort);
+						search = options.getOptionValue(CONSOLE_ARG_SEARCH);
 					} else {
-						page = new Page<>(index, 10, "", sort);
+						search = "";
 					}
 
-					companyService.populatePage(page);
+					PageRequest request = new PageRequest(index, 10);
 
-					displayList(page.getItems());
+					displayList(companyService.getPage(request, search).getContent());
 				}
 			} else {
 				displayList(companyService.listCompanies());
@@ -247,17 +240,16 @@ public final class CLI {
 				} else {
 					int index = Integer.parseInt(options.getOptionValue(CONSOLE_ARG_PAGE));
 
-					Page<Computer> page;
-					Sort sort = ComputerSort.getSort(1, Direction.ASC);
+					String search;
 					if (options.hasOption(CONSOLE_ARG_SEARCH)) {
-						page = new Page<>(index, 10, options.getOptionValue(CONSOLE_ARG_SEARCH), sort);
+						search = options.getOptionValue(CONSOLE_ARG_SEARCH);
 					} else {
-						page = new Page<>(index, 10, "", sort);
+						search = "";
 					}
 
-					computerService.populatePage(page);
+					PageRequest request = new PageRequest(index, 10);
 
-					displayList(page.getItems());
+					displayList(computerService.getPage(request, search).getContent());
 				}
 			} else {
 				displayList(computerService.listComputers());

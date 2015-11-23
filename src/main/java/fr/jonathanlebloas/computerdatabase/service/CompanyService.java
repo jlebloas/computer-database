@@ -2,8 +2,10 @@ package fr.jonathanlebloas.computerdatabase.service;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import fr.jonathanlebloas.computerdatabase.model.Company;
-import fr.jonathanlebloas.computerdatabase.model.Page;
 
 /**
  * Service interface used to manipulate companies
@@ -26,21 +28,13 @@ public interface CompanyService {
 	Company find(long id);
 
 	/**
-	 * Retrieves the list of Company with s in their name
+	 * Return the page asked
 	 *
-	 * @param name
+	 * @param pageable
+	 * @param search
 	 * @return
 	 */
-	List<Company> find(String s);
-
-	/**
-	 * Fill the page with all elements
-	 *
-	 * index order possibles are 1 and 2
-	 *
-	 * @param page
-	 */
-	void populatePage(Page<Company> page);
+	Page<Company> getPage(Pageable pageable, String search);
 
 	/**
 	 * Delete the given company

@@ -2,14 +2,27 @@ package fr.jonathanlebloas.computerdatabase.model;
 
 import java.time.LocalDate;
 
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+
 import fr.jonathanlebloas.computerdatabase.utils.StringUtils;
 
 /**
  * A computer has a name, the date when it was introduced, eventually the date
  * when it was discontinued, and the company. The name is mandatory
  */
+@Entity
+@Table(name = "computer")
 public class Computer {
 
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private long id;
 
 	private String name;
@@ -18,6 +31,8 @@ public class Computer {
 
 	private LocalDate discontinued;
 
+	@ManyToOne(fetch = FetchType.EAGER)
+	@JoinColumn(name = "company_id")
 	private Company company;
 
 	private Computer() {
