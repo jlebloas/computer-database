@@ -1,0 +1,53 @@
+<?xml version="1.0"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+	  <groupId>fr.jonathanlebloas</groupId>
+	  <artifactId>computer-database</artifactId>
+	  <version>1.0.0-SNAPSHOT</version>
+	</parent>
+	<artifactId>computer-database-service</artifactId>
+	<name>computer-database-service</name>
+	<packaging>jar</packaging>
+	
+	<dependencies>
+		<dependency>
+			<groupId>fr.jonathanlebloas</groupId>
+			<artifactId>computer-database-core</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>fr.jonathanlebloas</groupId>
+			<artifactId>computer-database-persistence</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<!-- Spring FrameWork -->
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-tx</artifactId>
+		</dependency>
+		<!-- TODO Refactor service exceptions, currently need spring-web for binding on reponse status -->
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-web</artifactId>
+		</dependency>
+
+		<!-- Tests -->
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-all</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+</project>
