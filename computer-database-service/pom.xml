@@ -32,11 +32,6 @@
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-tx</artifactId>
 		</dependency>
-		<!-- TODO Refactor service exceptions, currently need spring-web for binding on reponse status -->
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-web</artifactId>
-		</dependency>
 
 		<!-- Tests -->
 		<dependency>

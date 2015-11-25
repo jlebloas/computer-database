@@ -14,7 +14,6 @@ import fr.jonathanlebloas.computerdatabase.model.Company;
 import fr.jonathanlebloas.computerdatabase.repository.CompanyDAO;
 import fr.jonathanlebloas.computerdatabase.repository.ComputerDAO;
 import fr.jonathanlebloas.computerdatabase.service.CompanyService;
-import fr.jonathanlebloas.computerdatabase.service.exceptions.CompanyNotFoundException;
 
 /**
  * Service used to manipulate companies Singleton
@@ -42,12 +41,7 @@ public class CompanyServiceImpl implements CompanyService {
 	@Transactional(readOnly = true)
 	public Company find(long id) {
 		LOGGER.debug("Find company with id : {}", id);
-		Company company = companyDAO.findOne(id);
-		if (company == null) {
-			throw new CompanyNotFoundException();
-		} else {
-			return company;
-		}
+		return companyDAO.findOne(id);
 	}
 
 	@Override

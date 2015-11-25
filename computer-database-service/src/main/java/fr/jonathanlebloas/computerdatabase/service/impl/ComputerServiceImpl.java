@@ -13,7 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 import fr.jonathanlebloas.computerdatabase.model.Computer;
 import fr.jonathanlebloas.computerdatabase.repository.ComputerDAO;
 import fr.jonathanlebloas.computerdatabase.service.ComputerService;
-import fr.jonathanlebloas.computerdatabase.service.exceptions.ComputerNotFoundException;
 
 /**
  * Service used to manipulate computers Singleton
@@ -39,23 +38,14 @@ public class ComputerServiceImpl implements ComputerService {
 	public String getComputerDetails(Computer c) {
 		LOGGER.debug("Getting details of the computer : {}", c);
 		Computer computer = computerDAO.findOne(c.getId());
-		if (computer == null) {
-			throw new ComputerNotFoundException();
-		} else {
-			return computer.toString();
-		}
+		return computer.toString();
 	}
 
 	@Override
 	@Transactional(readOnly = true)
 	public Computer find(long id) {
 		LOGGER.debug("Find computer with id : {}", id);
-		Computer computer = computerDAO.findOne(id);
-		if (computer == null) {
-			throw new ComputerNotFoundException();
-		} else {
-			return computer;
-		}
+		return computerDAO.findOne(id);
 	}
 
 	@Override
@@ -68,11 +58,11 @@ public class ComputerServiceImpl implements ComputerService {
 	public void update(Computer c) {
 		LOGGER.debug("Update computer : {}", c);
 		if (c == null) {
-			throw new IllegalArgumentException("The computer is null");
+			throw new IllegalArgumentException("You must specify a computer");
 		}
 		// Check the Computer already exists
-		if (computerDAO.findOne(c.getId()) == null) {
-			throw new ComputerNotFoundException();
+		if (!computerDAO.exists(c.getId())) {
+			throw new RuntimeException("Computer with id" + c.getId() + " not found !");
 		}
 		computerDAO.save(c);
 	}

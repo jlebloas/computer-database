@@ -23,9 +23,6 @@ import fr.jonathanlebloas.computerdatabase.model.Company;
 import fr.jonathanlebloas.computerdatabase.model.Computer;
 import fr.jonathanlebloas.computerdatabase.service.CompanyService;
 import fr.jonathanlebloas.computerdatabase.service.ComputerService;
-import fr.jonathanlebloas.computerdatabase.service.exceptions.ComputerNotFoundException;
-import fr.jonathanlebloas.computerdatabase.service.exceptions.EmptyNameException;
-import fr.jonathanlebloas.computerdatabase.service.exceptions.ServiceException;
 import fr.jonathanlebloas.computerdatabase.utils.StringUtils;
 
 /**
@@ -226,7 +223,7 @@ public final class CLI {
 			System.out.println("\t Your id has a wrong format.");
 		} catch (IndexOutOfBoundsException e) {
 			System.out.println("\t The page does not exist.");
-		} catch (ServiceException e) {
+		} catch (Exception e) {
 			System.out.println("\t" + e.getMessage());
 		}
 	}
@@ -260,7 +257,7 @@ public final class CLI {
 			System.out.println("\t Your id has a wrong format.");
 		} catch (IndexOutOfBoundsException e) {
 			System.out.println("\t The page does not exist.");
-		} catch (ServiceException e) {
+		} catch (Exception e) {
 			System.out.println("\t" + e.getMessage());
 		}
 	}
@@ -279,11 +276,9 @@ public final class CLI {
 			String computerDetails = computerService.getComputerDetails(c);
 			System.out.println("\t" + computerDetails);
 
-		} catch (ComputerNotFoundException e) {
-			System.out.println("\t " + e.getMessage());
 		} catch (NumberFormatException e) {
 			System.out.println("\t Your id has a wrong format.");
-		} catch (ServiceException e) {
+		} catch (Exception e) {
 			System.out.println("\t" + e.getMessage());
 		}
 	}
@@ -292,7 +287,7 @@ public final class CLI {
 		try {
 			// Get the mandatory name asked
 			if (options == null || !options.hasOption(CONSOLE_ARG_NAME)) {
-				throw new EmptyNameException();
+				throw new RuntimeException("The computer must have a name !");
 			}
 			String name = options.getOptionValue(CONSOLE_ARG_NAME);
 
@@ -321,10 +316,10 @@ public final class CLI {
 
 			System.out.println("\t Your computer as been successfully created ! : " + newComputer.toString());
 
-		} catch (ServiceException e) {
-			System.out.println("\t" + e.getMessage());
 		} catch (DateTimeParseException e) {
 			System.out.println("\t Your date is not well formated. Format it like 2011-12-03");
+		} catch (Exception e) {
+			System.out.println("\t" + e.getMessage());
 		}
 	}
 
@@ -339,6 +334,9 @@ public final class CLI {
 			Long id = Long.parseLong(options.getOptionValue(CONSOLE_ARG_ID));
 
 			Computer computer = computerService.find(id);
+			if (computer == null) {
+				throw new Exception("The computer requested with this id does not exist.");
+			}
 
 			if (options.hasOption(CONSOLE_ARG_NAME)) {
 				computer.setName(options.getOptionValue(CONSOLE_ARG_NAME));
@@ -370,8 +368,10 @@ public final class CLI {
 			System.out.println("\t Your date is not well formated.");
 		} catch (NumberFormatException e) {
 			System.out.println("\t Your id has a wrong format. Format it like 2011-12-03");
-		} catch (ServiceException e) {
-			System.out.println(e.getMessage());
+		} catch (IllegalArgumentException e) {
+			System.out.println("\t " + e.getMessage());
+		} catch (Exception e) {
+			System.out.println("\t " + e.getMessage());
 		}
 	}
 
@@ -386,16 +386,17 @@ public final class CLI {
 			Long id = Long.parseLong(options.getOptionValue(CONSOLE_ARG_ID));
 
 			Computer computer = computerService.find(id);
+			if (computer == null) {
+				throw new Exception("The computer requested with this id does not exist.");
+			}
 
 			// Update the computer with the service
 			computerService.delete(computer);
 			System.out.println("\t Your computer as been successfully deleted ! : " + computer.toString());
 
-		} catch (ComputerNotFoundException e) {
-			System.out.println("\t The computer requested with this id does not exist.");
 		} catch (NumberFormatException e) {
 			System.out.println("\t Your id has a wrong format.");
-		} catch (ServiceException e) {
+		} catch (Exception e) {
 			System.out.println("\t" + e.getMessage());
 		}
 	}
@@ -411,16 +412,16 @@ public final class CLI {
 			Long id = Long.parseLong(options.getOptionValue(CONSOLE_ARG_ID));
 
 			Company company = companyService.find(id);
-
+			if (company == null) {
+				throw new Exception("The company requested with this id does not exist.");
+			}
 			// Update the computer with the service
 			companyService.delete(company);
 			System.out.println("\t Your company as been successfully deleted ! : " + company.toString());
 
-		} catch (ComputerNotFoundException e) {
-			System.out.println("\t The computer requested with this id does not exist.");
 		} catch (NumberFormatException e) {
 			System.out.println("\t Your id has a wrong format.");
-		} catch (ServiceException e) {
+		} catch (Exception e) {
 			System.out.println("\t" + e.getMessage());
 		}
 	}
