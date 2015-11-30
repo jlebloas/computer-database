@@ -615,3 +615,10 @@ insert into computer (id,name,introduced,discontinued,company_id) values (571,'L
 insert into computer (id,name,introduced,discontinued,company_id) values (572,'Dell Vostro',null,null,null);
 insert into computer (id,name,introduced,discontinued,company_id) values (573,'Gateway LT3103U','2008-01-01',null,null);
 insert into computer (id,name,introduced,discontinued,company_id) values (574,'iPhone 4S','2011-10-14',null,1);
+
+insert into users (username, password, enabled) values ('user', 'user', true);
+insert into users (username, password, enabled) values ('admin', 'admin', true);
+
+insert into authorities (username, authority) values ('user', 'ROLE_USER');
+insert into authorities (username, authority) values ('admin', 'ROLE_USER');
+insert into authorities (username, authority) values ('admin', 'ROLE_ADMIN');

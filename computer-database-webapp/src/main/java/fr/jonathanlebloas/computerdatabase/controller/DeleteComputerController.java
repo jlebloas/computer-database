@@ -9,14 +9,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import fr.jonathanlebloas.computerdatabase.service.ComputerService;
 
 @Controller
-public class DeleteComputerServlet {
+public class DeleteComputerController {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(DeleteComputerServlet.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(DeleteComputerController.class);
 	private static final String PATH_REDIRECT_VIEW = "redirect:../dashboard";
 	public static final String PARAM_DELETE_ID = "selection";
 
@@ -24,7 +23,7 @@ public class DeleteComputerServlet {
 	private ComputerService computerService;
 
 	@RequestMapping(path = "/computer/delete", method = RequestMethod.POST)
-	public String delete(@RequestParam(value = PARAM_DELETE_ID, required = true) final String selection) {
+	public String delete(final String selection) {
 		LOGGER.info("Delete computers = {}", selection);
 
 		// Stream the ids

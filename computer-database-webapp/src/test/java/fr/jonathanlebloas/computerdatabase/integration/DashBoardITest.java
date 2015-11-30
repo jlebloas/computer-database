@@ -1,13 +1,12 @@
 package fr.jonathanlebloas.computerdatabase.integration;
 
-import static org.junit.Assert.*;
-import static org.hamcrest.core.IsEqual.*;
+import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.Assert.assertThat;
 
 import java.net.URI;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -25,23 +24,20 @@ public class DashBoardITest {
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-		siteBase = new URI("http://localhost:18080/computer-database/dashboard");
+		siteBase = new URI("http://admin:admin@localhost:18080/computer-database/dashboard");
 		driver = new FirefoxDriver();
 		driver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS);
 	}
 
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
+		driver.quit();
 	}
 
 	@Before
 	public void setUp() throws Exception {
 		driver.manage().deleteAllCookies();
 		driver.get(siteBase.toString());
-	}
-
-	@After
-	public void tearDown() throws Exception {
 	}
 
 	@Test

@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,6 +31,7 @@ public class CompanyServiceImpl implements CompanyService {
 	@Autowired
 	private ComputerDAO computerDAO;
 
+	@Secured({ "ROLE_USER" })
 	@Override
 	@Transactional(readOnly = true)
 	public List<Company> listCompanies() {
@@ -37,6 +39,7 @@ public class CompanyServiceImpl implements CompanyService {
 		return companyDAO.findAll();
 	}
 
+	@Secured({ "ROLE_USER" })
 	@Override
 	@Transactional(readOnly = true)
 	public Company find(long id) {
@@ -44,6 +47,7 @@ public class CompanyServiceImpl implements CompanyService {
 		return companyDAO.findOne(id);
 	}
 
+	@Secured({ "ROLE_USER" })
 	@Override
 	@Transactional(readOnly = true)
 	public Page<Company> getPage(Pageable pageable, String search) {
@@ -51,6 +55,7 @@ public class CompanyServiceImpl implements CompanyService {
 		return companyDAO.findByNameContaining(pageable, search);
 	}
 
+	@Secured({ "ROLE_ADMIN" })
 	@Override
 	public void delete(Company c) {
 		LOGGER.debug("Delete the company : {}", c);

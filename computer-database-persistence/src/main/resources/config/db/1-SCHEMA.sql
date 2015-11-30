@@ -1,9 +1,11 @@
 drop schema if exists `computer-database-db`;
-  create schema if not exists `computer-database-db`;
+  create schema if not exists `computer-database-db` character set utf8 collate utf8_general_ci;
   use `computer-database-db`;
 
   drop table if exists computer;
   drop table if exists company;
+  drop table if exists users;
+  drop table if exists authorities;
 
   create table company (
     id                        bigint not null auto_increment,
@@ -22,3 +24,18 @@ drop schema if exists `computer-database-db`;
 
   alter table computer add constraint fk_computer_company_1 foreign key (company_id) references company (id) on delete restrict on update restrict;
   create index ix_computer_company_1 on computer (company_id);
+
+
+  create table users (
+    username varchar(50) not null primary key,
+    password varchar(50) not null,
+    enabled boolean not null
+  );
+
+  create table authorities (
+	username varchar(50) not null,
+	authority varchar(50) not null
+  );
+
+  alter table authorities add constraint fk_authorities_users foreign key (username) references users (username) on delete restrict on update restrict;
+  create unique index ix_auth_username on authorities (username,authority);

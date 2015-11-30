@@ -13,28 +13,31 @@
 		<level value="DEBUG" />
 	</logger>
 	<logger name="org.springframework">
-		<level value="OFF" />
+		<level value="WARN" />
 	</logger>
 	<logger name="org.springframework.jdbc">
-		<level value="OFF" />
+		<level value="WARN" />
 	</logger>
 	<logger name="org.springframework.transaction">
-		<level value="OFF" />
+		<level value="WARN" />
 	</logger>
 	<logger name="org.springframework.beans">
-		<level value="OFF" />
+		<level value="WARN" />
 	</logger>
 	<logger name="org.springframework.web">
-		<level value="OFF" />
+		<level value="WARN" />
+	</logger>
+	<logger name="org.springframework.security">
+		<level value="WARN" />
 	</logger>
 	<logger name="com.jolbox.bonecp">
-		<level value="OFF" />
+		<level value="WARN" />
 	</logger>
 	<logger name="org.hibernate">
-		<level value="OFF" />
+		<level value="WARN" />
 	</logger>
 
-	<root level="OFF">
+	<root level="WARN">
 		<appender-ref ref="STDOUT" />
 	</root>
 </configuration>

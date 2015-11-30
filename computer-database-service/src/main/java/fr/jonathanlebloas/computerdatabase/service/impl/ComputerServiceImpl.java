@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,6 +28,7 @@ public class ComputerServiceImpl implements ComputerService {
 	private ComputerDAO computerDAO;
 
 	@Override
+	@Secured({ "ROLE_USER" })
 	@Transactional(readOnly = true)
 	public List<Computer> listComputers() {
 		LOGGER.debug("List computers");
@@ -34,6 +36,7 @@ public class ComputerServiceImpl implements ComputerService {
 	}
 
 	@Override
+	@Secured({ "ROLE_USER" })
 	@Transactional(readOnly = true)
 	public String getComputerDetails(Computer c) {
 		LOGGER.debug("Getting details of the computer : {}", c);
@@ -42,6 +45,7 @@ public class ComputerServiceImpl implements ComputerService {
 	}
 
 	@Override
+	@Secured({ "ROLE_USER" })
 	@Transactional(readOnly = true)
 	public Computer find(long id) {
 		LOGGER.debug("Find computer with id : {}", id);
@@ -49,12 +53,14 @@ public class ComputerServiceImpl implements ComputerService {
 	}
 
 	@Override
+	@Secured({ "ROLE_ADMIN" })
 	public void create(Computer c) {
 		LOGGER.debug("Create computer : {}", c);
 		computerDAO.save(c);
 	}
 
 	@Override
+	@Secured({ "ROLE_ADMIN" })
 	public void update(Computer c) {
 		LOGGER.debug("Update computer : {}", c);
 		if (c == null) {
@@ -68,12 +74,14 @@ public class ComputerServiceImpl implements ComputerService {
 	}
 
 	@Override
+	@Secured({ "ROLE_ADMIN" })
 	public void delete(Computer c) {
 		LOGGER.debug("Delete computer : {}", c);
 		computerDAO.delete(c);
 	}
 
 	@Override
+	@Secured({ "ROLE_USER" })
 	@Transactional(readOnly = true)
 	public Page<Computer> getPage(Pageable pageable, String search) {
 		LOGGER.debug("Populating the computers page : {}", pageable);
