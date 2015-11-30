@@ -22,7 +22,7 @@ import fr.jonathanlebloas.computerdatabase.validation.validators.IsFirstNotEmpty
 @Constraint(validatedBy = IsFirstNotEmptyIfSecondNotEmptyValidator.class)
 @Documented
 public @interface IsFirstNotEmptyIfSecondNotEmpty {
-	String message() default "The after date must be after the before one";
+	String message() default "The first date must be set if the second one is set";
 
 	Class<?>[] groups() default {};
 

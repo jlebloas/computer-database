@@ -68,7 +68,7 @@ public class ComputerServiceImpl implements ComputerService {
 		}
 		// Check the Computer already exists
 		if (!computerDAO.exists(c.getId())) {
-			throw new RuntimeException("Computer with id" + c.getId() + " not found !");
+			throw new IllegalArgumentException("Computer with id " + c.getId() + " not found !");
 		}
 		computerDAO.save(c);
 	}

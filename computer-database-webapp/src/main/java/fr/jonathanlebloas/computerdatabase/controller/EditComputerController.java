@@ -10,9 +10,9 @@ import org.springframework.ui.Model;
 import org.springframework.ui.ModelMap;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import fr.jonathanlebloas.computerdatabase.dto.ComputerDTO;
 import fr.jonathanlebloas.computerdatabase.mapper.impl.CompanyMapper;
@@ -30,7 +30,6 @@ public class EditComputerController {
 	private static final Logger LOGGER = LoggerFactory.getLogger(EditComputerController.class);
 
 	private static final String PATH_UPDATE_VIEW = "editComputer";
-	private static final String PARAM_COMPUTER_ID = "id";
 
 	@Autowired
 	private ComputerMapper computerMapper;
@@ -44,8 +43,8 @@ public class EditComputerController {
 	@Autowired
 	private CompanyService companyService;
 
-	@RequestMapping(method = RequestMethod.GET)
-	public String doGet(@RequestParam(value = PARAM_COMPUTER_ID, required = true) final int computerId,
+	@RequestMapping(path = "/{id}", method = RequestMethod.GET)
+	public String doGet(@PathVariable(value = "id") final int computerId,
 			ModelMap model) {
 		LOGGER.info("Edit Computer : GET with id {}", computerId);
 

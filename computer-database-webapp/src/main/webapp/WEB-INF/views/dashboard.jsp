@@ -78,7 +78,7 @@
 						</sec:authorize>
 
 						<td><sec:authorize access="hasRole('ADMIN')">
-								<a href="<c:url value="/computer/edit?id=${computer.id}" />"><c:out
+								<a href="<c:url value="/computer/edit/${computer.id}" />"><c:out
 										value="${computer.name}" /></a>
 							</sec:authorize> <sec:authorize access="!hasRole('ADMIN')">
 								<c:out value="${computer.name}" />
