@@ -29,6 +29,9 @@ public class ComputerMapper implements Mapper<Computer, ComputerDTO> {
 
 	@Override
 	public ComputerDTO toDTO(Computer computer) {
+		if (computer==null) {
+			return null;
+		}
 		ComputerDTO computerDTO = new ComputerDTO();
 
 		computerDTO.setId("" + computer.getId());
@@ -73,6 +76,7 @@ public class ComputerMapper implements Mapper<Computer, ComputerDTO> {
 		Company company = null;
 		if (dto.getCompanyId() != null) {
 			company = companyMapper.fromDTO(new CompanyDTO(dto.getCompanyId(), dto.getCompanyName()));
+			company = company.getId() <= 0L ? null : company;
 		}
 
 		Computer computer = Computer.builder().name(dto.getName()).company(company).build();
@@ -102,5 +106,4 @@ public class ComputerMapper implements Mapper<Computer, ComputerDTO> {
 		}
 		return temp;
 	}
-
 }

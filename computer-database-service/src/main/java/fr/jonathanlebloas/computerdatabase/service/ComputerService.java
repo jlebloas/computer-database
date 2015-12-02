@@ -54,6 +54,13 @@ public interface ComputerService {
 	void delete(Computer c);
 
 	/**
+	 * Delete the computer with id
+	 *
+	 * @param id
+	 */
+	void delete(long id);
+
+	/**
 	 * Return the page asked
 	 *
 	 * @param pageable
@@ -61,5 +68,4 @@ public interface ComputerService {
 	 * @return
 	 */
 	Page<Computer> getPage(Pageable pageable, String search);
-
 }

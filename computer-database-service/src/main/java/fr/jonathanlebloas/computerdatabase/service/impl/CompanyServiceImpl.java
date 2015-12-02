@@ -62,4 +62,12 @@ public class CompanyServiceImpl implements CompanyService {
 		computerDAO.removeByCompany(c);
 		companyDAO.delete(c);
 	}
+
+	@Secured({ "ROLE_ADMIN" })
+	@Override
+	public void delete(long id) {
+		LOGGER.debug("Delete the company with id: {}", id);
+		computerDAO.removeByCompany_Id(id);
+		companyDAO.delete(id);
+	}
 }

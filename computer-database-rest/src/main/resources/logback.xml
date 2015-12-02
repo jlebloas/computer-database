@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+		<!-- encoders are assigned the type ch.qos.logback.classic.encoder.PatternLayoutEncoder 
+			by default -->
+		<encoder>
+			<pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+		</encoder>
+	</appender>
+
+	<logger name="fr.jonathanlebloas.computerdatabase">
+		<level value="DEBUG" />
+	</logger>
+	<logger name="org.springframework">
+		<level value="WARN" />
+	</logger>
+	<logger name="org.springframework.jdbc">
+		<level value="WARN" />
+	</logger>
+	<logger name="org.springframework.transaction">
+		<level value="WARN" />
+	</logger>
+	<logger name="org.springframework.beans">
+		<level value="WARN" />
+	</logger>
+	<logger name="org.springframework.web">
+		<level value="WARN" />
+	</logger>
+	<logger name="org.springframework.security">
+		<level value="WARN" />
+	</logger>
+	<logger name="com.jolbox.bonecp">
+		<level value="WARN" />
+	</logger>
+	<logger name="org.hibernate">
+		<level value="WARN" />
+	</logger>
+
+	<root level="WARN">
+		<appender-ref ref="STDOUT" />
+	</root>
+</configuration>

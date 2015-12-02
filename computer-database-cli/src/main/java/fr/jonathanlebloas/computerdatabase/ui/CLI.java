@@ -7,6 +7,11 @@ import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
 
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.core.GenericType;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
@@ -14,22 +19,21 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.stereotype.Component;
+import org.glassfish.jersey.client.ClientConfig;
+import org.glassfish.jersey.client.JerseyClient;
+import org.glassfish.jersey.client.JerseyClientBuilder;
 
-import fr.jonathanlebloas.computerdatabase.model.Company;
-import fr.jonathanlebloas.computerdatabase.model.Computer;
-import fr.jonathanlebloas.computerdatabase.service.CompanyService;
-import fr.jonathanlebloas.computerdatabase.service.ComputerService;
+import fr.jonathanlebloas.computerdatabase.dto.CompanyDTO;
+import fr.jonathanlebloas.computerdatabase.dto.ComputerDTO;
 import fr.jonathanlebloas.computerdatabase.utils.StringUtils;
 
 /**
  * Command Line Interface used to manage Computers (List, Create, Update ...)
  */
-@Component
 public final class CLI {
+
+	private static final String URI_COMPUTER = "http://localhost:8080/computer-database-rest/computer";
+	private static final String URI_COMPANY = "http://localhost:8080/computer-database-rest/company";
 
 	private static final String CONSOLE_ARG_ID = "id";
 	private static final String CONSOLE_ARG_NAME = "name";
@@ -92,12 +96,6 @@ public final class CLI {
 		}
 	}
 
-	@Autowired
-	private ComputerService computerService;
-
-	@Autowired
-	private CompanyService companyService;
-
 	private static DateTimeFormatter df = DateTimeFormatter.ISO_LOCAL_DATE;
 
 	private static HelpFormatter formatter = new HelpFormatter();
@@ -111,16 +109,19 @@ public final class CLI {
 		}
 	}
 
+	JerseyClient client;
+
+	public CLI() {
+		ClientConfig cc = new ClientConfig();
+		// cc.register(new LoggingFilter()); // Enable REST client Logs
+		client = JerseyClientBuilder.createClient(cc);
+	}
+
 	public static final void main(String[] args) {
-		CLI cli;
+		CLI cli = new CLI();
 		Command command = null;
 
-		// Load context spring with a try-with-resource that will automatically
-		// close the context at the end
-		try (ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(
-				"classpath:applicationContext.xml")) {
-			cli = context.getBean(CLI.class);
-
+		try {
 			// If there is at least a command
 			if (args.length > 0 && !StringUtils.isEmpty(args[0])) {
 				command = Command.valueOf(args[0].toUpperCase());
@@ -212,12 +213,17 @@ public final class CLI {
 						search = "";
 					}
 
-					PageRequest request = new PageRequest(index, 10);
-
-					displayList(companyService.getPage(request, search).getContent());
+					List<CompanyDTO> companies = client.target(URI_COMPANY).path("/page").queryParam("page", index)
+							.queryParam("search", search).queryParam("size", 10).request(MediaType.APPLICATION_JSON)
+							.get(new GenericType<List<CompanyDTO>>() {
+							});
+					displayList(companies);
 				}
 			} else {
-				displayList(companyService.listCompanies());
+				List<CompanyDTO> companies = client.target(URI_COMPANY).path("/").request(MediaType.APPLICATION_JSON)
+						.get(new GenericType<List<CompanyDTO>>() {
+						});
+				displayList(companies);
 			}
 		} catch (NumberFormatException e) {
 			System.out.println("\t Your id has a wrong format.");
@@ -246,12 +252,17 @@ public final class CLI {
 						search = "";
 					}
 
-					PageRequest request = new PageRequest(index, 10);
-
-					displayList(computerService.getPage(request, search).getContent());
+					List<ComputerDTO> computers = client.target(URI_COMPUTER).path("/page").queryParam("page", index)
+							.queryParam("search", search).queryParam("size", 10).request(MediaType.APPLICATION_JSON)
+							.get(new GenericType<List<ComputerDTO>>() {
+							});
+					displayList(computers);
 				}
 			} else {
-				displayList(computerService.listComputers());
+				List<ComputerDTO> computers = client.target(URI_COMPUTER).path("/").request(MediaType.APPLICATION_JSON)
+						.get(new GenericType<List<ComputerDTO>>() {
+						});
+				displayList(computers);
 			}
 		} catch (NumberFormatException e) {
 			System.out.println("\t Your id has a wrong format.");
@@ -271,11 +282,13 @@ public final class CLI {
 			}
 			// Check id type
 			Long id = Long.parseLong(options.getOptionValue(CONSOLE_ARG_ID));
-
-			Computer c = computerService.find(id);
-			String computerDetails = computerService.getComputerDetails(c);
-			System.out.println("\t" + computerDetails);
-
+			ComputerDTO computer = client.target(URI_COMPUTER).path("/" + id).request(MediaType.APPLICATION_JSON)
+					.get(ComputerDTO.class);
+			if (computer == null) {
+				System.out.println("\t The computer does not exist.");
+			} else {
+				System.out.println("\t" + computer);
+			}
 		} catch (NumberFormatException e) {
 			System.out.println("\t Your id has a wrong format.");
 		} catch (Exception e) {
@@ -302,20 +315,26 @@ public final class CLI {
 			}
 
 			// Get the optional manufacturer
-			Company company = null;
+			Long manufacturerId = 0L;
 			if (options.hasOption(CONSOLE_ARG_MANUFACTURER)) {
-				Long manufacturerId = Long.parseLong(options.getOptionValue(CONSOLE_ARG_MANUFACTURER));
-
-				company = companyService.find(manufacturerId);
+				manufacturerId = Long.parseLong(options.getOptionValue(CONSOLE_ARG_MANUFACTURER));
 			}
 
 			// Create the computer
-			Computer newComputer = Computer.builder().name(name).introduced(introduced).discontinued(discontinued)
-					.company(company).build();
-			computerService.create(newComputer);
+			ComputerDTO newComputer = new ComputerDTO();
+			newComputer.setName(name);
+			newComputer.setIntroduced(introduced == null ? "" : introduced.toString());
+			newComputer.setDiscontinued(discontinued == null ? "" : discontinued.toString());
+			newComputer.setCompanyId(manufacturerId.toString());
 
-			System.out.println("\t Your computer as been successfully created ! : " + newComputer.toString());
+			Response response = client.target(URI_COMPUTER).path("/").request()
+					.put(Entity.entity(newComputer, MediaType.APPLICATION_JSON));
 
+			if (response.getStatus() == 204) {
+				System.out.println("\t Your computer as been successfully created !");
+			} else {
+				System.out.println("\t an error occured : " + response.readEntity(String.class));
+			}
 		} catch (DateTimeParseException e) {
 			System.out.println("\t Your date is not well formated. Format it like 2011-12-03");
 		} catch (Exception e) {
@@ -333,7 +352,8 @@ public final class CLI {
 			// Check id type
 			Long id = Long.parseLong(options.getOptionValue(CONSOLE_ARG_ID));
 
-			Computer computer = computerService.find(id);
+			ComputerDTO computer = client.target(URI_COMPUTER).path("/" + id).request(MediaType.APPLICATION_JSON)
+					.get(ComputerDTO.class);
 			if (computer == null) {
 				throw new Exception("The computer requested with this id does not exist.");
 			}
@@ -344,26 +364,37 @@ public final class CLI {
 
 			// Parse the given dates
 			if (options.hasOption(CONSOLE_ARG_INTRODUCED)) {
-				LocalDate introduced = LocalDate.parse(options.getOptionValue(CONSOLE_ARG_INTRODUCED), df);
-				computer.setIntroduced(introduced);
+				if (StringUtils.isEmpty(options.getOptionValue(CONSOLE_ARG_INTRODUCED))) {
+					computer.setIntroduced(null);
+				} else {
+					LocalDate introduced = LocalDate.parse(options.getOptionValue(CONSOLE_ARG_INTRODUCED), df);
+					computer.setIntroduced(introduced.toString());
+				}
 			}
 			if (options.hasOption(CONSOLE_ARG_DISCONTINUED)) {
-				LocalDate discontinued = LocalDate.parse(options.getOptionValue(CONSOLE_ARG_DISCONTINUED), df);
-				computer.setDiscontinued(discontinued);
+				if (StringUtils.isEmpty(options.getOptionValue(CONSOLE_ARG_DISCONTINUED))) {
+					computer.setDiscontinued(null);
+				} else {
+					LocalDate discontinued = LocalDate.parse(options.getOptionValue(CONSOLE_ARG_DISCONTINUED), df);
+					computer.setDiscontinued(discontinued.toString());
+				}
 			}
 
 			// Get the optional manufacturer
 			if (options.hasOption(CONSOLE_ARG_MANUFACTURER)) {
 				Long manufacturerId = Long.parseLong(options.getOptionValue(CONSOLE_ARG_MANUFACTURER));
-
-				Company manufacturer = companyService.find(manufacturerId);
-				computer.setCompany(manufacturer);
+				computer.setCompanyId(manufacturerId.toString());
 			}
 
 			// Update the computer with the service
-			computerService.update(computer);
-			System.out.println("\t Your computer as been successfully updated ! : " + computer.toString());
+			Response response = client.target(URI_COMPUTER).path("/" + id).request()
+					.post(Entity.entity(computer, MediaType.APPLICATION_JSON));
 
+			if (response.getStatus() == 204) {
+				System.out.println("\t Your computer as been successfully updated !");
+			} else {
+				System.out.println("\t an error occured : " + response.readEntity(String.class));
+			}
 		} catch (DateTimeParseException e) {
 			System.out.println("\t Your date is not well formated.");
 		} catch (NumberFormatException e) {
@@ -385,15 +416,21 @@ public final class CLI {
 			// Check id type
 			Long id = Long.parseLong(options.getOptionValue(CONSOLE_ARG_ID));
 
-			Computer computer = computerService.find(id);
+			// Check if the computer exist
+			ComputerDTO computer = client.target(URI_COMPUTER).path("/" + id).request(MediaType.APPLICATION_JSON)
+					.get(ComputerDTO.class);
 			if (computer == null) {
-				throw new Exception("The computer requested with this id does not exist.");
+				throw new Exception("The computer does not exist.");
 			}
 
-			// Update the computer with the service
-			computerService.delete(computer);
-			System.out.println("\t Your computer as been successfully deleted ! : " + computer.toString());
+			// Delete the computer
+			Response response = client.target(URI_COMPUTER).path("/" + id).request().delete();
 
+			if (response.getStatus() == 204) {
+				System.out.println("\t Your computer as been successfully deleted !");
+			} else {
+				System.out.println("\t an error occured : " + response.readEntity(String.class));
+			}
 		} catch (NumberFormatException e) {
 			System.out.println("\t Your id has a wrong format.");
 		} catch (Exception e) {
@@ -411,19 +448,25 @@ public final class CLI {
 			// Check id type
 			Long id = Long.parseLong(options.getOptionValue(CONSOLE_ARG_ID));
 
-			Company company = companyService.find(id);
+			// Check if the company exist
+			CompanyDTO company = client.target(URI_COMPANY).path("/" + id).request(MediaType.APPLICATION_JSON)
+					.get(CompanyDTO.class);
 			if (company == null) {
-				throw new Exception("The company requested with this id does not exist.");
+				throw new Exception("The company does not exist.");
 			}
-			// Update the computer with the service
-			companyService.delete(company);
-			System.out.println("\t Your company as been successfully deleted ! : " + company.toString());
 
+			// Delete the computer
+			Response response = client.target(URI_COMPANY).path("/" + id).request().delete();
+
+			if (response.getStatus() == 204) {
+				System.out.println("\t Your company as been successfully deleted !");
+			} else {
+				System.out.println("\t an error occured : " + response.readEntity(String.class));
+			}
 		} catch (NumberFormatException e) {
 			System.out.println("\t Your id has a wrong format.");
 		} catch (Exception e) {
 			System.out.println("\t" + e.getMessage());
 		}
 	}
-
 }

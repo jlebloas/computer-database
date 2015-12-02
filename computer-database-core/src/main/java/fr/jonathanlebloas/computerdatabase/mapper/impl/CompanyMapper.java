@@ -18,6 +18,10 @@ public class CompanyMapper implements Mapper<Company, CompanyDTO> {
 
 	@Override
 	public CompanyDTO toDTO(Company company) {
+		if (company == null) {
+			return null;
+		}
+
 		CompanyDTO companyDto = new CompanyDTO();
 
 		companyDto.setId("" + company.getId());

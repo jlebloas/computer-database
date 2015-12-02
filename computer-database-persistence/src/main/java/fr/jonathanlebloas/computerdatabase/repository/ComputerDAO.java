@@ -12,4 +12,6 @@ public interface ComputerDAO extends JpaRepository<Computer, Long> {
 	Page<Computer> findByNameContainingOrCompany_NameContaining(Pageable pageable, String name, String companyName);
 
 	void removeByCompany(Company company);
+
+	void removeByCompany_Id(long id);
 }

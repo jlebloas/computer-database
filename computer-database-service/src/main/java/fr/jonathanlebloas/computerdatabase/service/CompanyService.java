@@ -41,4 +41,11 @@ public interface CompanyService {
 	 */
 	void delete(Company c);
 
+	/**
+	 * Delete the given company
+	 *
+	 * @param id
+	 */
+	void delete(long id);
+
 }

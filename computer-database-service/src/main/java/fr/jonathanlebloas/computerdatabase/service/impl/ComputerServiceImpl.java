@@ -56,6 +56,9 @@ public class ComputerServiceImpl implements ComputerService {
 	@Secured({ "ROLE_ADMIN" })
 	public void create(Computer c) {
 		LOGGER.debug("Create computer : {}", c);
+		if (computerDAO.exists(c.getId())) {
+			throw new IllegalArgumentException("The computer already exists");
+		}
 		computerDAO.save(c);
 	}
 
@@ -78,6 +81,13 @@ public class ComputerServiceImpl implements ComputerService {
 	public void delete(Computer c) {
 		LOGGER.debug("Delete computer : {}", c);
 		computerDAO.delete(c);
+	}
+
+	@Override
+	@Secured({ "ROLE_ADMIN" })
+	public void delete(long id) {
+		LOGGER.debug("Delete computer with id: {}");
+		computerDAO.delete(id);
 	}
 
 	@Override
