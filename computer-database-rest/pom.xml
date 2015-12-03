@@ -20,43 +20,18 @@
 		</dependency>
 
 		<dependency>
-			<groupId>org.glassfish.jersey.containers</groupId>
-			<artifactId>jersey-container-servlet</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.glassfish.jersey.media</groupId>
-			<artifactId>jersey-media-moxy</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>org.glassfish.jersey.ext</groupId>
-			<artifactId>jersey-spring3</artifactId>
-			<exclusions>
-				<!-- See https://github.com/spring-projects/spring-boot/commit/81f876aac5bcc07a51a323be8116910c0cf2bdd7 -->
-				<!-- jersey-spring3 has a transtive dependencies on HK2’s bean-validator 
-					module that embeds JBoss Logging, Hibernate Validator, and Classmate without 
-					repackaging them. This makes it impossible to control the version of those 
-					three libraries that will be used without relying on classpath ordering. -->
-				<exclusion>
-					<groupId>org.glassfish.hk2.external</groupId>
-					<artifactId>bean-validator</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-
-		<!-- Validation -->
-		<dependency>
-			<groupId>org.glassfish.jersey.ext</groupId>
-			<artifactId>jersey-bean-validation</artifactId>
-		</dependency>
-
-		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-core</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
-			<artifactId>spring-web</artifactId>
+			<artifactId>spring-webmvc</artifactId>
+		</dependency>
+
+		<!-- JSON Binding -->
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
 		</dependency>
 	</dependencies>
 

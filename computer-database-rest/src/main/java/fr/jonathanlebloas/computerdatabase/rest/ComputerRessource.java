@@ -3,17 +3,6 @@ package fr.jonathanlebloas.computerdatabase.rest;
 import java.util.List;
 
 import javax.validation.Valid;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.MediaType;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,17 +10,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort.Direction;
-import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import fr.jonathanlebloas.computerdatabase.dto.ComputerDTO;
 import fr.jonathanlebloas.computerdatabase.mapper.impl.ComputerMapper;
 import fr.jonathanlebloas.computerdatabase.model.Computer;
 import fr.jonathanlebloas.computerdatabase.service.ComputerService;
 
-@Path("/computer")
-@Consumes(MediaType.APPLICATION_JSON)
-@Produces(MediaType.APPLICATION_JSON)
-@Component
+@RestController
+@RequestMapping(path = "/computer")
 public class ComputerRessource {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(ComputerRessource.class);
@@ -42,47 +34,46 @@ public class ComputerRessource {
 	@Autowired
 	private ComputerMapper computerMapper;
 
-	@GET
+	@RequestMapping(method = RequestMethod.GET, produces = "application/json")
 	public List<ComputerDTO> list() {
 		LOGGER.info("List computers}");
 		return computerMapper.toDTO(computerService.listComputers());
 	}
 
-	@GET
-	@Path("{id}")
-	public ComputerDTO find(@PathParam("id") final long id) {
+	@RequestMapping(path = "/{id:\\d+}", method = RequestMethod.GET, produces = "application/json")
+	public ComputerDTO find(@PathVariable("id") final long id) {
 		LOGGER.info("Find computer with id : {}", id);
 		return computerMapper.toDTO(computerService.find(id));
 	}
 
-	@PUT
-	public void create(@Valid final ComputerDTO c) {
+	@RequestMapping(method = RequestMethod.POST, consumes = "application/json")
+	public void create(@Valid @RequestBody final ComputerDTO c) {
 		LOGGER.info("Create computer : {}", c);
 		computerService.create(computerMapper.fromDTO(c));
 	}
 
-	@POST
-	@Path("{id}")
-	public void update(@Valid final ComputerDTO c, @PathParam("id") final long id) {
+	@RequestMapping(path = "/{id:\\d+}", method = RequestMethod.POST, consumes = "application/json")
+	public void update(@Valid @RequestBody final ComputerDTO c, @PathVariable("id") final long id) {
 		LOGGER.info("Update computer : {}", c);
 		c.setId("" + id);
 		computerService.update(computerMapper.fromDTO(c));
 	}
 
-	@DELETE
-	@Path("{id}")
-	public void delete(@PathParam("id") final long id) {
+	@RequestMapping(path = "/{id:\\d+}", method = RequestMethod.DELETE)
+	public void delete(@PathVariable("id") final long id) {
 		LOGGER.info("Delete computer with id: {}", id);
-		computerService.delete(id);
+		if (computerService.exist(id)) {
+			computerService.delete(id);
+		}
 	}
 
-	@GET
-	@Path("page")
-	public List<ComputerDTO> getPage(@DefaultValue("0") @QueryParam("page") final int page,
-			@DefaultValue("10") @QueryParam("size") final int size,
-			@DefaultValue("ASC") @QueryParam("direction") final Direction direction,
-			@DefaultValue("id") @QueryParam("field") final String field,
-			@DefaultValue("") @QueryParam("search") final String search) {
+	@RequestMapping(path = "/page", method = RequestMethod.GET, produces = "application/json")
+	public List<ComputerDTO> getPage(
+			@RequestParam(value = "page", required = false, defaultValue = "0") final int page,
+			@RequestParam(value = "size", required = false, defaultValue = "10") final int size,
+			@RequestParam(value = "direction", required = false, defaultValue = "ASC") final Direction direction,
+			@RequestParam(value = "field", required = false, defaultValue = "id") final String field,
+			@RequestParam(value = "search", required = false, defaultValue = "") final String search) {
 
 		final PageRequest pageRequest = new PageRequest(page, size, direction, field);
 		LOGGER.info("Get page with search: {} search :{}", pageRequest, search);

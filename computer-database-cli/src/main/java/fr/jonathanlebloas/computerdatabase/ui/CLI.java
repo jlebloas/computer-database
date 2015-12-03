@@ -22,6 +22,7 @@ import org.apache.commons.cli.ParseException;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.JerseyClient;
 import org.glassfish.jersey.client.JerseyClientBuilder;
+import org.glassfish.jersey.filter.LoggingFilter;
 
 import fr.jonathanlebloas.computerdatabase.dto.CompanyDTO;
 import fr.jonathanlebloas.computerdatabase.dto.ComputerDTO;
@@ -328,9 +329,9 @@ public final class CLI {
 			newComputer.setCompanyId(manufacturerId.toString());
 
 			Response response = client.target(URI_COMPUTER).path("/").request()
-					.put(Entity.entity(newComputer, MediaType.APPLICATION_JSON));
+					.post(Entity.entity(newComputer, MediaType.APPLICATION_JSON));
 
-			if (response.getStatus() == 204) {
+			if (response.getStatus() == 200) {
 				System.out.println("\t Your computer as been successfully created !");
 			} else {
 				System.out.println("\t an error occured : " + response.readEntity(String.class));
@@ -390,7 +391,7 @@ public final class CLI {
 			Response response = client.target(URI_COMPUTER).path("/" + id).request()
 					.post(Entity.entity(computer, MediaType.APPLICATION_JSON));
 
-			if (response.getStatus() == 204) {
+			if (response.getStatus() == 200) {
 				System.out.println("\t Your computer as been successfully updated !");
 			} else {
 				System.out.println("\t an error occured : " + response.readEntity(String.class));
@@ -426,7 +427,7 @@ public final class CLI {
 			// Delete the computer
 			Response response = client.target(URI_COMPUTER).path("/" + id).request().delete();
 
-			if (response.getStatus() == 204) {
+			if (response.getStatus() == 200) {
 				System.out.println("\t Your computer as been successfully deleted !");
 			} else {
 				System.out.println("\t an error occured : " + response.readEntity(String.class));
@@ -458,7 +459,7 @@ public final class CLI {
 			// Delete the computer
 			Response response = client.target(URI_COMPANY).path("/" + id).request().delete();
 
-			if (response.getStatus() == 204) {
+			if (response.getStatus() == 200) {
 				System.out.println("\t Your company as been successfully deleted !");
 			} else {
 				System.out.println("\t an error occured : " + response.readEntity(String.class));

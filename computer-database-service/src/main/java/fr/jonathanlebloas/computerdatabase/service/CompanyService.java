@@ -48,4 +48,12 @@ public interface CompanyService {
 	 */
 	void delete(long id);
 
+	/**
+	 * Return if the company exists
+	 *
+	 * @param id
+	 * @return
+	 */
+	boolean exist(long id);
+
 }

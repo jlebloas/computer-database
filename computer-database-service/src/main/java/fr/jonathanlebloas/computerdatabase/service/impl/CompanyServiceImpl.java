@@ -47,6 +47,14 @@ public class CompanyServiceImpl implements CompanyService {
 		return companyDAO.findOne(id);
 	}
 
+	@Override
+	@Secured({ "ROLE_USER" })
+	@Transactional(readOnly = true)
+	public boolean exist(long id) {
+		LOGGER.debug("Exist computer with id : {}", id);
+		return companyDAO.exists(id);
+	}
+
 	@Secured({ "ROLE_USER" })
 	@Override
 	@Transactional(readOnly = true)

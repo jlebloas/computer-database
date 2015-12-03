@@ -53,6 +53,14 @@ public class ComputerServiceImpl implements ComputerService {
 	}
 
 	@Override
+	@Secured({ "ROLE_USER" })
+	@Transactional(readOnly = true)
+	public boolean exist(long id) {
+		LOGGER.debug("Exist computer with id : {}", id);
+		return computerDAO.exists(id);
+	}
+
+	@Override
 	@Secured({ "ROLE_ADMIN" })
 	public void create(Computer c) {
 		LOGGER.debug("Create computer : {}", c);
@@ -86,7 +94,7 @@ public class ComputerServiceImpl implements ComputerService {
 	@Override
 	@Secured({ "ROLE_ADMIN" })
 	public void delete(long id) {
-		LOGGER.debug("Delete computer with id: {}");
+		LOGGER.debug("Delete computer with id: {}", id);
 		computerDAO.delete(id);
 	}
 

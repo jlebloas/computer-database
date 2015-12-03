@@ -68,4 +68,12 @@ public interface ComputerService {
 	 * @return
 	 */
 	Page<Computer> getPage(Pageable pageable, String search);
+
+	/**
+	 * Return if the computer exist
+	 *
+	 * @param id
+	 * @return
+	 */
+	boolean exist(long id);
 }

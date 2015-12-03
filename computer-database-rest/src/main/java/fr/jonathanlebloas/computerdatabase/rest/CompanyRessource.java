@@ -2,34 +2,25 @@ package fr.jonathanlebloas.computerdatabase.rest;
 
 import java.util.List;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.GET;
-import javax.ws.rs.HeaderParam;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.MediaType;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort.Direction;
-import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import fr.jonathanlebloas.computerdatabase.dto.CompanyDTO;
 import fr.jonathanlebloas.computerdatabase.mapper.impl.CompanyMapper;
 import fr.jonathanlebloas.computerdatabase.model.Company;
 import fr.jonathanlebloas.computerdatabase.service.CompanyService;
 
-@Path("/company")
-@Consumes(MediaType.APPLICATION_JSON)
-@Produces(MediaType.APPLICATION_JSON)
-@Component
+@RestController
+@RequestMapping(path = "/company")
 public class CompanyRessource {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(CompanyRessource.class);
@@ -40,33 +31,32 @@ public class CompanyRessource {
 	@Autowired
 	private CompanyMapper companyMapper;
 
-	@GET
+	@RequestMapping(method = RequestMethod.GET, produces = "application/json")
 	public List<CompanyDTO> list() {
 		LOGGER.info("List computers}");
 		return companyMapper.toDTO(companyService.listCompanies());
 	}
 
-	@GET
-	@Path("{id}")
-	public CompanyDTO find(@PathParam("id") final long id) {
+	@RequestMapping(path = "/{id:\\d+}", method = RequestMethod.GET, produces = "application/json")
+	public CompanyDTO find(@PathVariable("id") final long id) {
 		LOGGER.info("Find computer with id : {}", id);
 		return companyMapper.toDTO(companyService.find(id));
 	}
 
-	@DELETE
-	@Path("{id}")
-	public void delete(@PathParam("id") final long id) {
+	@RequestMapping(path = "/{id:\\d+}", method = RequestMethod.DELETE)
+	public void delete(@PathVariable("id") final long id) {
 		LOGGER.info("Delete computer with id: {}", id);
-		companyService.delete(id);
+		if (companyService.exist(id)) {
+			companyService.delete(id);
+		}
 	}
 
-	@GET
-	@Path("page")
-	public List<CompanyDTO> getPage(@DefaultValue("0") @QueryParam("page") final int page,
-			@DefaultValue("10") @QueryParam("size") final int size,
-			@DefaultValue("ASC") @QueryParam("direction") final Direction direction,
-			@DefaultValue("id") @QueryParam("field") final String field,
-			@DefaultValue("") @HeaderParam("search") final String search) {
+	@RequestMapping(path = "/page", method = RequestMethod.GET, produces = "application/json")
+	public List<CompanyDTO> getPage(@RequestParam(value = "page", required = false, defaultValue = "0") final int page,
+			@RequestParam(value = "size", required = false, defaultValue = "10") final int size,
+			@RequestParam(value = "direction", required = false, defaultValue = "ASC") final Direction direction,
+			@RequestParam(value = "field", required = false, defaultValue = "id") final String field,
+			@RequestParam(value = "search", required = false, defaultValue = "") final String search) {
 
 		final PageRequest pageRequest = new PageRequest(page, size, direction, field);
 		LOGGER.info("Get page with search: {} search :{}", pageRequest, search);
