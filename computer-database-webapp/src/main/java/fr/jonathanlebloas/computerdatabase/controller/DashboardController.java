@@ -154,7 +154,7 @@ public class DashboardController {
 	 * @param pageIndexParam
 	 * @return
 	 */
-	private int getPageIndex(HttpServletRequest request, Optional<String> pageIndexParam) {
+	private static int getPageIndex(HttpServletRequest request, Optional<String> pageIndexParam) {
 		if (pageIndexParam.isPresent()) {
 			int parsed = Integer.parseInt(pageIndexParam.get());
 			return parsed >= 0 ? parsed : 0;
@@ -171,7 +171,7 @@ public class DashboardController {
 	 * @param sizeParam
 	 * @return
 	 */
-	private int getSize(HttpServletRequest request, Optional<String> sizeParam) {
+	private static int getSize(HttpServletRequest request, Optional<String> sizeParam) {
 		if (sizeParam.isPresent()) {
 			int parsed = Integer.parseInt(sizeParam.get());
 			return parsed > 0 ? parsed : 10;
@@ -188,7 +188,7 @@ public class DashboardController {
 	 * @param searchParam
 	 * @return
 	 */
-	private String getSearch(HttpServletRequest request, Optional<String> searchParam) {
+	private static String getSearch(HttpServletRequest request, Optional<String> searchParam) {
 		if (searchParam.isPresent()) {
 			return searchParam.get();
 		} else {
@@ -204,7 +204,7 @@ public class DashboardController {
 	 * @param orderParam
 	 * @return
 	 */
-	private String getOrderField(HttpServletRequest request, Optional<String> orderParam) {
+	private static String getOrderField(HttpServletRequest request, Optional<String> orderParam) {
 		if (orderParam.isPresent()) {
 			return orderParam.get();
 		} else {
@@ -266,8 +266,8 @@ public class DashboardController {
 	private static void prepareCookies(HttpServletResponse response, int pageIndex, int size, String search,
 			String order, Direction direction) {
 		List<Cookie> cookies = new ArrayList<>();
-		cookies.add(new Cookie(PARAM_PAGE, "" + pageIndex));
-		cookies.add(new Cookie(PARAM_SIZE, "" + size));
+		cookies.add(new Cookie(PARAM_PAGE, Integer.toString(pageIndex)));
+		cookies.add(new Cookie(PARAM_SIZE, Integer.toString(size)));
 		cookies.add(new Cookie(PARAM_SEARCH, search));
 		cookies.add(new Cookie(PARAM_ORDER, order));
 		cookies.add(new Cookie(PARAM_DIRECTION, direction.name()));

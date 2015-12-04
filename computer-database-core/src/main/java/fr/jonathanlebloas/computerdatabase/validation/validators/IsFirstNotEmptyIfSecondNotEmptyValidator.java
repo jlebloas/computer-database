@@ -27,12 +27,12 @@ public class IsFirstNotEmptyIfSecondNotEmptyValidator
 		try {
 			firstString = BeanUtils.getProperty(value, firstFieldName);
 		} catch (final Exception e) {
-			throw new RuntimeException("Bad usage of the annotation. Can't acces field: " + firstFieldName);
+			throw new IllegalArgumentException("Bad usage of the annotation. Can't acces field: " + firstFieldName);
 		}
 		try {
 			secondString = BeanUtils.getProperty(value, secondFieldName);
 		} catch (final Exception e) {
-			throw new RuntimeException("Bad usage of the annotation.  Can't acces field: " + secondFieldName);
+			throw new IllegalArgumentException("Bad usage of the annotation.  Can't acces field: " + secondFieldName);
 		}
 
 		if (!StringUtils.isEmpty(secondString) && StringUtils.isEmpty(firstString)) {

@@ -22,7 +22,6 @@ import org.apache.commons.cli.ParseException;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.JerseyClient;
 import org.glassfish.jersey.client.JerseyClientBuilder;
-import org.glassfish.jersey.filter.LoggingFilter;
 
 import fr.jonathanlebloas.computerdatabase.dto.CompanyDTO;
 import fr.jonathanlebloas.computerdatabase.dto.ComputerDTO;
@@ -79,10 +78,6 @@ public final class CLI {
 
 		private Options options;
 
-		private Command(String description) {
-			this.description = description;
-		}
-
 		private Command(String description, Options options) {
 			this.description = description;
 			this.options = options;
@@ -101,6 +96,14 @@ public final class CLI {
 
 	private static HelpFormatter formatter = new HelpFormatter();
 
+	JerseyClient client;
+
+	public CLI() {
+		ClientConfig cc = new ClientConfig();
+		// cc.register(new LoggingFilter()); // Enable REST client Logs
+		client = JerseyClientBuilder.createClient(cc);
+	}
+
 	private static void help() {
 		EnumSet<Command> enumSet = EnumSet.allOf(Command.class);
 		System.out.println("Here is the command list :\n");
@@ -108,14 +111,6 @@ public final class CLI {
 		for (Command command : enumSet) {
 			formatter.printHelp(command.toString(), command.getDescription(), command.getOptions(), "\n", true);
 		}
-	}
-
-	JerseyClient client;
-
-	public CLI() {
-		ClientConfig cc = new ClientConfig();
-		// cc.register(new LoggingFilter()); // Enable REST client Logs
-		client = JerseyClientBuilder.createClient(cc);
 	}
 
 	public static final void main(String[] args) {
@@ -128,8 +123,8 @@ public final class CLI {
 				command = Command.valueOf(args[0].toUpperCase());
 
 				// If there is additional options get and parse them
-				String[] optionsArray = null;
-				CommandLineParser optionsParser = null;
+				String[] optionsArray;
+				CommandLineParser optionsParser;
 				CommandLine options = null;
 				if (args.length > 1) {
 					optionsArray = Arrays.copyOfRange(args, 1, args.length);
@@ -301,7 +296,7 @@ public final class CLI {
 		try {
 			// Get the mandatory name asked
 			if (options == null || !options.hasOption(CONSOLE_ARG_NAME)) {
-				throw new RuntimeException("The computer must have a name !");
+				throw new IllegalArgumentException("The computer must have a name !");
 			}
 			String name = options.getOptionValue(CONSOLE_ARG_NAME);
 
@@ -356,7 +351,7 @@ public final class CLI {
 			ComputerDTO computer = client.target(URI_COMPUTER).path("/" + id).request(MediaType.APPLICATION_JSON)
 					.get(ComputerDTO.class);
 			if (computer == null) {
-				throw new Exception("The computer requested with this id does not exist.");
+				throw new IllegalArgumentException("The computer requested with this id does not exist.");
 			}
 
 			if (options.hasOption(CONSOLE_ARG_NAME)) {
@@ -421,7 +416,7 @@ public final class CLI {
 			ComputerDTO computer = client.target(URI_COMPUTER).path("/" + id).request(MediaType.APPLICATION_JSON)
 					.get(ComputerDTO.class);
 			if (computer == null) {
-				throw new Exception("The computer does not exist.");
+				throw new IllegalArgumentException("The computer does not exist.");
 			}
 
 			// Delete the computer
@@ -453,7 +448,7 @@ public final class CLI {
 			CompanyDTO company = client.target(URI_COMPANY).path("/" + id).request(MediaType.APPLICATION_JSON)
 					.get(CompanyDTO.class);
 			if (company == null) {
-				throw new Exception("The company does not exist.");
+				throw new IllegalArgumentException("The company does not exist.");
 			}
 
 			// Delete the computer

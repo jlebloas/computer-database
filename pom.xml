@@ -82,6 +82,7 @@
 		<java-target-version>1.8</java-target-version>
 		<maven-compiler-plugin-version>3.3</maven-compiler-plugin-version>
 		<maven-shade-plugin-version>2.4.2</maven-shade-plugin-version>
+		<sonar-maven-plugin>2.7.1</sonar-maven-plugin>
 		<cargo-maven2-version>1.4.16</cargo-maven2-version>
 		<maven-failsafe-version>2.12</maven-failsafe-version>
 		<maven-surefire-version>2.18</maven-surefire-version>
@@ -398,6 +399,12 @@
 						</execution>
 					</executions>
 				</plugin>
+				<!-- Sonar -->
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>sonar-maven-plugin</artifactId>
+					<version>${sonar-maven-plugin}</version>
+				</plugin>
 
 				<!-- Configure embedded tomcat server for integration tests (ie. Selenium 
 					tests) -->
@@ -441,6 +448,12 @@
 				</plugin>
 			</plugins>
 		</pluginManagement>
+		<plugins>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>sonar-maven-plugin</artifactId>
+			</plugin>
+		</plugins>
 	</build>
 
 	<repositories>

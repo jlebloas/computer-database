@@ -35,12 +35,12 @@ public class DateAfterValidator implements ConstraintValidator<DateAfter, Object
 		try {
 			firstObj = BeanUtils.getProperty(value, beforeFieldName);
 		} catch (final Exception e) {
-			throw new RuntimeException("Bad usage of the annotation. Can't acces field: " + beforeFieldName);
+			throw new IllegalArgumentException("Bad usage of the annotation. Can't acces field: " + beforeFieldName);
 		}
 		try {
 			secondObj = BeanUtils.getProperty(value, afterFieldName);
 		} catch (final Exception e) {
-			throw new RuntimeException("Bad usage of the annotation. Can't acces field: " + afterFieldName);
+			throw new IllegalArgumentException("Bad usage of the annotation. Can't acces field: " + afterFieldName);
 		}
 
 		// The check is only valid if the two given date are not empty

@@ -68,7 +68,7 @@ public class AddComputerController {
 		// We can now update the computer
 		Computer temp = computerMapper.fromDTO(computerDTO);
 		if (temp.getId() != 0) {
-			throw new RuntimeException("The computer should not have a id here");
+			throw new IllegalArgumentException("The computer should not have a id here");
 		}
 
 		long companyId = temp.getCompany().getId();

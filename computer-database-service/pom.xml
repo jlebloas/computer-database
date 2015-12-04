@@ -50,4 +50,8 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
+
+	<build>
+		<finalName>computer-database-rest</finalName>
+	</build>
 </project>

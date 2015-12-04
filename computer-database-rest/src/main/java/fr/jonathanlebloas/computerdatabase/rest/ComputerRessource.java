@@ -55,7 +55,7 @@ public class ComputerRessource {
 	@RequestMapping(path = "/{id:\\d+}", method = RequestMethod.POST, consumes = "application/json")
 	public void update(@Valid @RequestBody final ComputerDTO c, @PathVariable("id") final long id) {
 		LOGGER.info("Update computer : {}", c);
-		c.setId("" + id);
+		c.setId(Long.toString(id));
 		computerService.update(computerMapper.fromDTO(c));
 	}
 
@@ -84,7 +84,7 @@ public class ComputerRessource {
 			@Override
 			public ComputerDTO convert(Computer computer) {
 				return computerMapper.toDTO(computer);
-			};
+			}
 		}).getContent();
 	}
 }

@@ -34,14 +34,14 @@ public class ComputerMapper implements Mapper<Computer, ComputerDTO> {
 		}
 		ComputerDTO computerDTO = new ComputerDTO();
 
-		computerDTO.setId("" + computer.getId());
+		computerDTO.setId(Long.toString(computer.getId()));
 
 		computerDTO.setName(computer.getName());
 
 		Company company = computer.getCompany();
 		if (company != null) {
 			computerDTO.setCompanyName(company.getName());
-			computerDTO.setCompanyId("" + company.getId());
+			computerDTO.setCompanyId(Long.toString(company.getId()));
 		} else {
 			computerDTO.setCompanyName(null);
 			computerDTO.setCompanyId("0");
@@ -96,10 +96,10 @@ public class ComputerMapper implements Mapper<Computer, ComputerDTO> {
 	}
 
 	@Override
-	public List<Computer> fromDTO(List<ComputerDTO> DTOList) {
+	public List<Computer> fromDTO(List<ComputerDTO> dtoList) {
 
 		List<Computer> temp = new ArrayList<>();
-		for (Iterator<ComputerDTO> iterator = DTOList.iterator(); iterator.hasNext();) {
+		for (Iterator<ComputerDTO> iterator = dtoList.iterator(); iterator.hasNext();) {
 			ComputerDTO dto = iterator.next();
 
 			temp.add(fromDTO(dto));

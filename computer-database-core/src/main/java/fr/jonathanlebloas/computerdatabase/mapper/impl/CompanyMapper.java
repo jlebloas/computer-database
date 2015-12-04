@@ -24,7 +24,7 @@ public class CompanyMapper implements Mapper<Company, CompanyDTO> {
 
 		CompanyDTO companyDto = new CompanyDTO();
 
-		companyDto.setId("" + company.getId());
+		companyDto.setId(Long.toString(company.getId()));
 
 		companyDto.setName(company.getName());
 
@@ -48,10 +48,10 @@ public class CompanyMapper implements Mapper<Company, CompanyDTO> {
 	}
 
 	@Override
-	public List<Company> fromDTO(List<CompanyDTO> DTOList) {
+	public List<Company> fromDTO(List<CompanyDTO> dtoList) {
 
 		List<Company> temp = new ArrayList<>();
-		for (Iterator<CompanyDTO> iterator = DTOList.iterator(); iterator.hasNext();) {
+		for (Iterator<CompanyDTO> iterator = dtoList.iterator(); iterator.hasNext();) {
 			CompanyDTO dto = iterator.next();
 
 			temp.add(fromDTO(dto));

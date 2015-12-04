@@ -32,7 +32,7 @@ public class ErrorAdvice {
 	@ResponseBody
 	ResponseEntity<List<String>> handleException(MethodArgumentNotValidException ex) {
 		return new ResponseEntity<>(
-				ex.getBindingResult().getAllErrors().stream().map(this::mapError).collect(Collectors.toList()),
+				ex.getBindingResult().getAllErrors().stream().map(ErrorAdvice::mapError).collect(Collectors.toList()),
 				HttpStatus.BAD_REQUEST);
 	}
 
@@ -57,7 +57,7 @@ public class ErrorAdvice {
 	 * @param e
 	 * @return
 	 */
-	private String mapError(ObjectError e) {
+	private static String mapError(ObjectError e) {
 		if (e instanceof FieldError) {
 			return ((FieldError) e).getField() + ": " + e.getDefaultMessage();
 		} else {

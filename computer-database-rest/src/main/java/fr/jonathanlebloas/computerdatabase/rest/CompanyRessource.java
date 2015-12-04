@@ -67,7 +67,7 @@ public class CompanyRessource {
 			@Override
 			public CompanyDTO convert(Company company) {
 				return companyMapper.toDTO(company);
-			};
+			}
 		}).getContent();
 	}
 }

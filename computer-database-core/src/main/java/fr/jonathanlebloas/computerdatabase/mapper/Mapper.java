@@ -36,9 +36,9 @@ public interface Mapper<MODEL, DTO> {
 
 	/**
 	 * Map from list dto to its model list object
-	 * 
+	 *
 	 * @param DTOList
 	 * @return
 	 */
-	public List<MODEL> fromDTO(List<DTO> DTOList);
+	public List<MODEL> fromDTO(List<DTO> dtoList);
 }
