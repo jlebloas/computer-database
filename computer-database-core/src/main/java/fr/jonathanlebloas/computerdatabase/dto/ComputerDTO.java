@@ -2,7 +2,7 @@ package fr.jonathanlebloas.computerdatabase.dto;
 
 import javax.validation.GroupSequence;
 
-import org.hibernate.validator.constraints.NotEmpty;
+import org.hibernate.validator.constraints.Length;
 
 import fr.jonathanlebloas.computerdatabase.validation.constraints.DateAfter;
 import fr.jonathanlebloas.computerdatabase.validation.constraints.IsDate;
@@ -18,7 +18,7 @@ public class ComputerDTO {
 
 	private String id;
 
-	@NotEmpty
+	@Length(min = 1, max = 255)
 	private String name;
 
 	@IsDate

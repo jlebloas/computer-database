@@ -12,7 +12,7 @@
 			path="name" placeholder="${namePlaceHolder}" value="${computer.name}"
 			aria-describedby="computerNameErrorStatus" />
 		<span class="glyphicon glyphicon-remove form-control-feedback ${!status.error ? 'sr-only' : ''}"></span>
-		<span id="computerNameErrorStatus"	class="help-block ${!status.error ? 'sr-only' : ''}"><spring:message code="computer.error.emptyName" /></span>
+		<span id="computerNameErrorStatus"	class="help-block ${!status.error ? 'sr-only' : ''}"><spring:message code="computer.error.name" /></span>
 	</div>
 </spring:bind>
 
