@@ -73,10 +73,7 @@ public class EditComputerController {
 
 		// We can now update the computer
 		Computer temp = computerMapper.fromDTO(computerDTO);
-		long companyId = temp.getCompany().getId();
-		if (companyId <= 0) {
-			temp.setCompany(null);
-		} else {
+		if (temp.getCompany() != null) {
 			temp.setCompany(companyService.find(temp.getCompany().getId()));
 		}
 		computerService.update(temp);

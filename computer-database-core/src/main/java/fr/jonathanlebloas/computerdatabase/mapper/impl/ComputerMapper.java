@@ -2,9 +2,6 @@ package fr.jonathanlebloas.computerdatabase.mapper.impl;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -61,17 +58,6 @@ public class ComputerMapper implements Mapper<Computer, ComputerDTO> {
 	}
 
 	@Override
-	public List<ComputerDTO> toDTO(List<Computer> list) {
-		List<ComputerDTO> temp = new ArrayList<>();
-		for (Iterator<Computer> iterator = list.iterator(); iterator.hasNext();) {
-			Computer computer = iterator.next();
-
-			temp.add(toDTO(computer));
-		}
-		return temp;
-	}
-
-	@Override
 	public Computer fromDTO(ComputerDTO dto) {
 		Company company = null;
 		if (dto.getCompanyId() != null) {
@@ -93,17 +79,5 @@ public class ComputerMapper implements Mapper<Computer, ComputerDTO> {
 		}
 
 		return computer;
-	}
-
-	@Override
-	public List<Computer> fromDTO(List<ComputerDTO> dtoList) {
-
-		List<Computer> temp = new ArrayList<>();
-		for (Iterator<ComputerDTO> iterator = dtoList.iterator(); iterator.hasNext();) {
-			ComputerDTO dto = iterator.next();
-
-			temp.add(fromDTO(dto));
-		}
-		return temp;
 	}
 }

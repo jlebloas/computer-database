@@ -9,30 +9,34 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort.Direction;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import fr.jonathanlebloas.computerdatabase.dto.ComputerDTO;
+import fr.jonathanlebloas.computerdatabase.dto.PageDTO;
 import fr.jonathanlebloas.computerdatabase.mapper.impl.ComputerMapper;
+import fr.jonathanlebloas.computerdatabase.mapper.impl.PageMapper;
 import fr.jonathanlebloas.computerdatabase.model.Computer;
 import fr.jonathanlebloas.computerdatabase.service.ComputerService;
 
 @RestController
 @RequestMapping(path = "/computer")
-public class ComputerRessource {
+public class ComputerResource {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(ComputerRessource.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(ComputerResource.class);
 
 	@Autowired
 	private ComputerService computerService;
 
 	@Autowired
 	private ComputerMapper computerMapper;
+
+	@Autowired
+	private PageMapper pageMapper;
 
 	@RequestMapping(method = RequestMethod.GET, produces = "application/json")
 	public List<ComputerDTO> list() {
@@ -68,19 +72,13 @@ public class ComputerRessource {
 	}
 
 	@RequestMapping(path = "/page", method = RequestMethod.GET, produces = "application/json")
-	public List<ComputerDTO> getPage(
-			@RequestParam(value = "page", required = false, defaultValue = "0") final int page,
-			@RequestParam(value = "size", required = false, defaultValue = "10") final int size,
-			@RequestParam(value = "direction", required = false, defaultValue = "ASC") final Direction direction,
-			@RequestParam(value = "field", required = false, defaultValue = "id") final String field,
-			@RequestParam(value = "search", required = false, defaultValue = "") final String search) {
-
-		final PageRequest pageRequest = new PageRequest(page, size, direction, field);
-		LOGGER.info("Get page with search: {} search :{}", pageRequest, search);
+	public List<ComputerDTO> getPage(@ModelAttribute PageDTO page) {
+		LOGGER.info("Get computer page : {}", page);
+		PageRequest pageRequest = pageMapper.fromDTO(page);
 
 		// Get the page of Computer from the service and then map it on a page
 		// of ComputerDTO with a converter based on the computerMapper
-		return computerService.getPage(pageRequest, search).map(new Converter<Computer, ComputerDTO>() {
+		return computerService.getPage(pageRequest, page.getSearch()).map(new Converter<Computer, ComputerDTO>() {
 			@Override
 			public ComputerDTO convert(Computer computer) {
 				return computerMapper.toDTO(computer);

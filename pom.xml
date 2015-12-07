@@ -38,6 +38,7 @@
 
 		<!-- Spring FrameWork -->
 		<spring-version>4.2.2.RELEASE</spring-version>
+		<spring-data-commons-version>1.11.1.RELEASE</spring-data-commons-version>
 		<spring-data-jpa-version>1.9.1.RELEASE</spring-data-jpa-version>
 		<spring-security-version>4.0.3.RELEASE</spring-security-version>
 
@@ -171,6 +172,11 @@
 			</dependency>
 			<dependency>
 				<groupId>org.springframework.data</groupId>
+				<artifactId>spring-data-commons</artifactId>
+				<version>${spring-data-commons-version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework.data</groupId>
 				<artifactId>spring-data-jpa</artifactId>
 				<version>${spring-data-jpa-version}</version>
 			</dependency>
@@ -289,6 +295,11 @@
 			<dependency>
 				<groupId>com.fasterxml.jackson.core</groupId>
 				<artifactId>jackson-databind</artifactId>
+				<version>${jackson-version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.fasterxml.jackson.core</groupId>
+				<artifactId>jackson-annotations</artifactId>
 				<version>${jackson-version}</version>
 			</dependency>
 

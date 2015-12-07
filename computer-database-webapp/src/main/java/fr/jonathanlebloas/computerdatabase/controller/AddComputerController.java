@@ -71,15 +71,11 @@ public class AddComputerController {
 			throw new IllegalArgumentException("The computer should not have a id here");
 		}
 
-		long companyId = temp.getCompany().getId();
-		if (companyId <= 0) {
-			temp.setCompany(null);
-		} else {
+		if (temp.getCompany() != null) {
 			temp.setCompany(companyService.find(temp.getCompany().getId()));
 		}
 		computerService.create(temp);
 
 		return "redirect:/";
 	}
-
 }

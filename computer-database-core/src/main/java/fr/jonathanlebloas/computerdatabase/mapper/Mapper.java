@@ -1,6 +1,7 @@
 package fr.jonathanlebloas.computerdatabase.mapper;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Mapper model / DTO
@@ -16,7 +17,9 @@ public interface Mapper<MODEL, DTO> {
 	 * @param obj
 	 * @return
 	 */
-	public DTO toDTO(MODEL obj);
+	public default DTO toDTO(MODEL obj) {
+		throw new UnsupportedOperationException();
+	}
 
 	/**
 	 * Map from list model to its list DTO
@@ -24,7 +27,9 @@ public interface Mapper<MODEL, DTO> {
 	 * @param list
 	 * @return
 	 */
-	public List<DTO> toDTO(List<MODEL> list);
+	public default List<DTO> toDTO(List<MODEL> list) {
+		return list.stream().map(this::toDTO).collect(Collectors.toList());
+	}
 
 	/**
 	 * Map from dto to its model object
@@ -32,7 +37,9 @@ public interface Mapper<MODEL, DTO> {
 	 * @param dto
 	 * @return
 	 */
-	public MODEL fromDTO(DTO dto);
+	public default MODEL fromDTO(DTO dto) {
+		throw new UnsupportedOperationException();
+	}
 
 	/**
 	 * Map from list dto to its model list object
@@ -40,5 +47,7 @@ public interface Mapper<MODEL, DTO> {
 	 * @param DTOList
 	 * @return
 	 */
-	public List<MODEL> fromDTO(List<DTO> dtoList);
+	public default List<MODEL> fromDTO(List<DTO> dtoList) {
+		return dtoList.stream().map(this::fromDTO).collect(Collectors.toList());
+	}
 }
