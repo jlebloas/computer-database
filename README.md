@@ -5,4 +5,4 @@ This project is a implementation of the training program in eBusiness Informatio
 Here you find the specifications : [spec].
 
 
-[spec]: <https://github.com/loicortola/spec-cdb>
+[spec]: <https://github.com/jlebloas/spec-cdb>
